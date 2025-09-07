@@ -1,0 +1,401 @@
+Code,Name,Country,Exchange,Currency,Type,ISIN
+AA,Alcoa,US,NYSE,USD,Common Stock,US0138171014
+AAL,American Airlines Group,US,NASDAQ,USD,Common Stock,US02376R1023
+AAON,AAON,US,NASDAQ,USD,Common Stock,US0003602069
+ACHC,Acadia Healthcare,US,NASDAQ,USD,Common Stock,US00404A1097
+ACI,Albertsons,US,NYSE,USD,Common Stock,US0130911037
+ACM,AECOM,US,NYSE,USD,Common Stock,US00766T1007
+ADC,Agree Realty,US,NYSE,USD,Common Stock,US0084921008
+AFG,American Financial Group,US,NYSE,USD,Common Stock,US0259321042
+AGCO,AGCO,US,NYSE,USD,Common Stock,US0010841023
+AIT,Applied Industrial Technologies,US,NYSE,USD,Common Stock,US03820C1053
+ALE,ALLETE,US,NYSE,USD,Common Stock,US0185223007
+ALGM,Allegro MicroSystems,US,NASDAQ,USD,Common Stock,US01749D1054
+ALK,Alaska Air Group,US,NYSE,USD,Common Stock,US0116591092
+ALLY,Ally Financial,US,NYSE,USD,Common Stock,US02005N1000
+ALV,Autoliv,US,NYSE,USD,Common Stock,US0528001094
+AM,Antero Midstream,US,NYSE,USD,Common Stock,US03674X1063
+AMED,Amedisys,US,NASDAQ,USD,Common Stock,US0234361089
+AMG,Affiliated Managers Group,US,NYSE,USD,Common Stock,US0082521081
+AMH,American Homes 4 Rent,US,NASDAQ,USD,Common Stock,US02665T3068
+AMKR,Amkor Technology,US,NASDAQ,USD,Common Stock,US0316521006
+AN,AutoNation,US,NYSE,USD,Common Stock,US05329W1027
+ANF,Abercrombie & Fitch,US,NYSE,USD,Common Stock,US0028962076
+APG,APi Group,US,NYSE,USD,Common Stock,US00187Y1001
+APPF,AppFolio,US,NASDAQ,USD,Common Stock,US03783C1009
+AR,Antero Resources,US,NYSE,USD,Common Stock,US03674X1063
+ARMK,Aramark,US,NYSE,USD,Common Stock,US03852U1060
+ARW,Arrow Electronics,US,NYSE,USD,Common Stock,US0427351004
+ASB,Associated Bank,US,NYSE,USD,Common Stock,US0454871056
+ASGN,ASGN Inc.,US,NYSE,USD,Common Stock,US00191U1025
+ASH,Ashland Global,US,NYSE,USD,Common Stock,US0441861046
+ATI,ATI Inc.,US,NYSE,USD,Common Stock,US0017081010
+ATR,AptarGroup,US,NYSE,USD,Common Stock,US0383361039
+AVAV,AeroVironment,US,NASDAQ,USD,Common Stock,US0080731088
+AVNT,Avient,US,NYSE,USD,Common Stock,US05368V1061
+AVT,Avnet,US,NYSE,USD,Common Stock,US0538071038
+AVTR,Avantor,US,NYSE,USD,Common Stock,US05352A1007
+AXTA,Axalta,US,NYSE,USD,Common Stock,US05453E1029
+AYI,Acuity Brands,US,NYSE,USD,Common Stock,US00508Y1029
+BBWI,Bath & Body Works Inc.,US,NYSE,USD,Common Stock,US0708301041
+BC,Brunswick,US,NYSE,USD,Common Stock,US1170431092
+BCO,Brink’s,US,NYSE,USD,Common Stock,US1096961040
+BDC,Belden Inc.,US,NYSE,USD,Common Stock,US0774541066
+BHF,Brighthouse Financial,US,NASDAQ,USD,Common Stock,US10922N1037
+BILL,Bill Holdings (BILL Holdings),US,NYSE,USD,Common Stock,US0900431000
+BIO,Bio-Rad Laboratories,US,NYSE,USD,Common Stock,US0905722072
+BJ,BJ’s Wholesale Club,US,NYSE,USD,Common Stock,US05550J1016
+BKH,Black Hills Corporation,US,NYSE,USD,Common Stock,US0921131092
+BLD,TopBuild Corp.,US,NYSE,USD,Common Stock,US89055F1030
+BLKB,Blackbaud,US,NASDAQ,USD,Common Stock,US09227Q1004
+BMRN,BioMarin Pharmaceutical,US,NASDAQ,USD,Common Stock,US09061G1013
+BRBR,BellRing Brands,US,NYSE,USD,Common Stock,US07831C1036
+BRKR,Bruker,US,NASDAQ,USD,Common Stock,US1167941087
+BRX,Brixmor Property Group,US,NYSE,USD,Common Stock,US11120U1051
+BURL,Burlington,US,NYSE,USD,Common Stock,US1220171060
+BWXT,BWX Technologies,US,NYSE,USD,Common Stock,US05605H1005
+BYD,Boyd Gaming,US,NYSE,USD,Common Stock,US1033041013
+CACI,CACI International,US,NASDAQ,USD,Common Stock,US1271903049
+CADE,Cadence Bank,US,NYSE,USD,Common Stock,US12740C1036
+CAR,Avis Budget Group,US,NASDAQ,USD,Common Stock,US0537741052
+CART,Maplebear Inc. (Instacart),US,NASDAQ,USD,Common Stock,US56528J1025
+CASY,Casey’s General Stores,US,NASDAQ,USD,Common Stock,US1475281036
+CAVA,Cava Group,US,NYSE,USD,Common Stock,US14986K1060
+CBSH,Commerce Bancshares,US,NASDAQ,USD,Common Stock,US2005251036
+CBT,Cabot Corp,US,NYSE,USD,Common Stock,US1270551013
+CCK,Crown Holdings,US,NYSE,USD,Common Stock,US2283681060
+CDP,COPT Defense Properties,US,NYSE,USD,Common Stock,US22002T1088
+CELH,Celsius Holdings,US,NASDAQ,USD,Common Stock,US15118V2079
+CFR,Frost Bank (Cullen/Frost Bankers),US,NYSE,USD,Common Stock,US2298991090
+CG,Carlyle Group,US,NASDAQ,USD,Common Stock,US14316J1088
+CGNX,Cognex,US,NASDAQ,USD,Common Stock,US1924221039
+CHDN,Churchill Downs Inc.,US,NASDAQ,USD,Common Stock,US1714841087
+CHE,Chemed Corp.,US,NASDAQ,USD,Common Stock,US16359R1032
+CHH,Choice Hotels,US,NYSE,USD,Common Stock,US1699051066
+CHRD,Chord Energy,US,NASDAQ,USD,Common Stock,US17039E1029
+CHWY,Chewy,US,NYSE,USD,Common Stock,US16679L1098
+CIEN,Ciena,US,NYSE,USD,Common Stock,US1717793095
+CIVI,Civitas Resources,US,NYSE,USD,Common Stock,US17888R1014
+CLF,Cleveland-Cliffs,US,NYSE,USD,Common Stock,US1858991011
+CLH,Clean Harbors,US,NYSE,USD,Common Stock,US1844961078
+CMA,Comerica,US,NYSE,USD,Common Stock,US2003401070
+CMC,Commercial Metals,US,NYSE,USD,Common Stock,US2017231034
+CNH,CNH Industrial,Netherlands,NYSE,USD,Common Stock,NL0010545661
+CNM,Core & Main,US,NYSE,USD,Common Stock,US21873J1088
+CNO,CNO Financial Group,US,NYSE,USD,Common Stock,US12621E1038
+CNX,CNX Resources,US,NYSE,USD,Common Stock,US12653C1080
+CNXC,Concentrix,US,NASDAQ,USD,Common Stock,US20602D1019
+COHR,Coherent Corp.,US,NASDAQ,USD,Common Stock,US19247A1007
+COKE,Coca-Cola Consolidated,US,NASDAQ,USD,Common Stock,US19122T1097
+COLB,Columbia Banking System,US,NASDAQ,USD,Common Stock,US1972361026
+COLM,Columbia Sportswear,US,NASDAQ,USD,Common Stock,US1985161066
+COTY,Coty,US,NYSE,USD,Common Stock,US2220702037
+CPRI,Capri Holdings,UK,NYSE,USD,Common Stock,VGG1890L1076
+CR,Crane,US,NYSE,USD,Common Stock,US2243991054
+CROX,Crocs,US,NASDAQ,USD,Common Stock,US2270461096
+CRS,Carpenter Technology,US,NYSE,USD,Common Stock,US1442851036
+CRUS,Cirrus Logic,US,NASDAQ,USD,Common Stock,US1727551004
+CSL,Carlisle Companies,US,NYSE,USD,Common Stock,US1423391002
+CUBE,CubeSmart,US,NYSE,USD,Common Stock,US2296631094
+CUZ,Cousins Properties,US,NYSE,USD,Common Stock,US2227955026
+CVLT,CommVault Systems,US,NASDAQ,USD,Common Stock,US2041661024
+CW,Curtiss-Wright,US,NYSE,USD,Common Stock,US2315611010
+CXT,Crane NXT,US,NYSE,USD,Common Stock,US2247191040
+CYTK,Cytokinetics,US,NASDAQ,USD,Common Stock,US23282W6057
+DAR,Darling Ingredients,US,NYSE,USD,Common Stock,US2372661015
+DBX,Dropbox,US,NASDAQ,USD,Common Stock,US26210C1045
+DCI,Donaldson Company,US,NYSE,USD,Common Stock,US2576511099
+DINO,HF Sinclair,US,NYSE,USD,Common Stock,US4039491000
+DKS,Dick’s Sporting Goods,US,NYSE,USD,Common Stock,US2533931026
+DLB,Dolby,US,NYSE,USD,Common Stock,US25659T1079
+DOCS,Doximity,US,NYSE,USD,Common Stock,US26622P1075
+DOCU,DocuSign,US,NASDAQ,USD,Common Stock,US2561631068
+DT,Dynatrace,US,NYSE,USD,Common Stock,US2681501092
+DTM,DT Midstream,US,NYSE,USD,Common Stock,US23345P1021
+DUOL,Duolingo,US,NASDAQ,USD,Common Stock,US26603R1068
+EEFT,Euronet Worldwide,US,NASDAQ,USD,Common Stock,US2987361092
+EGP,EastGroup Properties,US,NYSE,USD,Common Stock,US2772761019
+EHC,Encompass Health,US,NYSE,USD,Common Stock,US29261A1007
+ELF,e.l.f. Beauty,US,NYSE,USD,Common Stock,US26856L1035
+ELS,Common Stock Lifestyle Properties,US,NYSE,USD,Common Stock,US29472R1086
+EME,Emcor,US,NYSE,USD,Common Stock,US29084Q1004
+ENS,EnerSys,US,NYSE,USD,Common Stock,US29275Y1029
+ENSG,Ensign Group,US,NASDAQ,USD,Common Stock,US29358P1012
+ENTG,Entegris,US,NASDAQ,USD,Common Stock,US29362U1043
+EPR,EPR Properties,US,NYSE,USD,Common Stock,US26884U1097
+EQH,Equitable Holdings,US,NYSE,USD,Common Stock,US29452E1010
+ESAB,ESAB,US,NYSE,USD,Common Stock,US29605W1071
+ESNT,Essent Group Ltd.,Bermuda,NYSE,USD,Common Stock,BMG3198U1027
+EVR,Evercore,US,NYSE,USD,Common Stock,US29977A1051
+EWBC,East West Bancorp,US,NASDAQ,USD,Common Stock,US27579R1041
+EXEL,Exelixis,US,NASDAQ,USD,Common Stock,US30161Q1040
+EXLS,EXL Service,US,NASDAQ,USD,Common Stock,US3020811044
+EXP,Eagle Materials,US,NYSE,USD,Common Stock,US26969P1084
+EXPO,Exponent Inc.,US,NASDAQ,USD,Common Stock,US30214U1025
+FAF,First American Financial Corporation,US,NYSE,USD,Common Stock,US31847R1023
+FBIN,Fortune Brands Innovations,US,NYSE,USD,Common Stock,US34964C1062
+FCFS,FirstCash,US,NASDAQ,USD,Common Stock,US33767D1054
+FCN,FTI Consulting,US,NYSE,USD,Common Stock,US3029411093
+FFIN,First Financial Bankshares,US,NASDAQ,USD,Common Stock,US32020R1095
+FHI,Federated Hermes,US,NYSE,USD,Common Stock,US3142111034
+FHN,First Horizon,US,NYSE,USD,Common Stock,US3205171057
+FIVE,Five Below,US,NASDAQ,USD,Common Stock,US33829M1018
+FIX,Comfort Systems USA,US,NYSE,USD,Common Stock,US1999081045
+FLEX,Flex Ltd.,Singapore,NASDAQ,USD,Common Stock,SG9999000020
+FLG,Flagstar Financial (Flagstar Bank),US,NYSE,USD,Common Stock,US33847C3012
+FLO,Flowers Foods,US,NYSE,USD,Common Stock,US3434981011
+FLR,Fluor,US,NYSE,USD,Common Stock,US3434121022
+FLS,Flowserve,US,NYSE,USD,Common Stock,US34354P1057
+FN,Fabrinet,Cayman Islands,NYSE,USD,Common Stock,KYG3323L1005
+FNB,FNB Corporation,US,NYSE,USD,Common Stock,US3025201019
+FND,Floor & Decor,US,NYSE,USD,Common Stock,US3397501012
+FNF,Fidelity National Financial,US,NYSE,USD,Common Stock,US31620R3030
+FOUR,Shift4,US,NYSE,USD,Common Stock,US82452J1025
+FR,First Industrial Realty Trust,US,NYSE,USD,Common Stock,US32054K1034
+FYBR,Frontier Communications,US,NASDAQ,USD,Common Stock,US35909D1081
+G,Genpact,US,NYSE,USD,Common Stock,US37246C1036
+GAP,Gap Inc.,US,NYSE,USD,Common Stock,US3647601083
+GATX,GATX,US,NYSE,USD,Common Stock,US3614481030
+GBCI,Glacier Bancorp,US,NASDAQ,USD,Common Stock,US37637Q1058
+GEF,Greif Inc.,US,NYSE,USD,Common Stock,US3976241071
+GGG,Graco Inc.,US,NYSE,USD,Common Stock,US3841091040
+GHC,Graham Holdings,US,NYSE,USD,Common Stock,US3846371041
+GLPI,Gaming and Leisure Properties,US,NASDAQ,USD,Common Stock,US36467J1088
+GME,GameStop,US,NYSE,USD,Common Stock,US36467W1099
+GMED,Globus Medical,US,NYSE,USD,Common Stock,US3795772082
+GNTX,Gentex,US,NASDAQ,USD,Common Stock,US3719011096
+GPK,Graphic Packaging,US,NYSE,USD,Common Stock,US3886891015
+GT,Goodyear Tire & Rubber,US,NASDAQ,USD,Common Stock,US3825501014
+GTLS,Chart Industries,US,NYSE,USD,Common Stock,US16115Q3083
+GTM,ZoomInfo (GT M stands for ZoomInfo’s temporary code),US,NASDAQ,USD,Common Stock,US98980F1049
+GWRE,Guidewire Software,US,NYSE,USD,Common Stock,US40171V1008
+GXO,GXO Logistics,US,NYSE,USD,Common Stock,US36262G1013
+H,Hyatt,US,NYSE,USD,Common Stock,US4485791028
+HAE,Haemonetics,US,NYSE,USD,Common Stock,US4050241003
+HALO,Halozyme,US,NASDAQ,USD,Common Stock,US40637H1095
+HGV,Hilton Grand Vacations,US,NYSE,USD,Common Stock,US43283X1054
+HIMS,Hims & Hers Health,US,NASDAQ,USD,Common Stock,US4330001065
+HLI,Houlihan Lokey,US,NYSE,USD,Common Stock,US4415931009
+HLNE,Hamilton Lane,US,NASDAQ,USD,Common Stock,US4074972064
+HOG,Harley-Davidson,US,NYSE,USD,Common Stock,US4128221086
+HOMB,Home BancShares,US,NASDAQ,USD,Common Stock,US4368932009
+HQY,HealthCommon Stock,US,NASDAQ,USD,Common Stock,US42226A1079
+HR,Healthcare Realty Trust,US,NYSE,USD,Common Stock,US42225P5017
+HRB,H&R Block,US,NYSE,USD,Common Stock,US0936711052
+HWC,Hancock Whitney,US,NASDAQ,USD,Common Stock,US4101201097
+HXL,Hexcel,US,NYSE,USD,Common Stock,US4282911084
+IBKR,Interactive Brokers,US,NASDAQ,USD,Common Stock,US45841N1072
+IBOC,Intl Bancshares Corp,US,NASDAQ,USD,Common Stock,US4590441030
+IDA,Idacorp,US,NYSE,USD,Common Stock,US4511071064
+ILMN,Illumina Inc.,US,NASDAQ,USD,Common Stock,US4523271090
+INGR,Ingredion,US,NYSE,USD,Common Stock,US4571871023
+IPGP,IPG Photonics,US,NASDAQ,USD,Common Stock,US44980X1090
+IRDM,Iridium Communications,US,NASDAQ,USD,Common Stock,US46269C1027
+IRT,IRT Living (Independence Realty Trust),US,NYSE,USD,Common Stock,US45378A1060
+ITT,ITT Inc.,US,NYSE,USD,Common Stock,US4509112010
+JAZZ,Jazz Pharmaceuticals,Ireland,NASDAQ,USD,Common Stock,IE00B4Q5ZN47
+JEF,Jefferies,US,NYSE,USD,Common Stock,US47233W1099
+JHG,Janus Henderson,UK,NYSE,USD,Common Stock,JE00BYPZJM29
+JLL,Jones Lang LaSalle,US,NYSE,USD,Common Stock,US48020Q1076
+KBH,KB Home,US,NYSE,USD,Common Stock,US48666K1097
+KBR,KBR Inc.,US,NYSE,USD,Common Stock,US48242W1062
+KD,Kyndryl,US,NYSE,USD,Common Stock,US50155Q1004
+KEX,Kirby Corporation,US,NYSE,USD,Common Stock,US4972661064
+KMPR,Kemper Corporation,US,NYSE,USD,Common Stock,US4884011002
+KNF,Knife River Corporation,US,NYSE,USD,Common Stock,US49804T1025
+KNSL,Kinsale Capital Group,US,NASDAQ,USD,Common Stock,US49714P1084
+KNX,Knight-Swift,US,NYSE,USD,Common Stock,US4990491049
+KRC,Kilroy Realty Corp,US,NYSE,USD,Common Stock,US49427F1084
+KRG,Kite Realty Group Trust,US,NYSE,USD,Common Stock,US49803T3005
+LAD,Lithia Motors,US,NYSE,USD,Common Stock,US5367971034
+LAMR,Lamar Advertising Company,US,NASDAQ,USD,Common Stock,US5130752019
+LEA,Lear,US,NYSE,USD,Common Stock,US5218652049
+LECO,Lincoln Electric,US,NASDAQ,USD,Common Stock,US5339001068
+LFUS,Littelfuse,US,NASDAQ,USD,Common Stock,US5370081045
+LITE,Lumentum Holdings,US,NASDAQ,USD,Common Stock,US55024U1097
+LIVN,LivaNova,UK,NASDAQ,USD,Common Stock,GB00BYMT0J19
+LNTH,Lantheus Holdings,US,NASDAQ,USD,Common Stock,US5165441032
+LNW,Light & Wonder,US,NASDAQ,USD,Common Stock,US5327461023
+LOPE,Grand Canyon Education,US,NASDAQ,USD,Common Stock,US38526M1062
+LPX,Louisiana-Pacific,US,NYSE,USD,Common Stock,US5463471053
+LSCC,Lattice Semiconductor,US,NASDAQ,USD,Common Stock,US5184151042
+LSTR,Landstar System,US,NASDAQ,USD,Common Stock,US5150981018
+M,Macy’s,US,NYSE,USD,Common Stock,US55616P1049
+MAN,ManpowerGroup,US,NYSE,USD,Common Stock,US56418H1005
+MANH,Manhattan Associates,US,NASDAQ,USD,Common Stock,US5627501092
+MASI,Masimo,US,NASDAQ,USD,Common Stock,US5747951003
+MAT,Mattel,US,NASDAQ,USD,Common Stock,US5770811025
+MEDP,Medpace,US,NASDAQ,USD,Common Stock,US58506Q1094
+MIDD,Middleby,US,NASDAQ,USD,Common Stock,US5962781010
+MKSI,MKS Instruments,US,NASDAQ,USD,Common Stock,US55306N1046
+MLI,Mueller Industries,US,NYSE,USD,Common Stock,US6247561029
+MMS,Maximus Inc.,US,NYSE,USD,Common Stock,US5779331041
+MORN,Morningstar Inc.,US,NASDAQ,USD,Common Stock,US6177001095
+MSA,MSA Safety,US,NYSE,USD,Common Stock,US5534981064
+MSM,MSC Industrial Direct,US,NYSE,USD,Common Stock,US5535301064
+MTDR,Matador Resources,US,NYSE,USD,Common Stock,US5764852050
+MTG,MGIC Investment Corporation,US,NYSE,USD,Common Stock,US5528481030
+MTN,Vail Resorts,US,NYSE,USD,Common Stock,US91879Q1094
+MTSI,MACOM Technology Solutions,US,NASDAQ,USD,Common Stock,US55405Y1001
+MTZ,MasTec,US,NYSE,USD,Common Stock,US5763231090
+MUR,Murphy Oil,US,NYSE,USD,Common Stock,US6267171022
+MUSA,Murphy USA,US,NYSE,USD,Common Stock,US6267551025
+MZTI,The Marzetti Company (Lancaster Colony),US,NASDAQ,USD,Common Stock,US5138471033
+NBIX,Neurocrine Biosciences,US,NASDAQ,USD,Common Stock,US64125C1099
+NEU,NewMarket Corporation,US,NYSE,USD,Common Stock,US6515871076
+NFG,National Fuel Gas,US,NYSE,USD,Common Stock,US6361801011
+NJR,New Jersey Resources,US,NYSE,USD,Common Stock,US6460251068
+NLY,Annaly Capital Management,US,NYSE,USD,Common Stock,US0357108390
+NNN,NNN REIT (National Retail Properties),US,NYSE,USD,Common Stock,US6374171063
+NOV,NOV Inc.,US,NYSE,USD,Common Stock,US62955J1034
+NOVT,Novanta,US,NASDAQ,USD,Common Stock,US66989K1051
+NSA,National Storage Affiliates Trust,US,NYSE,USD,Common Stock,US6378701063
+NSP,Insperity,US,NYSE,USD,Common Stock,US45778Q1076
+NVST,Envista Holdings,US,NYSE,USD,Common Stock,US29415F1049
+NVT,nVent Electric,Ireland,NYSE,USD,Common Stock,IE00BDVJJQ56
+NWE,NorthWestern Corporation,US,NYSE,USD,Common Stock,US6680743050
+NXST,Nexstar Media Group,US,NASDAQ,USD,Common Stock,US65336K1034
+NXT,Nextracker,US,NASDAQ,USD,Common Stock,US65343H1023
+NYT,New York Times Company,US,NYSE,USD,Common Stock,US6501111073
+OC,Owens Corning,US,NYSE,USD,Common Stock,US6907421019
+OGE,OGE Energy,US,NYSE,USD,Common Stock,US6708371033
+OGS,ONE Gas,US,NYSE,USD,Common Stock,US68235P1084
+OHI,Omega Healthcare Investors,US,NYSE,USD,Common Stock,US6819361006
+OKTA,Okta Inc.,US,NASDAQ,USD,Common Stock,US6792951054
+OLED,Universal Display,US,NASDAQ,USD,Common Stock,US91347P1057
+OLLI,Ollie’s Bargain Outlet,US,NASDAQ,USD,Common Stock,US6811161099
+OLN,Olin Corporation,US,NYSE,USD,Common Stock,US6806652052
+ONB,Old National Bank,US,NASDAQ,USD,Common Stock,US6800331075
+ONTO,Onto Innovation,US,NYSE,USD,Common Stock,US6833441057
+OPCH,Option Care Health,US,NASDAQ,USD,Common Stock,US68404L2016
+ORA,Ormat Technologies,US,NYSE,USD,Common Stock,US6866881021
+ORI,Old Republic International,US,NYSE,USD,Common Stock,US6802231042
+OSK,Oshkosh,US,NYSE,USD,Common Stock,US6882392011
+OVV,Ovintiv,Ireland,NYSE,USD,Common Stock,IE00BLNN3691
+OZK,Bank OZK,US,NASDAQ,USD,Common Stock,US06417N1037
+PAG,Penske Automotive Group,US,NYSE,USD,Common Stock,US70959W1036
+PB,Prosperity Bancshares,US,NYSE,USD,Common Stock,US7436061052
+PBF,PBF Energy,US,NYSE,USD,Common Stock,US69318G1067
+PCH,PotlatchDeltic,US,NASDAQ,USD,Common Stock,US7376301039
+PCTY,Paylocity,US,NASDAQ,USD,Common Stock,US70438V1061
+PEGA,Pegasystems,US,NASDAQ,USD,Common Stock,US7055731035
+PEN,Penumbra Inc.,US,NYSE,USD,Common Stock,US70975L1070
+PFGC,Performance Food Group,US,NYSE,USD,Common Stock,US71377A1034
+PII,Polaris,US,NYSE,USD,Common Stock,US7310681025
+PK,Park Hotels & Resorts,US,NYSE,USD,Common Stock,US7005171050
+PLNT,Planet Fitness,US,NYSE,USD,Common Stock,US72703H1014
+PNFP,Pinnacle Financial Partners,US,NASDAQ,USD,Common Stock,US72346Q1040
+POR,Portland General Electric,US,NYSE,USD,Common Stock,US7365088472
+POST,Post Holdings,US,NYSE,USD,Common Stock,US7374461041
+POWI,Power Integrations,US,NASDAQ,USD,Common Stock,US7392761034
+PPC,Pilgrim’s Pride,US,NASDAQ,USD,Common Stock,US72147K1088
+PR,Permian Resources,US,NYSE,USD,Common Stock,US71424F1057
+PRGO,Perrigo,US,NYSE,USD,Common Stock,IE00BGH1M568
+PRI,Primerica,US,NYSE,USD,Common Stock,US74164M1080
+PSN,Parsons Corporation,US,NYSE,USD,Common Stock,US70202L1026
+PSTG,Pure Storage,US,NYSE,USD,Common Stock,US74624M1027
+PVH,PVH Corp.,US,NYSE,USD,Common Stock,US6936561009
+QLYS,Qualys,US,NASDAQ,USD,Common Stock,US74758T3032
+R,Ryder,US,NYSE,USD,Common Stock,US7835491082
+RBA,RB Global (Ritchie Bros.),Canada,NYSE,USD,Common Stock,CA74971D1015
+RBC,RBC Bearings (now ABB Inc.),US,NYSE,USD,Common Stock,US75524B1044
+REXR,Rexford Industrial Realty,US,NYSE,USD,Common Stock,US76169C1009
+RGA,Reinsurance Group of America,US,NYSE,USD,Common Stock,US7593516047
+RGEN,Repligen,US,NASDAQ,USD,Common Stock,US7599161095
+RGLD,Royal Gold,US,NASDAQ,USD,Common Stock,US7802871084
+RH,RH (Restoration Hardware),US,NYSE,USD,Common Stock,US74967X1037
+RLI,RLI Corp.,US,NYSE,USD,Common Stock,US7496071074
+RMBS,Rambus,US,NASDAQ,USD,Common Stock,US7509171069
+RNR,RenaissanceRe,Bermuda,NYSE,USD,Common Stock,BMG7496G1033
+ROIV,Roivant Sciences,Bermuda,NASDAQ,USD,Common Stock,BMG762791017
+RPM,RPM International,US,NYSE,USD,Common Stock,US7496851038
+RRC,Range Resources,US,NYSE,USD,Common Stock,US75281A1097
+RRX,Regal Rexnord,US,NYSE,USD,Common Stock,US7587501039
+RS,Reliance Inc. (Reliance Steel & Aluminum),US,NYSE,USD,Common Stock,US7595091023
+RYAN,Ryan Specialty,US,NYSE,USD,Common Stock,US78351E1029
+RYN,Rayonier,US,NYSE,USD,Common Stock,US7549071030
+SAIA,Saia,US,NASDAQ,USD,Common Stock,US78709Y1055
+SAIC,Science Applications Intl Corp,US,NYSE,USD,Common Stock,US8086251076
+SAM,Boston Beer Company,US,NYSE,USD,Common Stock,US1005571070
+SATS,EchoStar,US,NASDAQ,USD,Common Stock,US2787681061
+SBRA,Sabra Health Care REIT,US,NASDAQ,USD,Common Stock,US78573L1061
+SCI,Service Corp. International,US,NYSE,USD,Common Stock,US8175651046
+SEIC,SEI Investments Company,US,NASDAQ,USD,Common Stock,US7841171033
+SF,Stifel,US,NYSE,USD,Common Stock,US8606301021
+SFM,Sprouts Farmers Market,US,NASDAQ,USD,Common Stock,US85208M1027
+SGI,Somnigroup International (La-Z-Boy Inc.),US,NYSE,USD,Common Stock,US5053361078
+SHC,Sotera Health,US,NASDAQ,USD,Common Stock,US83601L1026
+SIGI,Selective Insurance Group,US,NASDAQ,USD,Common Stock,US8163001071
+SKX,Skechers,US,NYSE,USD,Common Stock,US8305661055
+SLAB,Silicon Labs (Silicon Laboratories),US,NASDAQ,USD,Common Stock,US8269191024
+SLGN,Silgan Holdings,US,NASDAQ,USD,Common Stock,US8270481091
+SLM,SLM Corp (Sallie Mae),US,NASDAQ,USD,Common Stock,US78442P1066
+SMG,Scotts Miracle-Gro Company,US,NYSE,USD,Common Stock,US8101861065
+SNV,Synovus,US,NYSE,USD,Common Stock,US87161C5013
+SNX,TD Synnex,US,NYSE,USD,Common Stock,US87162W1009
+SON,Sonoco,US,NYSE,USD,Common Stock,US8354951027
+SR,Spire,US,NYSE,USD,Common Stock,US84857L1017
+SRPT,Sarepta Therapeutics,US,NASDAQ,USD,Common Stock,US8036071004
+SSB,South State Bank,US,NASDAQ,USD,Common Stock,US8404411097
+SSD,Simpson Manufacturing,US,NYSE,USD,Common Stock,US8290731053
+ST,Sensata Technologies,UK,NYSE,USD,Common Stock,GB00BFMBMT84
+STAG,STAG Industrial,US,NYSE,USD,Common Stock,US85254J1025
+STWD,Starwood Property Trust,US,NYSE,USD,Common Stock,US85571B1052
+SWX,Southwest Gas Corp,US,NYSE,USD,Common Stock,US8448951025
+SYNA,Synaptics,US,NASDAQ,USD,Common Stock,US87157D1090
+TCBI,Texas Capital Bancshares,US,NASDAQ,USD,Common Stock,US88224Q1076
+TEX,Terex,US,NYSE,USD,Common Stock,US8807791038
+THC,Tenet Health (Tenet Healthcare),US,NYSE,USD,Common Stock,US88033G4073
+THG,Hanover Insurance (The Hanover),US,NYSE,USD,Common Stock,US4108671052
+THO,Thor Industries,US,NYSE,USD,Common Stock,US8851601018
+TKR,Timken,US,NYSE,USD,Common Stock,US8873891043
+TMHC,Taylor Morrison,US,NYSE,USD,Common Stock,US87724P1066
+TNL,Travel + Leisure Co.,US,NYSE,USD,Common Stock,US8941641025
+TOL,Toll Brothers,US,NYSE,USD,Common Stock,US8894781033
+TREX,Trex,US,NYSE,USD,Common Stock,US89531P1057
+TTC,Toro,US,NYSE,USD,Common Stock,US8910921084
+TTEK,Tetra Tech,US,NASDAQ,USD,Common Stock,US88162G1031
+TXNM,TXNM Energy (PNM Resources),US,NYSE,USD,Common Stock,US69349H1077
+TXRH,Texas Roadhouse,US,NASDAQ,USD,Common Stock,US8826811098
+UA,Under Armour (Class C),US,NYSE,USD,Common Stock,US9043112062
+UAA,Under Armour (Class A),US,NYSE,USD,Common Stock,US9043111072
+UBSI,United Bankshares,US,NASDAQ,USD,Common Stock,US9099071071
+UFPI,UFP Industries,US,NASDAQ,USD,Common Stock,US90278Q1085
+UGI,UGI Corp,US,NYSE,USD,Common Stock,US9026811052
+UMBF,UMB Financial Corp.,US,NASDAQ,USD,Common Stock,US9027881088
+UNM,Unum,US,NYSE,USD,Common Stock,US91529Y1064
+USFD,US Foods,US,NYSE,USD,Common Stock,US9120081099
+UTHR,United Therapeutics,US,NASDAQ,USD,Common Stock,US91307C1027
+VAC,Marriott Vacations Worldwide,US,NYSE,USD,Common Stock,US57164Y1073
+VAL,Valaris,US,NYSE,USD,Common Stock,US91916X4044
+VC,Visteon,US,NASDAQ,USD,Common Stock,US92839U2069
+VFC,VF Corporation,US,NYSE,USD,Common Stock,US9182041080
+VLY,Valley Bank (Valley National Bancorp),US,NYSE,USD,Common Stock,US9197941076
+VMI,Valmont Industries,US,NYSE,USD,Common Stock,US9202531011
+VNO,Vornado Realty Trust,US,NYSE,USD,Common Stock,US9290421091
+VNOM,Viper Energy,US,NASDAQ,USD,Common Stock,US92763M1053
+VNT,Vontier,US,NYSE,USD,Common Stock,US9288811014
+VOYA,Voya Financial,US,NYSE,USD,Common Stock,US9290891004
+VVV,Valvoline,US,NYSE,USD,Common Stock,US92047W1018
+WAL,Western Alliance Bancorporation,US,NYSE,USD,Common Stock,US9576381092
+WBS,Webster Bank (Webster Financial),US,NYSE,USD,Common Stock,US9478901096
+WCC,WESCO International,US,NYSE,USD,Common Stock,US95082P1057
+WEN,Wendy’s,US,NASDAQ,USD,Common Stock,US95058W1009
+WEX,WEX Inc.,US,NYSE,USD,Common Stock,US96208T1043
+WFRD,Weatherford International,Ireland,NASDAQ,USD,Common Stock,IE00BLNN3691
+WH,Wyndham Hotels & Resorts,US,NYSE,USD,Common Stock,US98311A1051
+WHR,Whirlpool Corporation,US,NYSE,USD,Common Stock,US9633201069
+WING,Wingstop,US,NASDAQ,USD,Common Stock,US9741551033
+WLK,Westlake Corporation,US,NYSE,USD,Common Stock,US9604131022
+WMG,Warner Music Group,US,NASDAQ,USD,Common Stock,US9345502036
+WMS,Advanced Drainage Systems,US,NYSE,USD,Common Stock,US00790R1041
+WPC,W. P. Carey,US,NYSE,USD,Common Stock,US92936U1097
+WSO,Watsco,US,NYSE,USD,Common Stock,US9426222009
+WTFC,Wintrust Financial,US,NASDAQ,USD,Common Stock,US97650W1080
+WTRG,Essential Utilities,US,NYSE,USD,Common Stock,US29670G1022
+WTS,Watts Water Technologies,US,NYSE,USD,Common Stock,US9427491025
+WU,Western Union,US,NYSE,USD,Common Stock,US9598021098
+WWD,Woodward Inc.,US,NASDAQ,USD,Common Stock,US9807451037
+XPO,XPO Inc. (XPO Logistics),US,NYSE,USD,Common Stock,US9837931008
+XRAY,Dentsply Sirona,US,NASDAQ,USD,Common Stock,US24906P1093
+ZION,Zions Bancorporation,US,NASDAQ,USD,Common Stock,US9897011071

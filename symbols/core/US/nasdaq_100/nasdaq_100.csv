@@ -1,0 +1,91 @@
+Code,Name,Country,Exchange,Currency,Type,ISIN
+AAPL,Apple Inc.,US,NASDAQ,USD,Common Stock,US0378331005
+ABNB,Airbnb Inc.,US,NASDAQ,USD,Class A Common Stock,US0090661010
+ADBE,Adobe Inc.,US,NASDAQ,USD,Common Stock,US00724F1012
+ADI,Analog Devices Inc.,US,NASDAQ,USD,Common Stock,US0326541051
+ADP,Automatic Data Processing Inc.,US,NASDAQ,USD,Common Stock,US0530151036
+ADSK,Autodesk Inc.,US,NASDAQ,USD,Common Stock,US0527691069
+AEP,American Electric Power Company Inc.,US,NASDAQ,USD,Common Stock,US0255371017
+AMD,Advanced Micro Devices Inc.,US,NASDAQ,USD,Common Stock,US0079031078
+AMAT,Applied Materials Inc.,US,NASDAQ,USD,Common Stock,US0382221051
+AMGN,Amgen Inc.,US,NASDAQ,USD,Common Stock,US0311621009
+AMZN,Amazon.com Inc.,US,NASDAQ,USD,Common Stock,US0231351067
+APP,AppLovin Corporation,US,NASDAQ,USD,Class A Common Stock,US03831W1080
+ARM,Arm Holdings plc,UK,NASDAQ,USD,American Depositary Shares,US0420682058
+ASML,ASML Holding N.V.,Netherlands,NASDAQ,USD,New York Registry Shares,USN070592100
+AZN,AstraZeneca PLC,UK,NASDAQ,USD,American Depositary Shares,US0463531089
+AXON,Axon Enterprise Inc.,US,NASDAQ,USD,Common Stock,US05464C1018
+AVGO,Broadcom Inc.,US,NASDAQ,USD,Common Stock,US11135F1012
+BIIB,Biogen Inc.,US,NASDAQ,USD,Common Stock,US09062X1037
+BKNG,Booking Holdings Inc.,US,NASDAQ,USD,Common Stock,US09857L1089
+BKR,Baker Hughes Company,US,NASDAQ,USD,Common Stock,US05722G1004
+CCEP,Coca-Cola Europacific Partners plc,UK,NASDAQ,USD,Ordinary Shares,GB00BDCPN049
+CDNS,Cadence Design Systems Inc.,US,NASDAQ,USD,Common Stock,US1273871087
+CDW,CDW Corporation,US,NASDAQ,USD,Common Stock,US12514G1085
+CHTR,Charter Communications Inc.,US,NASDAQ,USD,Class A Common Stock,US16119P1084
+CMCSA,Comcast Corporation,US,NASDAQ,USD,Class A Common Stock,US20030N1019
+COST,Costco Wholesale Corporation,US,NASDAQ,USD,Common Stock,US22160K1051
+CPRT,Copart Inc.,US,NASDAQ,USD,Common Stock,US2172041061
+CRWD,CrowdStrike Holdings Inc.,US,NASDAQ,USD,Class A Common Stock,US22788C1053
+CSCO,Cisco Systems Inc.,US,NASDAQ,USD,Common Stock,US17275R1023
+CSGP,CoStar Group Inc.,US,NASDAQ,USD,Common Stock,US22160N1090
+CSX,CSX Corporation,US,NASDAQ,USD,Common Stock,US1264081035
+CTAS,Cintas Corporation,US,NASDAQ,USD,Common Stock,US1729081059
+DDOG,Datadog Inc.,US,NASDAQ,USD,Class A Common Stock,US23804L1035
+DXCM,DexCom Inc.,US,NASDAQ,USD,Common Stock,US2521311074
+EA,Electronic Arts Inc.,US,NASDAQ,USD,Common Stock,US2855121099
+EXC,Exelon Corporation,US,NASDAQ,USD,Common Stock,US30161N1019
+FAST,Fastenal Company,US,NASDAQ,USD,Common Stock,US3119001044
+FANG,Diamondback Energy Inc.,US,NASDAQ,USD,Common Stock,US25278X1090
+GEHC,GE HealthCare Technologies Inc.,US,NASDAQ,USD,Common Stock,US36266G1076
+GILD,Gilead Sciences Inc.,US,NASDAQ,USD,Common Stock,US3755581036
+GFS,GlobalFoundries Inc.,Cayman Islands,NASDAQ,USD,Ordinary Share,US37960X1028
+GOOGL,Alphabet Inc.,US,NASDAQ,USD,Class A Common Stock,US02079K3059
+GOOG,Alphabet Inc.,US,NASDAQ,USD,Class C Common Stock,US02079K1079
+HON,Honeywell International Inc.,US,NASDAQ,USD,Common Stock,US4385161066
+IDXX,IDEXX Laboratories Inc.,US,NASDAQ,USD,Common Stock,US45168D1046
+INTC,Intel Corporation,US,NASDAQ,USD,Common Stock,US4581401001
+INTU,Intuit Inc.,US,NASDAQ,USD,Common Stock,US4612021034
+ISRG,Intuitive Surgical Inc.,US,NASDAQ,USD,Common Stock,US46120E6023
+KDP,Keurig Dr Pepper Inc.,US,NASDAQ,USD,Common Stock,US49271V1008
+KLAC,KLA Corporation,US,NASDAQ,USD,Common Stock,US4824801009
+KHC,The Kraft Heinz Company,US,NASDAQ,USD,Common Stock,US5007541064
+LIN,Linde plc,Ireland,NASDAQ,USD,Common Stock,IE000S9YS762
+LRCX,Lam Research Corporation,US,NASDAQ,USD,Common Stock,US5128071082
+LULU,lululemon athletica inc.,US,NASDAQ,USD,Common Stock,US55087P1049
+MAR,Marriott International Inc.,US,NASDAQ,USD,Class A Common Stock,US5719032022
+META,Meta Platforms Inc.,US,NASDAQ,USD,Class A Common Stock,US30303M1027
+MCHP,Microchip Technology Incorporated,US,NASDAQ,USD,Common Stock,US5950171042
+MU,Micron Technology Inc.,US,NASDAQ,USD,Common Stock,US5951121038
+MSFT,Microsoft Corporation,US,NASDAQ,USD,Common Stock,US5949181045
+MSTR,MicroStrategy Incorporated,US,NASDAQ,USD,Class A Common Stock,US5949724083
+MDLZ,Mondelez International Inc.,US,NASDAQ,USD,Class A Common Stock,US6092071058
+MNST,Monster Beverage Corporation,US,NASDAQ,USD,Common Stock,US61174X1090
+NFLX,Netflix Inc.,US,NASDAQ,USD,Common Stock,US64110L1061
+NVDA,NVIDIA Corporation,US,NASDAQ,USD,Common Stock,US67066G1040
+NXPI,NXP Semiconductors N.V.,Netherlands,NASDAQ,USD,Common Stock,NL0009538784
+ODFL,Old Dominion Freight Line Inc.,US,NASDAQ,USD,Common Stock,US6795801009
+ON,ON Semiconductor Corporation,US,NASDAQ,USD,Common Stock,US6821891057
+ORLY,O'Reilly Automotive Inc.,US,NASDAQ,USD,Common Stock,US67103H1077
+PANW,Palo Alto Networks Inc.,US,NASDAQ,USD,Common Stock,US6974351057
+PAYX,Paychex Inc.,US,NASDAQ,USD,Common Stock,US7043261079
+PDD,PDD Holdings Inc.,Cayman Islands,NASDAQ,USD,American Depositary Shares,US7223041028
+PEP,PepsiCo Inc.,US,NASDAQ,USD,Common Stock,US7134481081
+QCOM,QUALCOMM Incorporated,US,NASDAQ,USD,Common Stock,US7475251036
+REGN,Regeneron Pharmaceuticals Inc.,US,NASDAQ,USD,Common Stock,US75886F1075
+ROP,Roper Technologies Inc.,US,NASDAQ,USD,Common Stock,US7767431055
+ROST,Ross Stores Inc.,US,NASDAQ,USD,Common Stock,US7782961038
+SHOP,Shopify Inc.,Canada,NASDAQ,USD,Class A Subordinate Voting Shares,CA82509L1076
+SBUX,Starbucks Corporation,US,NASDAQ,USD,Common Stock,US8552441094
+SNPS,Synopsys Inc.,US,NASDAQ,USD,Common Stock,US8716071076
+TMUS,T-Mobile US Inc.,US,NASDAQ,USD,Common Stock,US8725901040
+TTWO,Take-Two Interactive Software Inc.,US,NASDAQ,USD,Common Stock,US8740541094
+TSLA,Tesla Inc.,US,NASDAQ,USD,Common Stock,US88160R1014
+TXN,Texas Instruments Incorporated,US,NASDAQ,USD,Common Stock,US8825081040
+TRI,Thomson Reuters Corporation,Canada,NASDAQ,USD,Common Stock,CA8849038085
+TTD,The Trade Desk Inc.,US,NASDAQ,USD,Class A Common Stock,US88339J1051
+VRTX,Vertex Pharmaceuticals Incorporated,US,NASDAQ,USD,Common Stock,US92532F1003
+WBD,Warner Bros. Discovery Inc.,US,NASDAQ,USD,Series A Common Stock,US9344231041
+WDAY,Workday Inc.,US,NASDAQ,USD,Class A Common Stock,US98138H1014
+XEL,Xcel Energy Inc.,US,NASDAQ,USD,Common Stock,US98389B1008
+ZS,Zscaler Inc.,US,NASDAQ,USD,Common Stock,US98980G1022

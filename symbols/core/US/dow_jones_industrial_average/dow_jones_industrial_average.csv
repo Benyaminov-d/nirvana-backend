@@ -1,0 +1,31 @@
+Code,Name,Country,Exchange,Currency,Type,ISIN
+AAPL,Apple Inc.,US,NASDAQ,USD,Common Stock,US0378331005
+AMGN,Amgen Inc.,US,NASDAQ,USD,Common Stock,US0311621009
+AMZN,Amazon.com Inc.,US,NASDAQ,USD,Common Stock,US0231351067
+AXP,American Express Company,US,NYSE,USD,Common Stock,US0258161092
+BA,The Boeing Company,US,NYSE,USD,Common Stock,US0970231058
+CAT,Caterpillar Inc.,US,NYSE,USD,Common Stock,US1491231015
+CRM,Salesforce Inc.,US,NYSE,USD,Common Stock,US79466L3024
+CSCO,Cisco Systems Inc.,US,NASDAQ,USD,Common Stock,US17275R1023
+CVX,Chevron Corporation,US,NYSE,USD,Common Stock,US1667641005
+DIS,The Walt Disney Company,US,NYSE,USD,Common Stock,US2546871060
+GS,The Goldman Sachs Group Inc.,US,NYSE,USD,Common Stock,US38141G1040
+HD,The Home Depot Inc.,US,NYSE,USD,Common Stock,US4370761029
+HON,Honeywell International Inc.,US,NASDAQ,USD,Common Stock,US4385161066
+IBM,International Business Machines Corporation,US,NYSE,USD,Common Stock,US4592001014
+JNJ,Johnson & Johnson,US,NYSE,USD,Common Stock,US4781601046
+JPM,JPMorgan Chase & Co.,US,NYSE,USD,Common Stock,US46625H1005
+KO,The Coca-Cola Company,US,NYSE,USD,Common Stock,US1912161007
+MCD,McDonald's Corporation,US,NYSE,USD,Common Stock,US5801351017
+MMM,3M Company,US,NYSE,USD,Common Stock,US88579Y1010
+MRK,Merck & Co. Inc.,US,NYSE,USD,Common Stock,US58933Y1055
+MSFT,Microsoft Corporation,US,NASDAQ,USD,Common Stock,US5949181045
+NKE,Nike Inc.,US,NYSE,USD,Common Stock,US6541061031
+NVDA,NVIDIA Corporation,US,NASDAQ,USD,Common Stock,US67066G1040
+PG,The Procter & Gamble Company,US,NYSE,USD,Common Stock,US7427181091
+SHW,The Sherwin-Williams Company,US,NYSE,USD,Common Stock,US8243481061
+TRV,The Travelers Companies Inc.,US,NYSE,USD,Common Stock,US89417E1091
+UNH,UnitedHealth Group Incorporated,US,NYSE,USD,Common Stock,US91324P1021
+V,Visa Inc.,US,NYSE,USD,Common Stock,US92826C8394
+VZ,Verizon Communications Inc.,US,NYSE,USD,Common Stock,US92343V1044
+WMT,Walmart Inc.,US,NYSE,USD,Common Stock,US9311421039

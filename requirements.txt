@@ -1,0 +1,32 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart>=0.0.6
+numpy==2.2.*
+pandas>=2.2.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+scipy>=1.11.0
+SQLAlchemy>=2.0.32
+psycopg2-binary>=2.9.9
+openai>=1.40.0
+numba==0.61.*
+azure-servicebus>=7.12.2
+pdfplumber>=0.11.0
+python-docx>=1.1.2
+email-validator>=2.2.0
+passlib[bcrypt]>=1.7.4
+PyJWT>=2.9.0
+bcrypt==4.0.1
+
+# RAG with pgvector - simple and elegant
+pgvector>=0.2.0
+
+# Redis for caching and async processing
+redis>=4.0.0,<6.0.0
+rq>=1.15.0
+
+# Nirvana Risk packages from Azure Artifacts
+--only-binary=:all:
+--extra-index-url https://pypi.org/simple
+nirvana-risk==0.6.3
+nirvana-risk-core==0.6.3

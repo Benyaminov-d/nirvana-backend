@@ -1,0 +1,911 @@
+symbol,type,family,name,as_of,notes
+AAPL,Equity,SP500,Apple Inc.,2025-08-11,
+NVDA,Equity,SP500,NVIDIA Corporation,2025-08-11,
+MSFT,Equity,SP500,Microsoft Corporation,2025-08-11,
+AMZN,Equity,SP500,"Amazon.com, Inc.",2025-08-11,
+GOOGL,Equity,SP500,Alphabet Inc.,2025-08-11,
+GOOG,Equity,SP500,Alphabet Inc.,2025-08-11,
+META,Equity,SP500,"Meta Platforms, Inc.",2025-08-11,
+TSLA,Equity,SP500,"Tesla, Inc.",2025-08-11,
+AVGO,Equity,SP500,Broadcom Inc.,2025-08-11,
+BRK-B,Equity,SP500,Berkshire Hathaway Inc. New,2025-08-11,
+WMT,Equity,SP500,Walmart Inc.,2025-08-11,
+LLY,Equity,SP500,Eli Lilly and Company,2025-08-11,
+JPM,Equity,SP500,JP Morgan Chase & Co.,2025-08-11,
+V,Equity,SP500,Visa Inc.,2025-08-11,
+MA,Equity,SP500,Mastercard Incorporated,2025-08-11,
+ORCL,Equity,SP500,Oracle Corporation,2025-08-11,
+XOM,Equity,SP500,Exxon Mobil Corporation,2025-08-11,
+UNH,Equity,SP500,UnitedHealth Group Incorporated,2025-08-11,
+COST,Equity,SP500,Costco Wholesale Corporation,2025-08-11,
+PG,Equity,SP500,Procter & Gamble Company (The),2025-08-11,
+HD,Equity,SP500,"Home Depot, Inc. (The)",2025-08-11,
+NFLX,Equity,SP500,"Netflix, Inc.",2025-08-11,
+JNJ,Equity,SP500,Johnson & Johnson,2025-08-11,
+BAC,Equity,SP500,Bank of America Corporation,2025-08-11,
+CRM,Equity,SP500,"Salesforce, Inc.",2025-08-11,
+ABBV,Equity,SP500,AbbVie Inc.,2025-08-11,
+KO,Equity,SP500,Coca-Cola Company (The),2025-08-11,
+TMUS,Equity,SP500,"T-Mobile US, Inc.",2025-08-11,
+CVX,Equity,SP500,Chevron Corporation,2025-08-11,
+MRK,Equity,SP500,"Merck & Company, Inc.",2025-08-11,
+WFC,Equity,SP500,Wells Fargo & Company,2025-08-11,
+CSCO,Equity,SP500,"Cisco Systems, Inc.",2025-08-11,
+ACN,Equity,SP500,Accenture plc,2025-08-11,
+NOW,Equity,SP500,"ServiceNow, Inc.",2025-08-11,
+AXP,Equity,SP500,American Express Company,2025-08-11,
+MCD,Equity,SP500,McDonald's Corporation,2025-08-11,
+PEP,Equity,SP500,"Pepsico, Inc.",2025-08-11,
+BX,Equity,SP500,Blackstone Inc.,2025-08-11,
+IBM,Equity,SP500,International Business Machines,2025-08-11,
+DIS,Equity,SP500,Walt Disney Company (The),2025-08-11,
+LIN,Equity,SP500,Linde plc,2025-08-11,
+TMO,Equity,SP500,Thermo Fisher Scientific Inc,2025-08-11,
+MS,Equity,SP500,Morgan Stanley,2025-08-11,
+ABT,Equity,SP500,Abbott Laboratories,2025-08-11,
+ADBE,Equity,SP500,Adobe Inc.,2025-08-11,
+AMD,Equity,SP500,"Advanced Micro Devices, Inc.",2025-08-11,
+PM,Equity,SP500,Philip Morris International Inc,2025-08-11,
+ISRG,Equity,SP500,"Intuitive Surgical, Inc.",2025-08-11,
+PLTR,Equity,SP500,Palantir Technologies Inc.,2025-08-11,
+GE,Equity,SP500,GE Aerospace,2025-08-11,
+INTU,Equity,SP500,Intuit Inc.,2025-08-11,
+GS,Equity,SP500,"Goldman Sachs Group, Inc. (The)",2025-08-11,
+CAT,Equity,SP500,"Caterpillar, Inc.",2025-08-11,
+TXN,Equity,SP500,Texas Instruments Incorporated,2025-08-11,
+QCOM,Equity,SP500,QUALCOMM Incorporated,2025-08-11,
+VZ,Equity,SP500,Verizon Communications Inc.,2025-08-11,
+BKNG,Equity,SP500,Booking Holdings Inc. Common St,2025-08-11,
+DHR,Equity,SP500,Danaher Corporation,2025-08-11,
+T,Equity,SP500,AT&T Inc.,2025-08-11,
+BLK,Equity,SP500,"BlackRock, Inc.",2025-08-11,
+RTX,Equity,SP500,RTX Corporation,2025-08-11,
+SPGI,Equity,SP500,S&P Global Inc.,2025-08-11,
+PFE,Equity,SP500,"Pfizer, Inc.",2025-08-11,
+HON,Equity,SP500,Honeywell International Inc.,2025-08-11,
+NEE,Equity,SP500,"NextEra Energy, Inc.",2025-08-11,
+CMCSA,Equity,SP500,Comcast Corporation,2025-08-11,
+ANET,Equity,SP500,"Arista Networks, Inc.",2025-08-11,
+AMGN,Equity,SP500,Amgen Inc.,2025-08-11,
+PGR,Equity,SP500,Progressive Corporation (The),2025-08-11,
+LOW,Equity,SP500,"Lowe's Companies, Inc.",2025-08-11,
+SYK,Equity,SP500,Stryker Corporation,2025-08-11,
+UNP,Equity,SP500,Union Pacific Corporation,2025-08-11,
+TJX,Equity,SP500,"TJX Companies, Inc. (The)",2025-08-11,
+KKR,Equity,SP500,KKR & Co. Inc.,2025-08-11,
+SCHW,Equity,SP500,Charles Schwab Corporation (The,2025-08-11,
+ETN,Equity,SP500,"Eaton Corporation, PLC",2025-08-11,
+AMAT,Equity,SP500,"Applied Materials, Inc.",2025-08-11,
+BA,Equity,SP500,Boeing Company (The),2025-08-11,
+BSX,Equity,SP500,Boston Scientific Corporation,2025-08-11,
+C,Equity,SP500,"Citigroup, Inc.",2025-08-11,
+UBER,Equity,SP500,"Uber Technologies, Inc.",2025-08-11,
+COP,Equity,SP500,ConocoPhillips,2025-08-11,
+PANW,Equity,SP500,"Palo Alto Networks, Inc.",2025-08-11,
+ADP,Equity,SP500,"Automatic Data Processing, Inc.",2025-08-11,
+DE,Equity,SP500,Deere & Company,2025-08-11,
+FI,Equity,SP500,"Fiserv, Inc.",2025-08-11,
+BMY,Equity,SP500,Bristol-Myers Squibb Company,2025-08-11,
+LMT,Equity,SP500,Lockheed Martin Corporation,2025-08-11,
+GILD,Equity,SP500,"Gilead Sciences, Inc.",2025-08-11,
+NKE,Equity,SP500,"Nike, Inc.",2025-08-11,
+CB,Equity,SP500,Chubb Limited,2025-08-11,
+UPS,Equity,SP500,"United Parcel Service, Inc.",2025-08-11,
+ADI,Equity,SP500,"Analog Devices, Inc.",2025-08-11,
+MMC,Equity,SP500,"Marsh & McLennan Companies, Inc",2025-08-11,
+MDT,Equity,SP500,Medtronic plc.,2025-08-11,
+VRTX,Equity,SP500,Vertex Pharmaceuticals Incorpor,2025-08-11,
+MU,Equity,SP500,"Micron Technology, Inc.",2025-08-11,
+SBUX,Equity,SP500,Starbucks Corporation,2025-08-11,
+PLD,Equity,SP500,"Prologis, Inc.",2025-08-11,
+GEV,Equity,SP500,GE Vernova Inc.,2025-08-11,
+LRCX,Equity,SP500,Lam Research Corporation,2025-08-11,
+MO,Equity,SP500,"Altria Group, Inc.",2025-08-11,
+SO,Equity,SP500,Southern Company (The),2025-08-11,
+EQIX,Equity,SP500,"Equinix, Inc.",2025-08-11,
+CRWD,Equity,SP500,"CrowdStrike Holdings, Inc.",2025-08-11,
+PYPL,Equity,SP500,"PayPal Holdings, Inc.",2025-08-11,
+SHW,Equity,SP500,Sherwin-Williams Company (The),2025-08-11,
+ICE,Equity,SP500,Intercontinental Exchange Inc.,2025-08-11,
+CME,Equity,SP500,CME Group Inc.,2025-08-11,
+AMT,Equity,SP500,American Tower Corporation (REI,2025-08-11,
+APH,Equity,SP500,Amphenol Corporation,2025-08-11,
+ELV,Equity,SP500,"Elevance Health, Inc.",2025-08-11,
+TT,Equity,SP500,Trane Technologies plc,2025-08-11,
+MCO,Equity,SP500,Moody's Corporation,2025-08-11,
+CMG,Equity,SP500,"Chipotle Mexican Grill, Inc.",2025-08-11,
+INTC,Equity,SP500,Intel Corporation,2025-08-11,
+KLAC,Equity,SP500,KLA Corporation,2025-08-11,
+ABNB,Equity,SP500,"Airbnb, Inc.",2025-08-11,
+DUK,Equity,SP500,Duke Energy Corporation (Holdin,2025-08-11,
+PH,Equity,SP500,Parker-Hannifin Corporation,2025-08-11,
+CDNS,Equity,SP500,"Cadence Design Systems, Inc.",2025-08-11,
+WM,Equity,SP500,"Waste Management, Inc.",2025-08-11,
+DELL,Equity,SP500,Dell Technologies Inc.,2025-08-11,
+MDLZ,Equity,SP500,"Mondelez International, Inc.",2025-08-11,
+MAR,Equity,SP500,Marriott International,2025-08-11,
+MSI,Equity,SP500,"Motorola Solutions, Inc.",2025-08-11,
+WELL,Equity,SP500,Welltower Inc.,2025-08-11,
+AON,Equity,SP500,Aon plc,2025-08-11,
+REGN,Equity,SP500,"Regeneron Pharmaceuticals, Inc.",2025-08-11,
+CI,Equity,SP500,The Cigna Group,2025-08-11,
+HCA,Equity,SP500,"HCA Healthcare, Inc.",2025-08-11,
+PNC,Equity,SP500,"PNC Financial Services Group, I",2025-08-11,
+ITW,Equity,SP500,Illinois Tool Works Inc.,2025-08-11,
+SNPS,Equity,SP500,"Synopsys, Inc.",2025-08-11,
+CTAS,Equity,SP500,Cintas Corporation,2025-08-11,
+CL,Equity,SP500,Colgate-Palmolive Company,2025-08-11,
+USB,Equity,SP500,U.S. Bancorp,2025-08-11,
+FTNT,Equity,SP500,"Fortinet, Inc.",2025-08-11,
+ZTS,Equity,SP500,Zoetis Inc.,2025-08-11,
+MCK,Equity,SP500,McKesson Corporation,2025-08-11,
+GD,Equity,SP500,General Dynamics Corporation,2025-08-11,
+TDG,Equity,SP500,Transdigm Group Incorporated,2025-08-11,
+CEG,Equity,SP500,Constellation Energy Corporatio,2025-08-11,
+AJG,Equity,SP500,Arthur J. Gallagher & Co.,2025-08-11,
+EMR,Equity,SP500,Emerson Electric Company,2025-08-11,
+MMM,Equity,SP500,3M Company,2025-08-11,
+ORLY,Equity,SP500,"O'Reilly Automotive, Inc.",2025-08-11,
+NOC,Equity,SP500,Northrop Grumman Corporation,2025-08-11,
+COF,Equity,SP500,Capital One Financial Corporati,2025-08-11,
+ECL,Equity,SP500,Ecolab Inc.,2025-08-11,
+EOG,Equity,SP500,"EOG Resources, Inc.",2025-08-11,
+FDX,Equity,SP500,FedEx Corporation,2025-08-11,
+BDX,Equity,SP500,"Becton, Dickinson and Company",2025-08-11,
+APD,Equity,SP500,"Air Products and Chemicals, Inc",2025-08-11,
+WMB,Equity,SP500,"Williams Companies, Inc. (The)",2025-08-11,
+SPG,Equity,SP500,"Simon Property Group, Inc.",2025-08-11,
+ADSK,Equity,SP500,"Autodesk, Inc.",2025-08-11,
+RSG,Equity,SP500,"Republic Services, Inc.",2025-08-11,
+CARR,Equity,SP500,Carrier Global Corporation,2025-08-11,
+CSX,Equity,SP500,CSX Corporation,2025-08-11,
+HLT,Equity,SP500,Hilton Worldwide Holdings Inc.,2025-08-11,
+DLR,Equity,SP500,"Digital Realty Trust, Inc.",2025-08-11,
+TGT,Equity,SP500,Target Corporation,2025-08-11,
+KMI,Equity,SP500,"Kinder Morgan, Inc.",2025-08-11,
+OKE,Equity,SP500,"ONEOK, Inc.",2025-08-11,
+TFC,Equity,SP500,Truist Financial Corporation,2025-08-11,
+AFL,Equity,SP500,AFLAC Incorporated,2025-08-11,
+GM,Equity,SP500,General Motors Company,2025-08-11,
+BK,Equity,SP500,The Bank of New York Mellon Cor,2025-08-11,
+ROP,Equity,SP500,"Roper Technologies, Inc.",2025-08-11,
+MET,Equity,SP500,"MetLife, Inc.",2025-08-11,
+CPRT,Equity,SP500,"Copart, Inc.",2025-08-11,
+FCX,Equity,SP500,"Freeport-McMoRan, Inc.",2025-08-11,
+CVS,Equity,SP500,CVS Health Corporation,2025-08-11,
+PCAR,Equity,SP500,PACCAR Inc.,2025-08-11,
+SRE,Equity,SP500,DBA Sempra,2025-08-11,
+AZO,Equity,SP500,"AutoZone, Inc.",2025-08-11,
+TRV,Equity,SP500,"The Travelers Companies, Inc.",2025-08-11,
+NXPI,Equity,SP500,NXP Semiconductors N.V.,2025-08-11,
+JCI,Equity,SP500,Johnson Controls International,2025-08-11,
+GWW,Equity,SP500,"W.W. Grainger, Inc.",2025-08-11,
+NSC,Equity,SP500,Norfolk Southern Corporation,2025-08-11,
+PSA,Equity,SP500,Public Storage,2025-08-11,
+SLB,Equity,SP500,Schlumberger N.V.,2025-08-11,
+AMP,Equity,SP500,"Ameriprise Financial, Inc.",2025-08-11,
+ALL,Equity,SP500,Allstate Corporation (The),2025-08-11,
+FICO,Equity,SP500,Fair Isaac Corporation,2025-08-11,
+MNST,Equity,SP500,Monster Beverage Corporation,2025-08-11,
+PAYX,Equity,SP500,"Paychex, Inc.",2025-08-11,
+CHTR,Equity,SP500,"Charter Communications, Inc.",2025-08-11,
+AEP,Equity,SP500,American Electric Power Company,2025-08-11,
+ROST,Equity,SP500,"Ross Stores, Inc.",2025-08-11,
+PWR,Equity,SP500,"Quanta Services, Inc.",2025-08-11,
+CMI,Equity,SP500,Cummins Inc.,2025-08-11,
+AXON,Equity,SP500,"Axon Enterprise, Inc.",2025-08-11,
+VST,Equity,SP500,Vistra Corp.,2025-08-11,
+URI,Equity,SP500,"United Rentals, Inc.",2025-08-11,
+MSCI,Equity,SP500,MSCI Inc.,2025-08-11,
+LULU,Equity,SP500,lululemon athletica inc.,2025-08-11,
+O,Equity,SP500,Realty Income Corporation,2025-08-11,
+PSX,Equity,SP500,Phillips 66,2025-08-11,
+AIG,Equity,SP500,"American International Group, I",2025-08-11,
+D,Equity,SP500,"Dominion Energy, Inc.",2025-08-11,
+HWM,Equity,SP500,Howmet Aerospace Inc.,2025-08-11,
+DHI,Equity,SP500,"D.R. Horton, Inc.",2025-08-11,
+KR,Equity,SP500,Kroger Company (The),2025-08-11,
+NDAQ,Equity,SP500,"Nasdaq, Inc.",2025-08-11,
+EW,Equity,SP500,Edwards Lifesciences Corporatio,2025-08-11,
+COR,Equity,SP500,"Cencora, Inc.",2025-08-11,
+FIS,Equity,SP500,Fidelity National Information S,2025-08-11,
+KMB,Equity,SP500,Kimberly-Clark Corporation,2025-08-11,
+NEM,Equity,SP500,Newmont Corporation,2025-08-11,
+DFS,Equity,SP500,Discover Financial Services,2025-08-11,
+TEL,Equity,SP500,TE Connectivity plc,2025-08-11,
+MPC,Equity,SP500,Marathon Petroleum Corporation,2025-08-11,
+FAST,Equity,SP500,Fastenal Company,2025-08-11,
+AME,Equity,SP500,"AMETEK, Inc.",2025-08-11,
+PEG,Equity,SP500,Public Service Enterprise Group,2025-08-11,
+PRU,Equity,SP500,"Prudential Financial, Inc.",2025-08-11,
+KVUE,Equity,SP500,Kenvue Inc.,2025-08-11,
+STZ,Equity,SP500,"Constellation Brands, Inc.",2025-08-11,
+GLW,Equity,SP500,Corning Incorporated,2025-08-11,
+LHX,Equity,SP500,"L3Harris Technologies, Inc.",2025-08-11,
+GRMN,Equity,SP500,Garmin Ltd.,2025-08-11,
+BKR,Equity,SP500,Baker Hughes Company,2025-08-11,
+CBRE,Equity,SP500,CBRE Group Inc,2025-08-11,
+CTVA,Equity,SP500,"Corteva, Inc.",2025-08-11,
+HES,Equity,SP500,Hess Corporation,2025-08-11,
+CCI,Equity,SP500,Crown Castle Inc.,2025-08-11,
+DAL,Equity,SP500,"Delta Air Lines, Inc.",2025-08-11,
+CTSH,Equity,SP500,Cognizant Technology Solutions,2025-08-11,
+F,Equity,SP500,Ford Motor Company,2025-08-11,
+VRSK,Equity,SP500,"Verisk Analytics, Inc.",2025-08-11,
+EA,Equity,SP500,Electronic Arts Inc.,2025-08-11,
+ODFL,Equity,SP500,"Old Dominion Freight Line, Inc.",2025-08-11,
+XEL,Equity,SP500,Xcel Energy Inc.,2025-08-11,
+A,Equity,SP500,"Agilent Technologies, Inc.",2025-08-11,
+IT,Equity,SP500,"Gartner, Inc.",2025-08-11,
+LVS,Equity,SP500,Las Vegas Sands Corp.,2025-08-11,
+SYY,Equity,SP500,Sysco Corporation,2025-08-11,
+VLO,Equity,SP500,Valero Energy Corporation,2025-08-11,
+OTIS,Equity,SP500,Otis Worldwide Corporation,2025-08-11,
+LEN,Equity,SP500,Lennar Corporation,2025-08-11,
+EXC,Equity,SP500,Exelon Corporation,2025-08-11,
+IR,Equity,SP500,Ingersoll Rand Inc.,2025-08-11,
+YUM,Equity,SP500,"Yum! Brands, Inc.",2025-08-11,
+KHC,Equity,SP500,The Kraft Heinz Company,2025-08-11,
+GEHC,Equity,SP500,GE HealthCare Technologies Inc.,2025-08-11,
+IQV,Equity,SP500,"IQVIA Holdings, Inc.",2025-08-11,
+GIS,Equity,SP500,"General Mills, Inc.",2025-08-11,
+RMD,Equity,SP500,ResMed Inc.,2025-08-11,
+VMC,Equity,SP500,Vulcan Materials Company (Holdi,2025-08-11,
+HSY,Equity,SP500,The Hershey Company,2025-08-11,
+ACGL,Equity,SP500,Arch Capital Group Ltd.,2025-08-11,
+IDXX,Equity,SP500,"IDEXX Laboratories, Inc.",2025-08-11,
+WAB,Equity,SP500,Westinghouse Air Brake Technolo,2025-08-11,
+ROK,Equity,SP500,"Rockwell Automation, Inc.",2025-08-11,
+MLM,Equity,SP500,"Martin Marietta Materials, Inc.",2025-08-11,
+EXR,Equity,SP500,Extra Space Storage Inc,2025-08-11,
+DD,Equity,SP500,"DuPont de Nemours, Inc.",2025-08-11,
+ETR,Equity,SP500,Entergy Corporation,2025-08-11,
+DECK,Equity,SP500,Deckers Outdoor Corporation,2025-08-11,
+EFX,Equity,SP500,"Equifax, Inc.",2025-08-11,
+WTW,Equity,SP500,Willis Towers Watson Public Lim,2025-08-11,
+TTWO,Equity,SP500,"Take-Two Interactive Software, ",2025-08-11,
+HIG,Equity,SP500,Hartford Financial Services Gro,2025-08-11,
+RJF,Equity,SP500,"Raymond James Financial, Inc.",2025-08-11,
+AVB,Equity,SP500,"AvalonBay Communities, Inc.",2025-08-11,
+MTB,Equity,SP500,M&T Bank Corporation,2025-08-11,
+DXCM,Equity,SP500,"DexCom, Inc.",2025-08-11,
+ED,Equity,SP500,"Consolidated Edison, Inc.",2025-08-11,
+EBAY,Equity,SP500,eBay Inc.,2025-08-11,
+HPQ,Equity,SP500,HP Inc.,2025-08-11,
+IRM,Equity,SP500,Iron Mountain Incorporated (Del,2025-08-11,
+EIX,Equity,SP500,Edison International,2025-08-11,
+LYV,Equity,SP500,"Live Nation Entertainment, Inc.",2025-08-11,
+VICI,Equity,SP500,VICI Properties Inc.,2025-08-11,
+CNC,Equity,SP500,Centene Corporation,2025-08-11,
+WEC,Equity,SP500,"WEC Energy Group, Inc.",2025-08-11,
+MCHP,Equity,SP500,Microchip Technology Incorporat,2025-08-11,
+HUM,Equity,SP500,Humana Inc.,2025-08-11,
+ANSS,Equity,SP500,"ANSYS, Inc.",2025-08-11,
+BRO,Equity,SP500,"Brown & Brown, Inc.",2025-08-11,
+CSGP,Equity,SP500,"CoStar Group, Inc.",2025-08-11,
+MPWR,Equity,SP500,"Monolithic Power Systems, Inc.",2025-08-11,
+GDDY,Equity,SP500,GoDaddy Inc.,2025-08-11,
+TSCO,Equity,SP500,Tractor Supply Company,2025-08-11,
+STT,Equity,SP500,State Street Corporation,2025-08-11,
+CAH,Equity,SP500,"Cardinal Health, Inc.",2025-08-11,
+GPN,Equity,SP500,Global Payments Inc.,2025-08-11,
+FITB,Equity,SP500,Fifth Third Bancorp,2025-08-11,
+XYL,Equity,SP500,Xylem Inc.,2025-08-11,
+HPE,Equity,SP500,Hewlett Packard Enterprise Comp,2025-08-11,
+KEYS,Equity,SP500,Keysight Technologies Inc.,2025-08-11,
+DOW,Equity,SP500,Dow Inc.,2025-08-11,
+EQR,Equity,SP500,Equity Residential,2025-08-11,
+ON,Equity,SP500,ON Semiconductor Corporation,2025-08-11,
+PPG,Equity,SP500,"PPG Industries, Inc.",2025-08-11,
+K,Equity,SP500,Kellanova,2025-08-11,
+SW,Equity,SP500,Smurfit WestRock plc,2025-08-11,
+NUE,Equity,SP500,Nucor Corporation,2025-08-11,
+EL,Equity,SP500,"Estee Lauder Companies, Inc. (T",2025-08-11,
+BR,Equity,SP500,"Broadridge Financial Solutions,",2025-08-11,
+WBD,Equity,SP500,"Warner Bros. Discovery, Inc. - ",2025-08-11,
+TPL,Equity,SP500,Texas Pacific Land Corporation,2025-08-11,
+CHD,Equity,SP500,"Church & Dwight Company, Inc.",2025-08-11,
+MTD,Equity,SP500,"Mettler-Toledo International, I",2025-08-11,
+DOV,Equity,SP500,Dover Corporation,2025-08-11,
+TYL,Equity,SP500,"Tyler Technologies, Inc.",2025-08-11,
+FTV,Equity,SP500,Fortive Corporation,2025-08-11,
+TROW,Equity,SP500,"T. Rowe Price Group, Inc.",2025-08-11,
+VLTO,Equity,SP500,Veralto Corp,2025-08-11,
+EQT,Equity,SP500,EQT Corporation,2025-08-11,
+SYF,Equity,SP500,Synchrony Financial,2025-08-11,
+NVR,Equity,SP500,"NVR, Inc.",2025-08-11,
+DTE,Equity,SP500,DTE Energy Company,2025-08-11,
+VTR,Equity,SP500,"Ventas, Inc.",2025-08-11,
+AWK,Equity,SP500,"American Water Works Company, I",2025-08-11,
+ADM,Equity,SP500,Archer-Daniels-Midland Company,2025-08-11,
+NTAP,Equity,SP500,"NetApp, Inc.",2025-08-11,
+WST,Equity,SP500,"West Pharmaceutical Services, I",2025-08-11,
+CPAY,Equity,SP500,"Corpay, Inc.",2025-08-11,
+PPL,Equity,SP500,PPL Corporation,2025-08-11,
+LYB,Equity,SP500,LyondellBasell Industries NV,2025-08-11,
+AEE,Equity,SP500,Ameren Corporation,2025-08-11,
+EXPE,Equity,SP500,"Expedia Group, Inc.",2025-08-11,
+HBAN,Equity,SP500,Huntington Bancshares Incorpora,2025-08-11,
+CDW,Equity,SP500,CDW Corporation,2025-08-11,
+FE,Equity,SP500,FirstEnergy Corp.,2025-08-11,
+HUBB,Equity,SP500,Hubbell Inc,2025-08-11,
+ROL,Equity,SP500,"Rollins, Inc.",2025-08-11,
+PHM,Equity,SP500,"PulteGroup, Inc.",2025-08-11,
+CINF,Equity,SP500,Cincinnati Financial Corporatio,2025-08-11,
+PTC,Equity,SP500,PTC Inc.,2025-08-11,
+WRB,Equity,SP500,W.R. Berkley Corporation,2025-08-11,
+DRI,Equity,SP500,"Darden Restaurants, Inc.",2025-08-11,
+FOXA,Equity,SP500,Fox Corporation,2025-08-11,
+FOX,Equity,SP500,Fox Corporation,2025-08-11,
+IFF,Equity,SP500,International Flavors & Fragran,2025-08-11,
+SBAC,Equity,SP500,SBA Communications Corporation,2025-08-11,
+WAT,Equity,SP500,Waters Corporation,2025-08-11,
+ERIE,Equity,SP500,Erie Indemnity Company,2025-08-11,
+TDY,Equity,SP500,Teledyne Technologies Incorpora,2025-08-11,
+ATO,Equity,SP500,Atmos Energy Corporation,2025-08-11,
+RF,Equity,SP500,Regions Financial Corporation,2025-08-11,
+BIIB,Equity,SP500,Biogen Inc.,2025-08-11,
+ZBH,Equity,SP500,"Zimmer Biomet Holdings, Inc.",2025-08-11,
+CNP,Equity,SP500,"CenterPoint Energy, Inc (Holdin",2025-08-11,
+MKC,Equity,SP500,"McCormick & Company, Incorporat",2025-08-11,
+ES,Equity,SP500,Eversource Energy (D/B/A),2025-08-11,
+WDC,Equity,SP500,Western Digital Corporation,2025-08-11,
+TSN,Equity,SP500,"Tyson Foods, Inc.",2025-08-11,
+TER,Equity,SP500,"Teradyne, Inc.",2025-08-11,
+STE,Equity,SP500,STERIS plc (Ireland),2025-08-11,
+PKG,Equity,SP500,Packaging Corporation of Americ,2025-08-11,
+CLX,Equity,SP500,Clorox Company (The),2025-08-11,
+NTRS,Equity,SP500,Northern Trust Corporation,2025-08-11,
+ZBRA,Equity,SP500,Zebra Technologies Corporation,2025-08-11,
+DVN,Equity,SP500,Devon Energy Corporation,2025-08-11,
+CBOE,Equity,SP500,"Cboe Global Markets, Inc.",2025-08-11,
+WY,Equity,SP500,Weyerhaeuser Company,2025-08-11,
+LUV,Equity,SP500,Southwest Airlines Company,2025-08-11,
+ULTA,Equity,SP500,"Ulta Beauty, Inc.",2025-08-11,
+CMS,Equity,SP500,CMS Energy Corporation,2025-08-11,
+INVH,Equity,SP500,Invitation Homes Inc.,2025-08-11,
+FSLR,Equity,SP500,"First Solar, Inc.",2025-08-11,
+BF-B,Equity,SP500,Brown Forman Inc,2025-08-11,
+LDOS,Equity,SP500,"Leidos Holdings, Inc.",2025-08-11,
+CFG,Equity,SP500,"Citizens Financial Group, Inc.",2025-08-11,
+LH,Equity,SP500,Labcorp Holdings Inc.,2025-08-11,
+VRSN,Equity,SP500,"VeriSign, Inc.",2025-08-11,
+IP,Equity,SP500,International Paper Company,2025-08-11,
+ESS,Equity,SP500,"Essex Property Trust, Inc.",2025-08-11,
+PODD,Equity,SP500,Insulet Corporation,2025-08-11,
+COO,Equity,SP500,"The Cooper Companies, Inc.",2025-08-11,
+SMCI,Equity,SP500,"Super Micro Computer, Inc.",2025-08-11,
+STX,Equity,SP500,Seagate Technology Holdings PLC,2025-08-11,
+MAA,Equity,SP500,Mid-America Apartment Communiti,2025-08-11,
+FDS,Equity,SP500,FactSet Research Systems Inc.,2025-08-11,
+NRG,Equity,SP500,"NRG Energy, Inc.",2025-08-11,
+BBY,Equity,SP500,"Best Buy Co., Inc.",2025-08-11,
+SNA,Equity,SP500,Snap-On Incorporated,2025-08-11,
+L,Equity,SP500,Loews Corporation,2025-08-11,
+PFG,Equity,SP500,Principal Financial Group Inc,2025-08-11,
+STLD,Equity,SP500,"Steel Dynamics, Inc.",2025-08-11,
+TRMB,Equity,SP500,Trimble Inc.,2025-08-11,
+OMC,Equity,SP500,Omnicom Group Inc.,2025-08-11,
+CTRA,Equity,SP500,Coterra Energy Inc.,2025-08-11,
+HRL,Equity,SP500,Hormel Foods Corporation,2025-08-11,
+ARE,Equity,SP500,Alexandria Real Estate Equities,2025-08-11,
+BLDR,Equity,SP500,"Builders FirstSource, Inc.",2025-08-11,
+JBHT,Equity,SP500,"J.B. Hunt Transport Services, I",2025-08-11,
+GEN,Equity,SP500,Gen Digital Inc.,2025-08-11,
+DGX,Equity,SP500,Quest Diagnostics Incorporated,2025-08-11,
+KEY,Equity,SP500,KeyCorp,2025-08-11,
+NI,Equity,SP500,NiSource Inc,2025-08-11,
+MOH,Equity,SP500,Molina Healthcare Inc,2025-08-11,
+PNR,Equity,SP500,Pentair plc.,2025-08-11,
+J,Equity,SP500,Jacobs Solutions Inc.,2025-08-11,
+DG,Equity,SP500,Dollar General Corporation,2025-08-11,
+BALL,Equity,SP500,Ball Corporation,2025-08-11,
+NWS,Equity,SP500,News Corporation,2025-08-11,
+NWSA,Equity,SP500,News Corporation,2025-08-11,
+UDR,Equity,SP500,"UDR, Inc.",2025-08-11,
+HOLX,Equity,SP500,"Hologic, Inc.",2025-08-11,
+JBL,Equity,SP500,Jabil Inc.,2025-08-11,
+GPC,Equity,SP500,Genuine Parts Company,2025-08-11,
+IEX,Equity,SP500,IDEX Corporation,2025-08-11,
+MAS,Equity,SP500,Masco Corporation,2025-08-11,
+KIM,Equity,SP500,Kimco Realty Corporation (HC),2025-08-11,
+ALGN,Equity,SP500,"Align Technology, Inc.",2025-08-11,
+DLTR,Equity,SP500,"Dollar Tree, Inc.",2025-08-11,
+EXPD,Equity,SP500,Expeditors International of Was,2025-08-11,
+EG,Equity,SP500,"Everest Group, Ltd.",2025-08-11,
+MRNA,Equity,SP500,"Moderna, Inc.",2025-08-11,
+LNT,Equity,SP500,Alliant Energy Corporation,2025-08-11,
+AVY,Equity,SP500,Avery Dennison Corporation,2025-08-11,
+BAX,Equity,SP500,Baxter International Inc.,2025-08-11,
+TPR,Equity,SP500,"Tapestry, Inc.",2025-08-11,
+VTRS,Equity,SP500,Viatris Inc.,2025-08-11,
+CF,Equity,SP500,"CF Industries Holdings, Inc.",2025-08-11,
+FFIV,Equity,SP500,"F5, Inc.",2025-08-11,
+DPZ,Equity,SP500,Domino's Pizza Inc,2025-08-11,
+AKAM,Equity,SP500,"Akamai Technologies, Inc.",2025-08-11,
+RL,Equity,SP500,Ralph Lauren Corporation,2025-08-11,
+TXT,Equity,SP500,Textron Inc.,2025-08-11,
+SWKS,Equity,SP500,"Skyworks Solutions, Inc.",2025-08-11,
+EVRG,Equity,SP500,"Evergy, Inc.",2025-08-11,
+EPAM,Equity,SP500,"EPAM Systems, Inc.",2025-08-11,
+DOC,Equity,SP500,"Healthpeak Properties, Inc.",2025-08-11,
+APTV,Equity,SP500,Aptiv PLC,2025-08-11,
+RVTY,Equity,SP500,"Revvity, Inc.",2025-08-11,
+AMCR,Equity,SP500,Amcor plc,2025-08-11,
+REG,Equity,SP500,Regency Centers Corporation,2025-08-11,
+POOL,Equity,SP500,Pool Corporation,2025-08-11,
+INCY,Equity,SP500,Incyte Corporation,2025-08-11,
+BXP,Equity,SP500,"BXP, Inc.",2025-08-11,
+KMX,Equity,SP500,CarMax Inc,2025-08-11,
+CAG,Equity,SP500,"ConAgra Brands, Inc.",2025-08-11,
+HST,Equity,SP500,"Host Hotels & Resorts, Inc.",2025-08-11,
+JKHY,Equity,SP500,"Jack Henry & Associates, Inc.",2025-08-11,
+SWK,Equity,SP500,"Stanley Black & Decker, Inc.",2025-08-11,
+DVA,Equity,SP500,DaVita Inc.,2025-08-11,
+CPB,Equity,SP500,The Campbell's Company,2025-08-11,
+CHRW,Equity,SP500,"C.H. Robinson Worldwide, Inc.",2025-08-11,
+JNPR,Equity,SP500,"Juniper Networks, Inc.",2025-08-11,
+CPT,Equity,SP500,Camden Property Trust,2025-08-11,
+TAP,Equity,SP500,Molson Coors Beverage Company,2025-08-11,
+NDSN,Equity,SP500,Nordson Corporation,2025-08-11,
+PAYC,Equity,SP500,"Paycom Software, Inc.",2025-08-11,
+UHS,Equity,SP500,"Universal Health Services, Inc.",2025-08-11,
+DAY,Equity,SP500,"Dayforce, Inc.",2025-08-11,
+SJM,Equity,SP500,The J.M. Smucker Company,2025-08-11,
+TECH,Equity,SP500,Bio-Techne Corp,2025-08-11,
+SOLV,Equity,SP500,Solventum Corporation,2025-08-11,
+ALLE,Equity,SP500,Allegion plc,2025-08-11,
+BG,Equity,SP500,Bunge Limited,2025-08-11,
+AIZ,Equity,SP500,"Assurant, Inc.",2025-08-11,
+IPG,Equity,SP500,"Interpublic Group of Companies,",2025-08-11,
+BEN,Equity,SP500,"Franklin Resources, Inc.",2025-08-11,
+EMN,Equity,SP500,Eastman Chemical Company,2025-08-11,
+ALB,Equity,SP500,Albemarle Corporation,2025-08-11,
+MGM,Equity,SP500,MGM Resorts International,2025-08-11,
+AOS,Equity,SP500,A.O. Smith Corporation,2025-08-11,
+WYNN,Equity,SP500,"Wynn Resorts, Limited",2025-08-11,
+PNW,Equity,SP500,Pinnacle West Capital Corporati,2025-08-11,
+ENPH,Equity,SP500,"Enphase Energy, Inc.",2025-08-11,
+LKQ,Equity,SP500,LKQ Corporation,2025-08-11,
+FRT,Equity,SP500,Federal Realty Investment Trust,2025-08-11,
+CRL,Equity,SP500,Charles River Laboratories Inte,2025-08-11,
+GNRC,Equity,SP500,Generac Holdlings Inc.,2025-08-11,
+AES,Equity,SP500,The AES Corporation,2025-08-11,
+GL,Equity,SP500,Globe Life Inc.,2025-08-11,
+LW,Equity,SP500,"Lamb Weston Holdings, Inc.",2025-08-11,
+HSIC,Equity,SP500,"Henry Schein, Inc.",2025-08-11,
+MKTX,Equity,SP500,"MarketAxess Holdings, Inc.",2025-08-11,
+MTCH,Equity,SP500,"Match Group, Inc.",2025-08-11,
+TFX,Equity,SP500,Teleflex Incorporated,2025-08-11,
+WBA,Equity,SP500,"Walgreens Boots Alliance, Inc.",2025-08-11,
+HAS,Equity,SP500,"Hasbro, Inc.",2025-08-11,
+IVZ,Equity,SP500,Invesco Ltd,2025-08-11,
+MOS,Equity,SP500,Mosaic Company (The),2025-08-11,
+PARA,Equity,SP500,Paramount Global,2025-08-11,
+MHK,Equity,SP500,"Mohawk Industries, Inc.",2025-08-11,
+CE,Equity,SP500,Celanese Corporation,2025-08-11,
+HII,Equity,SP500,"Huntington Ingalls Industries, ",2025-08-11,
+BWA,Equity,SP500,BorgWarner Inc.,2025-08-11,
+QRVO,Equity,SP500,"Qorvo, Inc.",2025-08-11,
+FMC,Equity,SP500,FMC Corporation,2025-08-11,
+AMTM,Equity,SP500,"Amentum Holdings, Inc.",2025-08-11,
+SPY,ETF,State Street SPDR,SPDR S&P 500 ETF Trust,2025-08-11,>=10y history; non-leveraged/inverse
+IVV,ETF,BlackRock iShares,iShares Core S&P 500 ETF,2025-08-11,>=10y history; non-leveraged/inverse
+VOO,ETF,Vanguard,Vanguard S&P 500 ETF,2025-08-11,>=10y history; non-leveraged/inverse
+QQQ,ETF,Invesco,Invesco QQQ Trust,2025-08-11,>=10y history; non-leveraged/inverse
+VTI,ETF,Vanguard,Vanguard Total Stock Market ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IWM,ETF,BlackRock iShares,iShares Russell 2000 ETF,2025-08-11,>=10y history; non-leveraged/inverse
+EFA,ETF,BlackRock iShares,iShares MSCI EAFE ETF,2025-08-11,>=10y history; non-leveraged/inverse
+EEM,ETF,BlackRock iShares,iShares MSCI Emerging Markets ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IEFA,ETF,BlackRock iShares,iShares Core MSCI EAFE ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IEMG,ETF,BlackRock iShares,iShares Core MSCI Emerging Markets ETF,2025-08-11,>=10y history; non-leveraged/inverse
+AGG,ETF,BlackRock iShares,iShares Core U.S. Aggregate Bond ETF,2025-08-11,>=10y history; non-leveraged/inverse
+BND,ETF,Vanguard,Vanguard Total Bond Market ETF,2025-08-11,>=10y history; non-leveraged/inverse
+LQD,ETF,BlackRock iShares,iShares iBoxx $ Investment Grade Corporate Bond ETF,2025-08-11,>=10y history; non-leveraged/inverse
+HYG,ETF,BlackRock iShares,iShares iBoxx $ High Yield Corporate Bond ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IAU,ETF,BlackRock iShares,iShares Gold Trust,2025-08-11,>=10y history; non-leveraged/inverse
+GLD,ETF,State Street SPDR,SPDR Gold Shares,2025-08-11,>=10y history; non-leveraged/inverse
+TLT,ETF,BlackRock iShares,iShares 20+ Year Treasury Bond ETF,2025-08-11,>=10y history; non-leveraged/inverse
+TIP,ETF,BlackRock iShares,iShares TIPS Bond ETF,2025-08-11,>=10y history; non-leveraged/inverse
+SHY,ETF,BlackRock iShares,iShares 1-3 Year Treasury Bond ETF,2025-08-11,>=10y history; non-leveraged/inverse
+VNQ,ETF,Vanguard,Vanguard Real Estate ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IYR,ETF,BlackRock iShares,iShares U.S. Real Estate ETF,2025-08-11,>=10y history; non-leveraged/inverse
+VIG,ETF,Vanguard,Vanguard Dividend Appreciation ETF,2025-08-11,>=10y history; non-leveraged/inverse
+VYM,ETF,Vanguard,Vanguard High Dividend Yield ETF,2025-08-11,>=10y history; non-leveraged/inverse
+SCHD,ETF,Schwab,Schwab U.S. Dividend Equity ETF,2025-08-11,>=10y history; non-leveraged/inverse
+DIA,ETF,State Street SPDR,SPDR Dow Jones Industrial Average ETF Trust,2025-08-11,>=10y history; non-leveraged/inverse
+MDY,ETF,State Street SPDR,SPDR S&P MidCap 400 ETF Trust,2025-08-11,>=10y history; non-leveraged/inverse
+XLB,ETF,State Street SPDR,Materials Select Sector SPDR Fund,2025-08-11,>=10y history; non-leveraged/inverse
+XLE,ETF,State Street SPDR,Energy Select Sector SPDR Fund,2025-08-11,>=10y history; non-leveraged/inverse
+XLF,ETF,State Street SPDR,Financial Select Sector SPDR Fund,2025-08-11,>=10y history; non-leveraged/inverse
+XLI,ETF,State Street SPDR,Industrial Select Sector SPDR Fund,2025-08-11,>=10y history; non-leveraged/inverse
+XLK,ETF,State Street SPDR,Technology Select Sector SPDR Fund,2025-08-11,>=10y history; non-leveraged/inverse
+XLP,ETF,State Street SPDR,Consumer Staples Select Sector SPDR Fund,2025-08-11,>=10y history; non-leveraged/inverse
+XLU,ETF,State Street SPDR,Utilities Select Sector SPDR Fund,2025-08-11,>=10y history; non-leveraged/inverse
+XLV,ETF,State Street SPDR,Health Care Select Sector SPDR Fund,2025-08-11,>=10y history; non-leveraged/inverse
+XLY,ETF,State Street SPDR,Consumer Discretionary Select Sector SPDR Fund,2025-08-11,>=10y history; non-leveraged/inverse
+IJH,ETF,BlackRock iShares,iShares Core S&P Mid-Cap ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IJR,ETF,BlackRock iShares,iShares Core S&P Small-Cap ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IWB,ETF,BlackRock iShares,iShares Russell 1000 ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IWF,ETF,BlackRock iShares,iShares Russell 1000 Growth ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IWD,ETF,BlackRock iShares,iShares Russell 1000 Value ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IWR,ETF,BlackRock iShares,iShares Russell Mid-Cap ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IWS,ETF,BlackRock iShares,iShares Russell Mid-Cap Value ETF,2025-08-11,>=10y history; non-leveraged/inverse
+ITOT,ETF,BlackRock iShares,iShares Core S&P Total U.S. Stock Market ETF,2025-08-11,>=10y history; non-leveraged/inverse
+VEA,ETF,Vanguard,Vanguard FTSE Developed Markets ETF,2025-08-11,>=10y history; non-leveraged/inverse
+VWO,ETF,Vanguard,Vanguard FTSE Emerging Markets ETF,2025-08-11,>=10y history; non-leveraged/inverse
+IBB,ETF,BlackRock iShares,iShares Biotechnology ETF,2025-08-11,>=10y history; non-leveraged/inverse
+XBI,ETF,State Street SPDR,SPDR S&P Biotech ETF,2025-08-11,>=10y history; non-leveraged/inverse
+FXI,ETF,BlackRock iShares,iShares China Large-Cap ETF,2025-08-11,>=10y history; non-leveraged/inverse
+EWJ,ETF,BlackRock iShares,iShares MSCI Japan ETF,2025-08-11,>=10y history; non-leveraged/inverse
+VUG,ETF,Vanguard,Vanguard Growth ETF,2025-08-11,>=10y history; non-leveraged/inverse
+FIUIX,MutualFund,Fidelity,Fidelity Telecom and Utilities Fund (FIUIX),2025-08-11,5★
+FPURX,MutualFund,Fidelity,Fidelity Puritan Fund (FPURX),2025-08-11,5★
+FFNOX,MutualFund,Fidelity,Fidelity Multi-Asset Index Fund (FFNOX),2025-08-11,5★
+FSUTX,MutualFund,Fidelity,Fidelity Select Utilities Portfolio (FSUTX),2025-08-11,5★
+FBALX,MutualFund,Fidelity,Fidelity Balanced Fund (FBALX),2025-08-11,5★
+VASGX,MutualFund,Vanguard,Vanguard LifeStrategy Growth Fund Investor Shares (VASGX),2025-08-11,5★
+FCVSX,MutualFund,Fidelity,Fidelity Convertible Securities Fund (FCVSX),2025-08-11,5★
+PBAIX,MutualFund,BlackRock,BlackRock Tactical Opportunities Fund Institutional Shares (PBAIX),2025-08-11,5★
+FAGIX,MutualFund,Fidelity,Fidelity Capital & Income Fund (FAGIX),2025-08-11,5★
+TIBIX,MutualFund,Other,Thornburg Investment Income Builder Fund Class I (TIBIX),2025-08-11,5★
+TIBAX,MutualFund,Other,Thornburg Investment Income Builder Fund Class A (TIBAX),2025-08-11,5★
+EKBYX,MutualFund,Other,Allspring Diversified Capital Builder Fund - Class Inst (EKBYX),2025-08-11,5★
+MDCEX,MutualFund,Other,Matisse Discounted Closed-End Fund Strategy Institutional Class Shares (MDCEX),2025-08-11,5★
+EKBDX,MutualFund,Other,Allspring Diversified Capital Builder Fund - Class Admin (EKBDX),2025-08-11,5★
+EKBAX,MutualFund,Other,Allspring Diversified Capital Builder Fund - Class A (EKBAX),2025-08-11,5★
+PLIBX,MutualFund,Other,Plumb Balanced Fund Institutional Shares (PLIBX),2025-08-11,5★
+PRPFX,MutualFund,Other,Permanent Portfolio Permanent Portfolio Class I (PRPFX),2025-08-11,5★
+EKBCX,MutualFund,Other,Allspring Diversified Capital Builder Fund - Class C (EKBCX),2025-08-11,5★
+PRPDX,MutualFund,Other,Permanent Portfolio Permanent Portfolio Class A (PRPDX),2025-08-11,5★
+EIDOX,MutualFund,Other,Eaton Vance Emerging Markets Debt Opportunities Fund Class I (EIDOX),2025-08-11,5★
+AGEPX,MutualFund,Other,American Beacon Developing World Income Fund-Investor Class (AGEPX),2025-08-11,5★
+AGUAX,MutualFund,Other,American Beacon Developing World Income Fund-A Class (AGUAX),2025-08-11,5★
+EADOX,MutualFund,Other,Eaton Vance Emerging Markets Debt Opportunities Fund Class A (EADOX),2025-08-11,5★
+PRPHX,MutualFund,Other,Permanent Portfolio Permanent Portfolio Class C (PRPHX),2025-08-11,5★
+CVLOX,MutualFund,Other,Calamos Global Opportunities Fund Class A (CVLOX),2025-08-11,5★
+CVTRX,MutualFund,Other,Calamos Growth & Income Fund Class A (CVTRX),2025-08-11,5★
+FPCSX,MutualFund,Other,FPA Crescent Fund Supra Institutional Class (FPCSX),2025-08-11,5★
+FPACX,MutualFund,Other,FPA Crescent Fund (FPACX),2025-08-11,5★
+FPFRX,MutualFund,Other,FPA Crescent Fund Investor Class (FPFRX),2025-08-11,5★
+SGIIX,MutualFund,Other,First Eagle Global Fund Class I (SGIIX),2025-08-11,5★
+APDOX,MutualFund,Other,Artisan Emerging Markets Debt Opportunities Fund Advisor Shares (APDOX),2025-08-11,5★
+CVLCX,MutualFund,Other,Calamos Global Opportunities Fund Class C (CVLCX),2025-08-11,5★
+CVTCX,MutualFund,Other,Calamos Growth & Income Fund Class C (CVTCX),2025-08-11,5★
+SGENX,MutualFund,Other,First Eagle Global Fund Class A (SGENX),2025-08-11,5★
+SIBAX,MutualFund,Other,Sit Balanced Fund (SIBAX),2025-08-11,5★
+PMFYX,MutualFund,Other,Victory Pioneer Multi-Asset Income Fund Class Y (PMFYX),2025-08-11,5★
+PMAIX,MutualFund,Other,Victory Pioneer Multi-Asset Income Fund Class A (PMAIX),2025-08-11,5★
+JBALX,MutualFund,Other,Janus Henderson Balanced Fund Class I (JBALX),2025-08-11,5★
+JABAX,MutualFund,Other,Janus Henderson Balanced Fund Class T (JABAX),2025-08-11,5★
+TSUMX,MutualFund,Other,Thornburg Summit Fund Class I (TSUMX),2025-08-11,5★
+TSAMX,MutualFund,Other,Thornburg Summit Fund - Class A (TSAMX),2025-08-11,5★
+EEIIX,MutualFund,Other,Eaton Vance Emerging Markets Local Income Fund Class I (EEIIX),2025-08-11,5★
+PMACX,MutualFund,Other,Victory Pioneer Multi-Asset Income Fund Class C (PMACX),2025-08-11,5★
+PELNX,MutualFund,Other,PIMCO Emerging Markets Local Currency and Bond Fund Class I-3 (PELNX),2025-08-11,5★
+HIIIX,MutualFund,Other,Catalyst/SMH High Income Fund Class I (HIIIX),2025-08-11,5★
+EEIAX,MutualFund,Other,Eaton Vance Emerging Markets Local Income Fund Class A (EEIAX),2025-08-11,5★
+PELAX,MutualFund,Other,PIMCO Emerging Markets Local Currency and Bond Fund Class A (PELAX),2025-08-11,5★
+HIIFX,MutualFund,Other,Catalyst/SMH High Income Fund Class A (HIIFX),2025-08-11,5★
+AMECX,MutualFund,Other,American Funds The Income Fund of America Class A (AMECX),2025-08-11,5★
+IFAFX,MutualFund,Other,American Funds The Income Fund of America Class F-1 (IFAFX),2025-08-11,5★
+ASAMX,MutualFund,Other,American Century Strategic Allocation: Moderate Fund I Class (ASAMX),2025-08-11,5★
+FRFZX,MutualFund,Other,PGIM Floating Rate Income Fund- Class Z (FRFZX),2025-08-11,5★
+CFRIX,MutualFund,Other,Catalyst/CIFC Senior Secured Income Fund Class I (CFRIX),2025-08-11,5★
+PLFRX,MutualFund,Other,Aristotle Floating Rate Income Fund Class I (PLFRX),2025-08-11,5★
+PYFRX,MutualFund,Other,Payden Floating Rate Fund Investor Class (PYFRX),2025-08-11,5★
+PLFDX,MutualFund,Other,Aristotle Floating Rate Income Fund Class I-2 (PLFDX),2025-08-11,5★
+EIFAX,MutualFund,Other,Eaton Vance Floating-Rate Advantage Fund Class I (EIFAX),2025-08-11,5★
+TBLVX,MutualFund,Other,T. Rowe Price Retirement Blend 2025 Fund (TBLVX),2025-08-11,5★
+BUIHX,MutualFund,Other,Buffalo High Yield Fund Institutional Class (BUIHX),2025-08-11,5★
+CSOIX,MutualFund,Other,Credit Suisse Strategic Income Fund Class I Shares (CSOIX),2025-08-11,5★
+BUFHX,MutualFund,Other,Buffalo High Yield Fund (BUFHX),2025-08-11,5★
+PHYSX,MutualFund,Other,PIA High Yield Fund Institutional Class (PHYSX),2025-08-11,5★
+TRRHX,MutualFund,Other,T. Rowe Price Retirement 2025 Fund (TRRHX),2025-08-11,5★
+CSOAX,MutualFund,Other,Credit Suisse Strategic Income Fund Class A Shares (CSOAX),2025-08-11,5★
+TSBAX,MutualFund,Other,T. Rowe Price Retirement Blend 2020 Fund (TSBAX),2025-08-11,5★
+PYHRX,MutualFund,Other,Payden High Income Fund Investor Class (PYHRX),2025-08-11,5★
+AADTX,MutualFund,Other,American Funds 2025 Target Date Retirement Fund Class A (AADTX),2025-08-11,5★
+FAPTX,MutualFund,Other,American Funds 2025 Target Date Retirement Fund Class F-1 (FAPTX),2025-08-11,5★
+MFHIX,MutualFund,Other,Mesirow High Yield Fund Institutional Shares (MFHIX),2025-08-11,5★
+TARBX,MutualFund,Other,Touchstone Ares Credit Opportunities Fund I (TARBX),2025-08-11,5★
+BCGIX,MutualFund,Other,BrandywineGLOBAL - Corporate Credit Fund Class I (BCGIX),2025-08-11,5★
+TMAYX,MutualFund,Other,Touchstone Ares Credit Opportunities Fund Y (TMAYX),2025-08-11,5★
+TBLSX,MutualFund,Other,T. Rowe Price Retirement Blend 2015 Fund (TBLSX),2025-08-11,5★
+TRRBX,MutualFund,Other,T. Rowe Price Retirement 2020 Fund (TRRBX),2025-08-11,5★
+MFHVX,MutualFund,Other,Mesirow High Yield Fund Investor Shares (MFHVX),2025-08-11,5★
+TMARX,MutualFund,Other,Touchstone Ares Credit Opportunities Fund A (TMARX),2025-08-11,5★
+PLMAX,MutualFund,Other,PIMCO Emerging Markets Currency and Short-Term Investments Fund Class A (PLMAX),2025-08-11,5★
+AACTX,MutualFund,Other,American Funds 2020 Target Date Retirement Fund Class A (AACTX),2025-08-11,5★
+TRRGX,MutualFund,Other,T. Rowe Price Retirement 2015 Fund (TRRGX),2025-08-11,5★
+TBLQX,MutualFund,Other,T. Rowe Price Retirement Blend 2010 Fund (TBLQX),2025-08-11,5★
+FAOTX,MutualFund,Other,American Funds 2020 Target Date Retirement Fund Class F-1 (FAOTX),2025-08-11,5★
+TBLPX,MutualFund,Other,T. Rowe Price Retirement Blend 2005 Fund (TBLPX),2025-08-11,5★
+TRRAX,MutualFund,Other,T. Rowe Price Retirement 2010 Fund (TRRAX),2025-08-11,5★
+AABTX,MutualFund,Other,American Funds 2015 Target Date Retirement Fund Class A (AABTX),2025-08-11,5★
+FAKTX,MutualFund,Other,American Funds 2015 Target Date Retirement Fund Class F-1 (FAKTX),2025-08-11,5★
+AQMIX,MutualFund,Other,AQR Managed Futures Strategy Fund Class I (AQMIX),2025-08-11,5★
+AAATX,MutualFund,Other,American Funds 2010 Target Date Retirement Fund Class A (AAATX),2025-08-11,5★
+FAATX,MutualFund,Other,American Funds 2010 Target Date Retirement Fund Class F-1 (FAATX),2025-08-11,5★
+AQMNX,MutualFund,Other,AQR Managed Futures Strategy Fund Class N (AQMNX),2025-08-11,5★
+NVHAX,MutualFund,Other,Nuveen Short Duration High Yield Municipal Bond Fund Class A (NVHAX),2025-08-11,5★
+ISHAX,MutualFund,Other,Invesco Short Duration High Yield Municipal Fund Class A (ISHAX),2025-08-11,5★
+GPAIX,MutualFund,Other,Grant Park Multi Alternative Strategies Fund Class I (GPAIX),2025-08-11,5★
+GPANX,MutualFund,Other,Grant Park Multi Alternative Strategies Fund Class N (GPANX),2025-08-11,5★
+GPAAX,MutualFund,Other,Grant Park Multi Alternative Strategies Fund Class A (GPAAX),2025-08-11,5★
+USGDX,MutualFund,Other,Morgan Stanley Long Duration Government Opportunities Fund Class I (USGDX),2025-08-11,5★
+USGAX,MutualFund,Other,Morgan Stanley Long Duration Government Opportunities Fund Class A (USGAX),2025-08-11,5★
+FADMX,MutualFund,Fidelity,FADMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FAMRX,MutualFund,Fidelity,FAMRX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FAPGX,MutualFund,Fidelity,FAPGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FAPHX,MutualFund,Fidelity,FAPHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FAPSX,MutualFund,Fidelity,FAPSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FARMX,MutualFund,Fidelity,FARMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FASGX,MutualFund,Fidelity,FASGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FASIX,MutualFund,Fidelity,FASIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FASMX,MutualFund,Fidelity,FASMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FBAGX,MutualFund,Fidelity,FBAGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FBCVX,MutualFund,Fidelity,FBCVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FBGRX,MutualFund,Fidelity,FBGRX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FBIFX,MutualFund,Fidelity,FBIFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FBIIX,MutualFund,Fidelity,FBIIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FBIOX,MutualFund,Fidelity,FBIOX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FBMPX,MutualFund,Fidelity,FBMPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FBNDX,MutualFund,Fidelity,FBNDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FBSOX,MutualFund,Fidelity,FBSOX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FCAEX,MutualFund,Fidelity,FCAEX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FCBFX,MutualFund,Fidelity,FCBFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FCNTX,MutualFund,Fidelity,FCNTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FCNVX,MutualFund,Fidelity,FCNVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FCPVX,MutualFund,Fidelity,FCPVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FCSTX,MutualFund,Fidelity,FCSTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FCTFX,MutualFund,Fidelity,FCTFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FCYIX,MutualFund,Fidelity,FCYIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDCAX,MutualFund,Fidelity,FDCAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDCPX,MutualFund,Fidelity,FDCPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDEEX,MutualFund,Fidelity,FDEEX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDEGX,MutualFund,Fidelity,FDEGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDEQX,MutualFund,Fidelity,FDEQX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDEWX,MutualFund,Fidelity,FDEWX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDFAX,MutualFund,Fidelity,FDFAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDGFX,MutualFund,Fidelity,FDGFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDIVX,MutualFund,Fidelity,FDIVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDKLX,MutualFund,Fidelity,FDKLX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDKVX,MutualFund,Fidelity,FDKVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDLSX,MutualFund,Fidelity,FDLSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDMMX,MutualFund,Fidelity,FDMMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDSCX,MutualFund,Fidelity,FDSCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDSSX,MutualFund,Fidelity,FDSSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDSVX,MutualFund,Fidelity,FDSVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FDVLX,MutualFund,Fidelity,FDVLX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FECGX,MutualFund,Fidelity,FECGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FEDDX,MutualFund,Fidelity,FEDDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FEMKX,MutualFund,Fidelity,FEMKX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FEMNX,MutualFund,Fidelity,FEMNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FEOPX,MutualFund,Fidelity,FEOPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FEQHX,MutualFund,Fidelity,FEQHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FEQIX,MutualFund,Fidelity,FEQIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FEQTX,MutualFund,Fidelity,FEQTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFANX,MutualFund,Fidelity,FFANX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFBSX,MutualFund,Fidelity,FFBSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFEBX,MutualFund,Fidelity,FFEBX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFEDX,MutualFund,Fidelity,FFEDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFEGX,MutualFund,Fidelity,FFEGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFEZX,MutualFund,Fidelity,FFEZX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFFAX,MutualFund,Fidelity,FFFAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFFCX,MutualFund,Fidelity,FFFCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFFDX,MutualFund,Fidelity,FFFDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFFEX,MutualFund,Fidelity,FFFEX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFFFX,MutualFund,Fidelity,FFFFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFFGX,MutualFund,Fidelity,FFFGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFFHX,MutualFund,Fidelity,FFFHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFGCX,MutualFund,Fidelity,FFGCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFGZX,MutualFund,Fidelity,FFGZX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFIDX,MutualFund,Fidelity,FFIDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFIJX,MutualFund,Fidelity,FFIJX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFIKX,MutualFund,Fidelity,FFIKX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFIZX,MutualFund,Fidelity,FFIZX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFLDX,MutualFund,Fidelity,FFLDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFLEX,MutualFund,Fidelity,FFLEX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFOLX,MutualFund,Fidelity,FFOLX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFOPX,MutualFund,Fidelity,FFOPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFRHX,MutualFund,Fidelity,FFRHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFSFX,MutualFund,Fidelity,FFSFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFTHX,MutualFund,Fidelity,FFTHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFTWX,MutualFund,Fidelity,FFTWX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFVFX,MutualFund,Fidelity,FFVFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFWTX,MutualFund,Fidelity,FFWTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FFXSX,MutualFund,Fidelity,FFXSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FGBFX,MutualFund,Fidelity,FGBFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FGILX,MutualFund,Fidelity,FGILX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FGMNX,MutualFund,Fidelity,FGMNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FGOVX,MutualFund,Fidelity,FGOVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FGRIX,MutualFund,Fidelity,FGRIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FGRTX,MutualFund,Fidelity,FGRTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHANX,MutualFund,Fidelity,FHANX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHAOX,MutualFund,Fidelity,FHAOX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHAPX,MutualFund,Fidelity,FHAPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHAQX,MutualFund,Fidelity,FHAQX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHARX,MutualFund,Fidelity,FHARX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHASX,MutualFund,Fidelity,FHASX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHATX,MutualFund,Fidelity,FHATX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHAUX,MutualFund,Fidelity,FHAUX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHAVX,MutualFund,Fidelity,FHAVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHAWX,MutualFund,Fidelity,FHAWX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHAYX,MutualFund,Fidelity,FHAYX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHBZX,MutualFund,Fidelity,FHBZX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHIFX,MutualFund,Fidelity,FHIFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHIGX,MutualFund,Fidelity,FHIGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHKCX,MutualFund,Fidelity,FHKCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHLKX,MutualFund,Fidelity,FHLKX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHLSX,MutualFund,Fidelity,FHLSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FHSNX,MutualFund,Fidelity,FHSNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIAEX,MutualFund,Fidelity,FIAEX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FICDX,MutualFund,Fidelity,FICDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FICNX,MutualFund,Fidelity,FICNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIDSX,MutualFund,Fidelity,FIDSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIEUX,MutualFund,Fidelity,FIEUX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIFNX,MutualFund,Fidelity,FIFNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIGFX,MutualFund,Fidelity,FIGFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIGRX,MutualFund,Fidelity,FIGRX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIHFX,MutualFund,Fidelity,FIHFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIKFX,MutualFund,Fidelity,FIKFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIMIX,MutualFund,Fidelity,FIMIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIMVX,MutualFund,Fidelity,FIMVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIOFX,MutualFund,Fidelity,FIOFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIPDX,MutualFund,Fidelity,FIPDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIPFX,MutualFund,Fidelity,FIPFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIREX,MutualFund,Fidelity,FIREX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIRMX,MutualFund,Fidelity,FIRMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIRQX,MutualFund,Fidelity,FIRQX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIRSX,MutualFund,Fidelity,FIRSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIRVX,MutualFund,Fidelity,FIRVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FISMX,MutualFund,Fidelity,FISMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FISVX,MutualFund,Fidelity,FISVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FITLX,MutualFund,Fidelity,FITLX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIVFX,MutualFund,Fidelity,FIVFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIVLX,MutualFund,Fidelity,FIVLX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIWFX,MutualFund,Fidelity,FIWFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIWTX,MutualFund,Fidelity,FIWTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FIXRX,MutualFund,Fidelity,FIXRX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FJPNX,MutualFund,Fidelity,FJPNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FJRLX,MutualFund,Fidelity,FJRLX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FJSCX,MutualFund,Fidelity,FJSCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FKIFX,MutualFund,Fidelity,FKIFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FLCOX,MutualFund,Fidelity,FLCOX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FLCSX,MutualFund,Fidelity,FLCSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FLIFX,MutualFund,Fidelity,FLIFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FLOWX,MutualFund,Fidelity,FLOWX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FLPSX,MutualFund,Fidelity,FLPSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FLTMX,MutualFund,Fidelity,FLTMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FLVCX,MutualFund,Fidelity,FLVCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMAGX,MutualFund,Fidelity,FMAGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMCSX,MutualFund,Fidelity,FMCSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMDGX,MutualFund,Fidelity,FMDGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMHTX,MutualFund,Fidelity,FMHTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMILX,MutualFund,Fidelity,FMILX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMNDX,MutualFund,Fidelity,FMNDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMRAX,MutualFund,Fidelity,FMRAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMRTX,MutualFund,Fidelity,FMRTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMSDX,MutualFund,Fidelity,FMSDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMSFX,MutualFund,Fidelity,FMSFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FMWIX,MutualFund,Fidelity,FMWIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNARX,MutualFund,Fidelity,FNARX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNBGX,MutualFund,Fidelity,FNBGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNCMX,MutualFund,Fidelity,FNCMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNDSX,MutualFund,Fidelity,FNDSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNIDX,MutualFund,Fidelity,FNIDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNILX,MutualFund,Fidelity,FNILX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNJHX,MutualFund,Fidelity,FNJHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNMIX,MutualFund,Fidelity,FNMIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNORX,MutualFund,Fidelity,FNORX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNSOX,MutualFund,Fidelity,FNSOX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FNSTX,MutualFund,Fidelity,FNSTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FOCPX,MutualFund,Fidelity,FOCPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FOHFX,MutualFund,Fidelity,FOHFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FOSFX,MutualFund,Fidelity,FOSFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FPADX,MutualFund,Fidelity,FPADX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FPBFX,MutualFund,Fidelity,FPBFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FPHAX,MutualFund,Fidelity,FPHAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FPIFX,MutualFund,Fidelity,FPIFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FPXTX,MutualFund,Fidelity,FPXTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FQIFX,MutualFund,Fidelity,FQIFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRAGX,MutualFund,Fidelity,FRAGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRBDX,MutualFund,Fidelity,FRBDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRBUX,MutualFund,Fidelity,FRBUX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRBVX,MutualFund,Fidelity,FRBVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRBYX,MutualFund,Fidelity,FRBYX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRCQX,MutualFund,Fidelity,FRCQX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRESX,MutualFund,Fidelity,FRESX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRGAX,MutualFund,Fidelity,FRGAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRIFX,MutualFund,Fidelity,FRIFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FRYBX,MutualFund,Fidelity,FRYBX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSAGX,MutualFund,Fidelity,FSAGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSAHX,MutualFund,Fidelity,FSAHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSANX,MutualFund,Fidelity,FSANX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSAVX,MutualFund,Fidelity,FSAVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSAZX,MutualFund,Fidelity,FSAZX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSCHX,MutualFund,Fidelity,FSCHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSCOX,MutualFund,Fidelity,FSCOX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSCPX,MutualFund,Fidelity,FSCPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSCRX,MutualFund,Fidelity,FSCRX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSCSX,MutualFund,Fidelity,FSCSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSDAX,MutualFund,Fidelity,FSDAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSDIX,MutualFund,Fidelity,FSDIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSDPX,MutualFund,Fidelity,FSDPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSEAX,MutualFund,Fidelity,FSEAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSEBX,MutualFund,Fidelity,FSEBX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSELX,MutualFund,Fidelity,FSELX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSENX,MutualFund,Fidelity,FSENX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSGGX,MutualFund,Fidelity,FSGGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSHBX,MutualFund,Fidelity,FSHBX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSHCX,MutualFund,Fidelity,FSHCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSHOX,MutualFund,Fidelity,FSHOX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSIKX,MutualFund,Fidelity,FSIKX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSKAX,MutualFund,Fidelity,FSKAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSLBX,MutualFund,Fidelity,FSLBX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSLCX,MutualFund,Fidelity,FSLCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSLEX,MutualFund,Fidelity,FSLEX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSLSX,MutualFund,Fidelity,FSLSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSLVX,MutualFund,Fidelity,FSLVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSMAX,MutualFund,Fidelity,FSMAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSMDX,MutualFund,Fidelity,FSMDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSMEX,MutualFund,Fidelity,FSMEX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSMVX,MutualFund,Fidelity,FSMVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSPCX,MutualFund,Fidelity,FSPCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSPGX,MutualFund,Fidelity,FSPGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSPHX,MutualFund,Fidelity,FSPHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSPSX,MutualFund,Fidelity,FSPSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSPTX,MutualFund,Fidelity,FSPTX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSRBX,MutualFund,Fidelity,FSRBX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSRFX,MutualFund,Fidelity,FSRFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSRNX,MutualFund,Fidelity,FSRNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSRPX,MutualFund,Fidelity,FSRPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSRRX,MutualFund,Fidelity,FSRRX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSSMX,MutualFund,Fidelity,FSSMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSSNX,MutualFund,Fidelity,FSSNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSTCX,MutualFund,Fidelity,FSTCX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSTFX,MutualFund,Fidelity,FSTFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSTGX,MutualFund,Fidelity,FSTGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSUDX,MutualFund,Fidelity,FSUDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSUYX,MutualFund,Fidelity,FSUYX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSVLX,MutualFund,Fidelity,FSVLX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSVNX,MutualFund,Fidelity,FSVNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSWDX,MutualFund,Fidelity,FSWDX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSWOX,MutualFund,Fidelity,FSWOX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSXAX,MutualFund,Fidelity,FSXAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSXKX,MutualFund,Fidelity,FSXKX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSXVX,MutualFund,Fidelity,FSXVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSYHX,MutualFund,Fidelity,FSYHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSYJX,MutualFund,Fidelity,FSYJX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSYRX,MutualFund,Fidelity,FSYRX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSYWX,MutualFund,Fidelity,FSYWX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSZHX,MutualFund,Fidelity,FSZHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FSZSX,MutualFund,Fidelity,FSZSX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTABX,MutualFund,Fidelity,FTABX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTANX,MutualFund,Fidelity,FTANX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTBFX,MutualFund,Fidelity,FTBFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTFMX,MutualFund,Fidelity,FTFMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTGPX,MutualFund,Fidelity,FTGPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTHRX,MutualFund,Fidelity,FTHRX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTIEX,MutualFund,Fidelity,FTIEX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTIHX,MutualFund,Fidelity,FTIHX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTQGX,MutualFund,Fidelity,FTQGX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FTRNX,MutualFund,Fidelity,FTRNX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FUAMX,MutualFund,Fidelity,FUAMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FULVX,MutualFund,Fidelity,FULVX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FUMBX,MutualFund,Fidelity,FUMBX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FVDFX,MutualFund,Fidelity,FVDFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FWOMX,MutualFund,Fidelity,FWOMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FWRLX,MutualFund,Fidelity,FWRLX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FWWFX,MutualFund,Fidelity,FWWFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FXAIX,MutualFund,Fidelity,FXAIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FXIFX,MutualFund,Fidelity,FXIFX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FXNAX,MutualFund,Fidelity,FXNAX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FYMRX,MutualFund,Fidelity,FYMRX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FZILX,MutualFund,Fidelity,FZILX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FZIPX,MutualFund,Fidelity,FZIPX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+FZROX,MutualFund,Fidelity,FZROX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+SMDMX,MutualFund,Fidelity,SMDMX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+SPHIX,MutualFund,Fidelity,SPHIX,,From Fidelity_mutual_funds20240430.csv (column header tickers)
+SP500TR,Index,S&P DJI,S&P 500 Total Return Index,,From SP500TR.csv

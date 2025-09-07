@@ -1,0 +1,13 @@
+[global]
+# Your private Azure Artifacts feed (replace YOUR_TOKEN with actual token)
+index-url = https://YOUR_TOKEN@pkgs.dev.azure.com/nirvanax/Nirvana/_packaging/nirvana-math/pypi/simple/
+
+# Public dependencies are pulled from PyPI
+extra-index-url = https://pypi.org/simple
+
+# Allow only binary wheels
+only-binary = :all:
+prefer-binary = yes
+
+# Prevent TLS host verification issues for Azure Artifacts
+trusted-host = pkgs.dev.azure.com
