@@ -140,43 +140,152 @@ def ticker_feed_country_specific(
                             else '2025-09-06'
                         )
 
-                    items.append({
-                        "symbol": symbol,
-                        "as_of": as_of_date,
-                        "cvar95": (
-                            cvar95_snapshot.cvar_ghst
-                            if cvar95_snapshot else None
-                        ),
-                        "cvar99": (
-                            cvar99_snapshot.cvar_nig
-                            if cvar99_snapshot else None
-                        ),
-                        "cvar50": (
-                            cvar50_snapshot.cvar_evar
-                            if cvar50_snapshot else None
-                        ),
-                    })
+                    # Get CVaR values based on mode
+                    cvar95_value = (
+                        cvar95_snapshot.cvar_ghst
+                        if cvar95_snapshot else None
+                    )
+                    cvar99_value = (
+                        cvar99_snapshot.cvar_nig
+                        if cvar99_snapshot else None
+                    )
+                    cvar50_value = (
+                        cvar50_snapshot.cvar_evar
+                        if cvar50_snapshot else None
+                    )
+
+                    # Determine which CVaR value to use for filtering based on mode
+                    primary_cvar_value = None
+                    if mode == 'cvar99' and cvar99_value is not None:
+                        primary_cvar_value = cvar99_value
+                    elif mode == 'cvar95' and cvar95_value is not None:
+                        primary_cvar_value = cvar95_value
+                    elif mode == 'five_stars' and cvar99_value is not None:
+                        primary_cvar_value = cvar99_value
+
+                    # Only include symbols with valid CVaR data and above -95%
+                    if (primary_cvar_value is not None and
+                            primary_cvar_value >= -0.95):  # -95% threshold
+                        items.append({
+                            "symbol": symbol,
+                            "as_of": as_of_date,
+                            "cvar95": cvar95_value,
+                            "cvar99": cvar99_value,
+                            "cvar50": cvar50_value,
+                        })
+                    else:
+                        logger.debug(
+                            f"Excluding {symbol}: CVaR value "
+                            f"{primary_cvar_value} is null or below -95%"
+                        )
                 else:
-                    # Add without CVaR data
-                    items.append({
-                        "symbol": symbol,
-                        "as_of": '2025-09-06',
-                        "cvar95": None,
-                        "cvar99": None,
-                        "cvar50": None,
-                    })
+                    logger.debug(f"Excluding {symbol}: No CVaR snapshots found")
             except Exception as e:
                 logger.warning(
                     f"Failed to get CVaR data for {symbol}: {e}"
                 )
-                # Add without CVaR data
-                items.append({
-                    "symbol": symbol,
-                    "as_of": '2025-09-06',
-                    "cvar95": None,
-                    "cvar99": None,
-                    "cvar50": None,
-                })
+                # Don't add symbols without data
+
+        # If we have too few items after filtering, try to get more symbols
+        if len(items) < 10 and len(final_products) < 50:
+            logger.info(
+                f"Only {len(items)} valid items found, trying to get more"
+            )
+            # Try to get more symbols with a higher limit
+            additional_limit = min(50, limit * 3)
+
+            if country.upper() == "US":
+                additional_products = query_builder.get_symbols_with_filters(
+                    country="US",
+                    five_stars=True,
+                    limit=additional_limit
+                )
+            else:
+                additional_country_products = (
+                    query_builder.get_symbols_with_filters(
+                        country=country,
+                        five_stars=False,
+                        limit=additional_limit
+                    )
+                )
+                additional_us_products = query_builder.get_symbols_with_filters(
+                    country="US",
+                    five_stars=True,
+                    limit=additional_limit
+                )
+                additional_products = (
+                    additional_country_products + additional_us_products
+                )
+
+            # Process additional symbols that weren't already processed
+            processed_symbols = {item["symbol"] for item in items}
+            for symbol in additional_products:
+                if symbol in processed_symbols or len(items) >= limit:
+                    continue
+
+                try:
+                    cvar_snapshots = cvar_repo.get_latest_by_symbol(symbol)
+                    if cvar_snapshots:
+                        # Find snapshots for different alpha levels
+                        cvar95_snapshot = None
+                        cvar99_snapshot = None
+                        cvar50_snapshot = None
+
+                        for snapshot in cvar_snapshots:
+                            if snapshot.alpha_label == 95:
+                                cvar95_snapshot = snapshot
+                            elif snapshot.alpha_label == 99:
+                                cvar99_snapshot = snapshot
+                            elif snapshot.alpha_label == 50:
+                                cvar50_snapshot = snapshot
+
+                        # Get CVaR values
+                        cvar95_value = (
+                            cvar95_snapshot.cvar_ghst
+                            if cvar95_snapshot else None
+                        )
+                        cvar99_value = (
+                            cvar99_snapshot.cvar_nig
+                            if cvar99_snapshot else None
+                        )
+                        cvar50_value = (
+                            cvar50_snapshot.cvar_evar
+                            if cvar50_snapshot else None
+                        )
+
+                        # Determine primary CVaR value for filtering
+                        primary_cvar_value = None
+                        if mode == 'cvar99' and cvar99_value is not None:
+                            primary_cvar_value = cvar99_value
+                        elif mode == 'cvar95' and cvar95_value is not None:
+                            primary_cvar_value = cvar95_value
+                        elif mode == 'five_stars' and cvar99_value is not None:
+                            primary_cvar_value = cvar99_value
+
+                        # Apply the same filtering criteria
+                        if (primary_cvar_value is not None and
+                                primary_cvar_value >= -0.95):
+
+                            as_of_date = (
+                                cvar_snapshots[0].as_of_date.strftime(
+                                    '%Y-%m-%d'
+                                )
+                                if cvar_snapshots[0].as_of_date
+                                else '2025-09-06'
+                            )
+
+                            items.append({
+                                "symbol": symbol,
+                                "as_of": as_of_date,
+                                "cvar95": cvar95_value,
+                                "cvar99": cvar99_value,
+                                "cvar50": cvar50_value,
+                            })
+                            processed_symbols.add(symbol)
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to process additional symbol {symbol}: {e}"
+                    )
 
         return {
             "items": items,
