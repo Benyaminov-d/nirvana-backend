@@ -55,12 +55,14 @@ from routes.rag import router as rag_router
 from routes.universe import router as universe_router
 from routes.cvar_refactored_demo import router as cvar_refactored_router
 from routes.ticker_refactored import router as ticker_refactored_router
+from routes.ticker_country_specific import router as ticker_country_specific_router
 from routes.refactoring_tools import router as refactoring_tools_router
 from routes.application_services_demo import router as application_services_demo_router
 from routes.infrastructure_demo import router as infrastructure_demo_router
 from routes.data_access_demo import router as data_access_demo_router
 from routes.shared_demo import router as shared_demo_router
 from routes.domain_models_demo import router as domain_models_demo_router
+from routes.debug_database import router as debug_database_router
 
 # ───────────────────── env / init ─────────────────────
 load_dotenv()
@@ -98,12 +100,14 @@ app.include_router(ticker_check_router)
 app.include_router(universe_router, prefix="/api")
 app.include_router(cvar_refactored_router, prefix="/api")
 app.include_router(ticker_refactored_router, prefix="/api")
+app.include_router(ticker_country_specific_router, prefix="/api")
 app.include_router(refactoring_tools_router, prefix="/api")
 app.include_router(application_services_demo_router, prefix="/api")
 app.include_router(infrastructure_demo_router, prefix="/api")
 app.include_router(data_access_demo_router, prefix="/api")
 app.include_router(shared_demo_router, prefix="/api")
 app.include_router(domain_models_demo_router, prefix="/api")
+app.include_router(debug_database_router, prefix="/api")
 
 # Static files (HTML, PDFs, images) are now served by the frontend container
 # under /spa/public/static/ - backend no longer serves static content

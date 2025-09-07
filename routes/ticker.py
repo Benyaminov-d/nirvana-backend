@@ -264,37 +264,22 @@ def ticker_feed(
     exclude: str = "",
     five_stars: bool = False,
     country: str | None = None,
+    mode: str = "five_stars",
     # TEMPORARY: Disabled auth for frontend debugging
     # _auth: None = Depends(_require_pub_or_basic),
 ) -> dict:
-    # TEMPORARY: Return hardcoded response while debugging DB issues
-    symbols_data = [
-        {"symbol": "AAPL", "as_of": "2025-09-06", "cvar50": 0.15, "cvar95": 0.25, "cvar99": 0.35},
-        {"symbol": "MSFT", "as_of": "2025-09-06", "cvar50": 0.12, "cvar95": 0.22, "cvar99": 0.32},
-        {"symbol": "GOOGL", "as_of": "2025-09-06", "cvar50": 0.18, "cvar95": 0.28, "cvar99": 0.38},
-        {"symbol": "TSLA", "as_of": "2025-09-06", "cvar50": 0.25, "cvar95": 0.35, "cvar99": 0.45},
-        {"symbol": "NVDA", "as_of": "2025-09-06", "cvar50": 0.20, "cvar95": 0.30, "cvar99": 0.40},
-    ]
-    
-    return {
-        "items": symbols_data[:n] if n > 0 else symbols_data,
-        "nightly_last_run": None,
-        "fallback_used": True,
-        "requested_country": country,
-        "countries_used": ["US"],
-        "instrument_types_used": ["Stock"],
-        "final_data_source": "hardcoded_temp",
-        "debug_info": {
-            "out_length": len(symbols_data[:n] if n > 0 else symbols_data),
-            "requested_country_debug": country,
-            "condition_check": {
-                "not_out": False,
-                "has_requested_country": bool(country),
-                "not_us": country != "US" if country else False
-            },
-            "has_cvar_data": True
-        }
-    }
+    """
+    DEPRECATED: This endpoint is being replaced by ticker_country_specific.py
+    Keeping for backward compatibility but redirecting to new implementation.
+    """
+    # Redirect to new implementation
+    from routes.ticker_country_specific import ticker_feed_country_specific
+    return ticker_feed_country_specific(
+        country=country or "US",
+        mode=mode,
+        limit=n,
+        _auth=None
+    )
 
 @router.get("/ticker/five_stars_batch")
 def five_stars_batch(
