@@ -1,13 +1,13 @@
 from __future__ import annotations
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Response  # type: ignore
+from fastapi import APIRouter, HTTPException, Response, Request  # type: ignore
 from pydantic import BaseModel, EmailStr  # type: ignore
 from passlib.context import CryptContext  # type: ignore
 
 from core.db import get_db_session
 from core.models import User, AuthAttempt
-from utils.auth import mint_jwt_token
+from utils.auth import mint_jwt_token, verify_jwt_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -163,6 +163,39 @@ def logout(resp: Response) -> dict:
     return {"ok": True}
 
 
+# New endpoint to check authentication status
+@router.get("/status")
+def auth_status(request: Request) -> dict:
+    token = request.cookies.get("nir_user")
+    if not token:
+        return {"authenticated": False}
+    
+    jwt_data = verify_jwt_token(token)
+    if not jwt_data or not jwt_data.get("sub"):
+        return {"authenticated": False}
+    
+    try:
+        # Parse user ID from JWT subject
+        user_id_str = jwt_data.get("sub", "").split(":", 1)[1]
+        user_id = int(user_id_str)
+        
+        # Fetch user from database to verify it exists
+        sess = get_db_session()
+        if sess is None:
+            raise HTTPException(503, "database unavailable")
+        
+        try:
+            user = sess.query(User).filter(User.id == user_id).one_or_none()
+            if user is None:
+                return {"authenticated": False}
+                
+            return {"authenticated": True, "email": user.email}
+        finally:
+            sess.close()
+    except Exception:
+        return {"authenticated": False}
+
+
 class ResetRequest(BaseModel):
     email: EmailStr
 
@@ -278,4 +311,3 @@ def verify_email(token: str, resp: Response) -> dict:
             sess.close()
         except Exception:
             pass
-
