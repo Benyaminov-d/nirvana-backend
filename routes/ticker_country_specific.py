@@ -10,6 +10,7 @@ Implements the business logic for country-specific ticker data:
 from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Dict, Any
 import logging
+import random
 
 from repositories.cvar_repository import CvarRepository
 from repositories.query_builders import CvarQueryBuilder
@@ -286,6 +287,9 @@ def ticker_feed_country_specific(
                     logger.warning(
                         f"Failed to process additional symbol {symbol}: {e}"
                     )
+
+        # Randomly shuffle items before returning
+        random.shuffle(items)
 
         return {
             "items": items,
