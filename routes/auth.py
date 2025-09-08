@@ -89,7 +89,19 @@ def signin(payload: SigninRequest, resp: Response) -> AuthResponse:
         raise HTTPException(503, "database unavailable")
     try:
         email = payload.email.lower().strip()
-        # Rate limit: block after 5 fails in last 10 minutes by email or IP
+        
+        # Clean up old auth attempts first - any older than 24h
+        try:
+            from datetime import datetime, timedelta
+            one_day_ago = datetime.utcnow() - timedelta(days=1)
+            sess.query(AuthAttempt).filter(AuthAttempt.timestamp_utc < one_day_ago).delete()
+            sess.commit()
+        except Exception:
+            # Don't fail if cleanup fails
+            pass
+            
+        # Rate limit: block after 15 fails in last 10 minutes by email or IP
+        # Increased from 5 to 15 to reduce lockouts during development
         try:
             from datetime import datetime, timedelta
             ip = ""  # optional: extract from headers if behind proxy
@@ -103,12 +115,13 @@ def signin(payload: SigninRequest, resp: Response) -> AuthResponse:
                 q = q.filter(AuthAttempt.email == email)  # type: ignore
             recent = q.all()
             fails = [a for a in recent if int(getattr(a, "success", 0)) == 0]
-            if len(fails) >= 5:
+            if len(fails) >= 15:  # Increased from 5 to 15
                 raise HTTPException(429, "too many attempts, try later")
         except HTTPException:
             raise
         except Exception:
             pass
+        
         user = (
             sess.query(User)
             .filter(User.email == email)
@@ -163,37 +176,42 @@ def logout(resp: Response) -> dict:
     return {"ok": True}
 
 
-# New endpoint to check authentication status
+# Make status endpoint more robust with better error handling
 @router.get("/status")
 def auth_status(request: Request) -> dict:
-    token = request.cookies.get("nir_user")
-    if not token:
-        return {"authenticated": False}
-    
-    jwt_data = verify_jwt_token(token)
-    if not jwt_data or not jwt_data.get("sub"):
-        return {"authenticated": False}
-    
     try:
+        token = request.cookies.get("nir_user")
+        if not token:
+            return {"authenticated": False, "message": "No authentication token found"}
+        
+        jwt_data = verify_jwt_token(token)
+        if not jwt_data or not jwt_data.get("sub"):
+            return {"authenticated": False, "message": "Invalid authentication token"}
+        
         # Parse user ID from JWT subject
-        user_id_str = jwt_data.get("sub", "").split(":", 1)[1]
-        user_id = int(user_id_str)
+        try:
+            user_id_str = jwt_data.get("sub", "").split(":", 1)[1]
+            user_id = int(user_id_str)
+        except (ValueError, IndexError):
+            return {"authenticated": False, "message": "Invalid token format"}
         
         # Fetch user from database to verify it exists
         sess = get_db_session()
         if sess is None:
-            raise HTTPException(503, "database unavailable")
+            return {"authenticated": False, "message": "Database unavailable"}
         
         try:
             user = sess.query(User).filter(User.id == user_id).one_or_none()
             if user is None:
-                return {"authenticated": False}
+                return {"authenticated": False, "message": "User not found"}
                 
-            return {"authenticated": True, "email": user.email}
+            return {"authenticated": True, "email": user.email, "user_id": user.id}
+        except Exception as e:
+            return {"authenticated": False, "message": f"Error verifying user: {str(e)}"}
         finally:
             sess.close()
-    except Exception:
-        return {"authenticated": False}
+    except Exception as e:
+        return {"authenticated": False, "message": f"Error checking authentication: {str(e)}"}
 
 
 class ResetRequest(BaseModel):
@@ -306,6 +324,26 @@ def verify_email(token: str, resp: Response) -> dict:
                 path="/",
             )
         return {"ok": True}
+    finally:
+        try:
+            sess.close()
+        except Exception:
+            pass
+
+
+# Add an endpoint to clear auth attempts - useful for debugging
+@router.post("/clear-attempts", include_in_schema=False)
+def clear_auth_attempts(email: str = None) -> dict:
+    sess = get_db_session()
+    if sess is None:
+        raise HTTPException(503, "database unavailable")
+    try:
+        q = sess.query(AuthAttempt)
+        if email:
+            q = q.filter(AuthAttempt.email == email.lower().strip())
+        count = q.delete()
+        sess.commit()
+        return {"ok": True, "cleared": count}
     finally:
         try:
             sess.close()
