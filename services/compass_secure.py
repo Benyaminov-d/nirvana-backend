@@ -10,6 +10,15 @@ from typing import Any, Dict, Optional
 
 _LOG = logging.getLogger(__name__)
 
+# Set up detailed logging
+_LOG.setLevel(logging.DEBUG)
+if not _LOG.handlers:
+    _h = logging.StreamHandler()
+    _h.setFormatter(
+        logging.Formatter("%(asctime)s COMPASS_SECURE %(levelname)s: %(message)s")
+    )
+    _LOG.addHandler(_h)
+
 
 class CompassSecureInterface:
     """Secure interface to proprietary Compass Score calculation."""
@@ -26,20 +35,25 @@ class CompassSecureInterface:
 
         try:
             # Import from compiled binary library only
+            _LOG.debug("Initializing Compass Score library (compiled mode)")
             from nirvana_risk_core import compass as _c  # type: ignore
             self._score_func = _c.score
             self._score_breakdown_func = _c.score_with_breakdown
             self._initialized = True
+            _LOG.info("Successfully initialized Compass Score compiled library")
         except ImportError:
             try:
                 # Fallback to binary module
+                _LOG.debug("Compiled module not found, trying fallback import")
                 from importlib import import_module
                 mod = import_module("nirvana_risk_core.compass_core")
                 self._score_func = getattr(mod, "score")
                 breakdown_func = getattr(mod, "score_with_breakdown")
                 self._score_breakdown_func = breakdown_func
                 self._initialized = True
+                _LOG.info("Successfully initialized Compass Score fallback library")
             except Exception as exc:
+                _LOG.error(f"Failed to initialize Compass library: {exc}")
                 msg = f"Compass library not available: {exc}"
                 raise RuntimeError(msg)
 
@@ -70,7 +84,11 @@ class CompassSecureInterface:
 
         try:
             # Call proprietary algorithm (parameters are internal to library)
+            _LOG.debug(
+                f"Computing score with params: mu={mu:.4f} L={L:.4f} anchors=[{anchor_low:.4f},{anchor_high:.4f}] tol={tolerance:.4f}"
+            )
             score = self._score_func(mu, L, anchor_low, anchor_high, tolerance)
+            _LOG.debug(f"Score calculation result: {int(score)}")
             return int(score)
         except Exception as exc:
             _LOG.warning("Score calculation failed: %s", exc)
@@ -94,8 +112,12 @@ class CompassSecureInterface:
 
         try:
             # Call proprietary algorithm with breakdown
+            _LOG.debug(
+                f"Computing score breakdown with params: mu={mu:.4f} L={L:.4f} anchors=[{anchor_low:.4f},{anchor_high:.4f}] tol={tolerance:.4f}"
+            )
             breakdown_args = (mu, L, anchor_low, anchor_high, tolerance)
             result = self._score_breakdown_func(*breakdown_args)
+            _LOG.debug(f"Score breakdown R={result.get('R'):.4f} S={result.get('S'):.4f} score={result.get('score')}")
             return result
         except Exception as exc:
             _LOG.warning("Score breakdown calculation failed: %s", exc)

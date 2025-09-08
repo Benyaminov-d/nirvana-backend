@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field  # type: ignore
 from utils.auth import require_pub_or_basic as _require_pub_or_basic
 from utils.common import resolve_eodhd_endpoint_symbol
 from core.db import get_db_session
-from core.models import PriceSeries, CvarSnapshot
+from core.models import Symbols, CvarSnapshot
 from sqlalchemy.sql import func  # type: ignore
 from sqlalchemy import or_  # type: ignore
 
@@ -42,7 +42,7 @@ if not _LOG.handlers:
         logging.Formatter("%(asctime)s demo %(levelname)s: %(message)s")
     )
     _LOG.addHandler(_h)
-_LOG.setLevel(logging.INFO)
+_LOG.setLevel(logging.DEBUG)  # Set to DEBUG level to capture all logs
 _LOG.propagate = False
 
 
@@ -200,6 +200,8 @@ class AssistantResponse(BaseModel):
 class MarketQuote(BaseModel):
     symbol: str
     name: str
+    currency: Optional[str] = None
+    country: Optional[str] = None
     current_price: float
     change: float
     change_percent: float
@@ -269,18 +271,18 @@ def demo_search(
         return {"items": []}
     try:
         needle = f"%{query.lower()}%"
-        base = sess.query(PriceSeries)
+        base = sess.query(Symbols)
         filt = or_(
-            func.lower(PriceSeries.symbol).like(needle),  # type: ignore
-            func.lower(PriceSeries.name).like(needle),  # type: ignore
+            func.lower(Symbols.symbol).like(needle),  # type: ignore
+            func.lower(Symbols.name).like(needle),  # type: ignore
         )
         
         # Filter by valid=1 products only
-        base = base.filter(PriceSeries.valid == 1)
+        base = base.filter(Symbols.valid == 1)
         
         # Filter by country if specified
         if country:
-            base = base.filter(PriceSeries.country == country)
+            base = base.filter(Symbols.country == country)
         
         recs = base.filter(filt).limit(max(50, limit)).all()
         recs_sorted = sorted(
@@ -339,9 +341,9 @@ def instrument_summary(
         raise HTTPException(501, "Database not configured")
     try:
         ps = (
-            sess.query(PriceSeries)
-            .filter(PriceSeries.symbol == sym)  # type: ignore
-            .order_by((PriceSeries.country == "US").desc())  # type: ignore
+            sess.query(Symbols)
+            .filter(Symbols.symbol == sym)  # type: ignore
+            .order_by((Symbols.country == "US").desc())  # type: ignore
             .first()
         )
         if ps is None:
@@ -535,9 +537,9 @@ def get_market_quote(
 
     try:
         ps = (
-            sess.query(PriceSeries)
-            .filter(PriceSeries.symbol == sym)
-            .order_by((PriceSeries.country == "US").desc())
+            sess.query(Symbols)
+            .filter(Symbols.symbol == sym)
+            .order_by((Symbols.country == "US").desc())
             .first()
         )
 
@@ -584,6 +586,8 @@ def get_market_quote(
         return MarketQuote(
             symbol=sym,
             name=name,
+            currency=ps.currency,       # Добавляем валюту из базы данных
+            country=ps.country,         # Добавляем страну из базы данных
             current_price=current_price,
             change=change,
             change_percent=change_percent,
@@ -761,13 +765,25 @@ def _compute_matches_payload(
 ) -> dict:
     """Compute matches using Arman's algorithm directly."""
     # Configuration now comes from environment variables with sensible defaults
+    _LOG.info(f"Computing recommendations with: loss_tolerance={loss_tolerance_pct}% country={country} seed={seed_symbol or 'None'}")
     service = CompassRecommendationsService()
 
-    return service.get_recommendations(
+    result = service.get_recommendations(
         loss_tolerance_pct=loss_tolerance_pct,
         country=country,
         seed_symbol=seed_symbol,
     )
+    
+    # Log the result summary for debugging
+    metadata = result.get("metadata", {})
+    _LOG.info(
+        f"Recommendation result: algorithm={metadata.get('algorithm')} " +
+        f"survivors={metadata.get('survivors_count', 0)} returned={metadata.get('returned_count', 0)}"
+    )
+    if metadata.get("error"):
+        _LOG.warning(f"Recommendation error: {metadata.get('error')}")
+        
+    return result
 
 
 def _search_candidates_us(query: str, limit: int = 5) -> list[dict]:
@@ -785,25 +801,25 @@ def _search_candidates(query: str, limit: int = 5, country: str = "US") -> list[
     try:
         from sqlalchemy.sql import func as _f  # type: ignore
         needle = f"%{q.lower()}%"
-        base = sess.query(PriceSeries)
+        base = sess.query(Symbols)
         
         # Filter by valid=1 products only
-        base = base.filter(PriceSeries.valid == 1)
+        base = base.filter(Symbols.valid == 1)
         
         # Filter by country if specified
         if country:
-            base = base.filter(PriceSeries.country == country)
+            base = base.filter(Symbols.country == country)
         
         recs = (
             base.filter(
-                _f.lower(PriceSeries.symbol).like(needle)  # type: ignore
-                | _f.lower(PriceSeries.name).like(needle)  # type: ignore
+                _f.lower(Symbols.symbol).like(needle)  # type: ignore
+                | _f.lower(Symbols.name).like(needle)  # type: ignore
             )
             .limit(200)
             .all()
         )
 
-        def _accept(rec: PriceSeries) -> bool:
+        def _accept(rec: Symbols) -> bool:
             sy = (getattr(rec, "symbol", "") or "").lower()
             nm = (getattr(rec, "name", "") or "").lower()
             toks = [t for t in q.lower().split() if t]
@@ -826,7 +842,7 @@ def _search_candidates(query: str, limit: int = 5, country: str = "US") -> list[
 
         recs = [r for r in recs if _accept(r)]
 
-        def _rank(rec: PriceSeries) -> tuple:
+        def _rank(rec: Symbols) -> tuple:
             sy = (getattr(rec, "symbol", "") or "").lower()
             nm = (getattr(rec, "name", "") or "").lower()
             ql = q.lower()
@@ -1073,12 +1089,16 @@ def assistant_router(
         lt = intent_obj.loss_tolerance_pct
         if lt is None or not (lt == lt):
             return handle_ask_tol()
+            
+        _LOG.info(f"Handling MATCHES action with loss tolerance: {lt}% country: {body.country or 'US'}")
         data = _compute_matches_payload(float(lt), country=body.country or "US")
+        _LOG.info(f"Matches payload response: survivors_count={data.get('metadata', {}).get('survivors_count', 0)}")
+        
         try:
             _CTX.setdefault(sid, {})["mode"] = "finance"
             _CTX[sid]["last_tol"] = float(lt)
-        except Exception:
-            pass
+        except Exception as e:
+            _LOG.warning(f"Failed to update session context: {e}")
         return AssistantResponse(
             assistant_message=(
                 ai_text

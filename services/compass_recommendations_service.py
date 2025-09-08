@@ -7,6 +7,7 @@ user loss tolerance.
 """
 
 import logging
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
@@ -14,10 +15,19 @@ from typing import Any, Dict, List, Optional, Tuple
 from sqlalchemy import and_, func  # type: ignore
 
 from core.db import get_db_session
-from core.models import CvarSnapshot, PriceSeries
+from core.models import CvarSnapshot, Symbols
 from services.compass_secure import get_secure_compass
 
 _LOG = logging.getLogger(__name__)
+
+# Set up detailed logging
+_LOG.setLevel(logging.DEBUG)
+if not _LOG.handlers:
+    _h = logging.StreamHandler()
+    _h.setFormatter(
+        logging.Formatter("%(asctime)s COMPASS_RECOMMEND %(levelname)s: %(message)s")
+    )
+    _LOG.addHandler(_h)
 
 
 @dataclass
@@ -39,9 +49,11 @@ class RecommendationResult:
     symbol: str
     name: Optional[str]
     type: Optional[str]
-    compass_score: int
-    nirvana_standard_pass: bool
-    annualized_return: Optional[float]
+    country: Optional[str] = None
+    currency: Optional[str] = None
+    compass_score: int = 0
+    nirvana_standard_pass: bool = False
+    annualized_return: Optional[float] = None
     mu: Optional[float] = None
     L: Optional[float] = None
     R: Optional[float] = None
@@ -77,16 +89,21 @@ class CompassRecommendationsService:
         try:
             # Step 1: Get survivors (products passing customer standard)
             _LOG.info(
-                "Starting recommendations: tolerance=%s%% country=%s",
+                "Starting recommendations: tolerance=%s%% country=%s seed_symbol=%s",
                 loss_tolerance_pct,
                 country,
+                seed_symbol or "None"
             )
 
             # Convert percentage to decimal for internal calculations
             tolerance_decimal = loss_tolerance_pct / 100.0
+            _LOG.debug(f"Converting tolerance {loss_tolerance_pct}%% to decimal: {tolerance_decimal}")
             survivors = self._get_survivors(tolerance_decimal, country)
 
             if not survivors:
+                _LOG.warning(
+                    f"No survivors found for tolerance={loss_tolerance_pct}% country={country}"
+                )
                 return {
                     "recommendations": [],
                     "metadata": {
@@ -99,9 +116,23 @@ class CompassRecommendationsService:
                 }
 
             _LOG.info("Found %d survivors for %s", len(survivors), country)
+            
+            # Log first 5 survivors for debugging
+            sample_survivors = survivors[:5]
+            _LOG.debug(
+                "Sample survivors: %s", 
+                json.dumps([{"symbol": s.symbol, "mu": s.mu, "L": s.L} for s in sample_survivors])
+            )
 
             # Steps 2-3: Get anchors and calculate scores
+            _LOG.info("Getting anchor values for country %s", country)
             anchors = self._winsorize_and_recalibrate(survivors, country)
+            _LOG.info(
+                "Anchor values: mu_low=%.4f mu_high=%.4f median=%.4f", 
+                anchors[0], anchors[1], anchors[2]
+            )
+            
+            _LOG.info("Calculating Compass Scores for %d survivors", len(survivors))
             recommendations = self._calculate_scores(
                 survivors, anchors, tolerance_decimal
             )
@@ -171,8 +202,10 @@ class CompassRecommendationsService:
         self, tolerance: float, country: str
     ) -> List[SurvivorData]:
         """Step 1: Apply customer standard - get surviving products."""
+        _LOG.debug(f"Getting survivors with tolerance={tolerance} country={country}")
         sess = get_db_session()
         if sess is None:
+            _LOG.error("Database session is None - cannot query survivors")
             return []
 
         try:
@@ -188,8 +221,9 @@ class CompassRecommendationsService:
             )
 
             # Query with filters
+            _LOG.debug(f"Building survivor query with alpha={self.config.alpha_label}")
             q = (
-                sess.query(CvarSnapshot, PriceSeries)
+                sess.query(CvarSnapshot, Symbols)
                 .join(
                     latest_per_symbol,
                     and_(
@@ -198,33 +232,90 @@ class CompassRecommendationsService:
                     ),
                 )
                 .outerjoin(
-                    PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol
+                    Symbols, Symbols.symbol == CvarSnapshot.symbol
                 )
                 .filter(CvarSnapshot.alpha_label == self.config.alpha_label)
-                .filter(PriceSeries.country == country)
-                .filter(PriceSeries.valid == 1)  # Only use valid products
+                .filter(Symbols.country == country)
+                .filter(Symbols.valid == 1)  # Only use valid products
             )
+            
+            _LOG.debug("Applied base filters: alpha=%s country=%s valid=1", 
+                      self.config.alpha_label, country)
 
-            # Apply five_stars filter only for US products where it exists
+            # Count total valid products for country before filtering
+            try:
+                total_valid_count = sess.query(Symbols).filter(
+                    Symbols.country == country,
+                    Symbols.valid == 1
+                ).count()
+                _LOG.debug(f"Found {total_valid_count} total valid products for {country} before additional filters")
+            except Exception as e:
+                _LOG.warning(f"Error counting valid products: {e}")
+                
+            # REMOVED five_stars filter - using Harvard Release instead
             if country == "US":
-                q = q.filter(PriceSeries.five_stars == 1)
+                _LOG.debug("Using Harvard Release for US products (no five_stars filter)")
+                # Не применяем фильтр five_stars == 1, используем только Harvard Release
+                # который обеспечивается через valid == 1 и другие фильтры
 
             # Filter by instrument type based on validated universe
             # US: ETF, Mutual Fund, Common Stock (Non PINK Exchange)
             # UK: ETF, Common Stock
             # Canada: ETF
-            type_lc = func.lower(PriceSeries.instrument_type)
+            type_lc = func.lower(Symbols.instrument_type)
             if country.upper() == "US":
                 # US: ETF, Mutual Fund, Common Stock (excluding PINK exchange)
                 allowed_types = [
                     "etf", "mutual fund", "mutual_fund", "fund", "common stock"
                 ]
-                q = q.filter(type_lc.in_(allowed_types)).filter(
-                    func.upper(PriceSeries.exchange) != "PINK"
-                )
+                
+                # Count before instrument type filter
+                try:
+                    before_count = q.count()
+                    _LOG.debug(f"Before US instrument type filter: {before_count} potential products")
+                except Exception as e:
+                    _LOG.warning(f"Error counting before instrument filter: {e}")
+                
+                q = q.filter(type_lc.in_(allowed_types))
+                
+                # Count after instrument type filter
+                try:
+                    after_count = q.count()
+                    _LOG.debug(f"After instrument type filter: {after_count} products (removed {before_count - after_count})")
+                except Exception as e:
+                    _LOG.warning(f"Error counting after instrument filter: {e}")
+                
+                # Exclude PINK exchange
+                before_count = after_count
+                q = q.filter(func.upper(Symbols.exchange) != "PINK")
+                
+                # Count after PINK exchange filter
+                try:
+                    after_count = q.count()
+                    _LOG.debug(f"After excluding PINK exchange: {after_count} products (removed {before_count - after_count})")
+                except Exception as e:
+                    _LOG.warning(f"Error counting after PINK filter: {e}")
+                    
+                _LOG.debug(f"Applied US-specific filters: type in {allowed_types}, exchange != PINK")
             elif country.upper() == "UK":
                 # UK: ETF, Common Stock
+                _LOG.debug("Applying UK-specific instrument type filters: ['etf', 'common stock']")
                 q = q.filter(type_lc.in_(["etf", "common stock"]))
+                
+                # Special debug for UK products
+                _LOG.debug("Checking UK products in database:")
+                try:
+                    uk_products = sess.query(Symbols).filter(Symbols.country == "UK").filter(Symbols.valid == 1).all()
+                    _LOG.debug(f"Found {len(uk_products)} valid UK products in database")
+                    if len(uk_products) > 0:
+                        _LOG.debug(f"Sample UK products: {', '.join([p.symbol for p in uk_products[:5]])}")
+                        
+                        # Check CVaR values for UK products
+                        sample_symbols = [p.symbol for p in uk_products[:5]]
+                        cvar_values = sess.query(CvarSnapshot).filter(CvarSnapshot.symbol.in_(sample_symbols)).all()
+                        _LOG.debug(f"Found {len(cvar_values)} CVaR records for sample UK products")
+                except Exception as e:
+                    _LOG.warning(f"Failed to check UK product availability: {e}")
             elif country.upper() in ["CA", "CANADA"]:
                 # Canada: ETF only
                 q = q.filter(type_lc.in_(["etf"]))
@@ -236,15 +327,83 @@ class CompassRecommendationsService:
                 q = q.filter(type_lc.in_(allowed_types))
 
             # Apply customer standard (loss tolerance filter)
+            # Note: CVaR values in DB are stored as positive numbers representing losses
+            # But tolerance is provided as negative (e.g., -40%), so we need to compare with abs(tolerance)
             worst_expr = func.greatest(
                 CvarSnapshot.cvar_nig,
                 CvarSnapshot.cvar_ghst,
                 CvarSnapshot.cvar_evar,
             )
-            q = q.filter(worst_expr <= tolerance)
+            # Convert negative tolerance to positive for comparison
+            abs_tolerance = abs(tolerance)
+            
+            # Count before risk filter
+            try:
+                before_count = q.count()
+                _LOG.debug(f"Before risk filter: {before_count} potential products")
+            except Exception as e:
+                _LOG.warning(f"Error counting before risk filter: {e}")
+            
+            q = q.filter(worst_expr <= abs_tolerance)
+            
+            # Log this filter application
+            _LOG.debug(
+                "Applied corrected risk filter: max(cvar_nig, cvar_ghst, cvar_evar) <= %f (absolute value of %f)",
+                abs_tolerance, tolerance
+            )
+            
+            # Count after risk filter
+            try:
+                after_count = q.count()
+                _LOG.debug(f"After risk filter: {after_count} products (removed {before_count - after_count})")
+                
+                # If almost all products were filtered out by risk, get a sample of what was excluded
+                if after_count < 10 and before_count > after_count + 10:
+                    # Sample query without risk filter to see what's being excluded
+                    sample_without_risk = q.filter(worst_expr > abs_tolerance).limit(5).all()
+                    if sample_without_risk:
+                        _LOG.debug("Sample products that failed the risk filter:")
+                        for cs, ps in sample_without_risk:
+                            worst_cvar = max(filter(
+                                lambda x: x is not None,
+                                [cs.cvar_nig, cs.cvar_ghst, cs.cvar_evar]
+                            ))
+                            _LOG.debug(f"  - {cs.symbol}: worst_cvar={worst_cvar:.4f}, tolerance={abs_tolerance:.4f}, return={cs.return_annual:.4f}")
+            except Exception as e:
+                _LOG.warning(f"Error in risk filter analysis: {e}")
+            
+            # Debug minimum CVaR values
+            if country.upper() == "UK":
+                try:
+                    # Check minimum CVaR values in the database
+                    min_query = sess.query(
+                        func.min(CvarSnapshot.cvar_nig).label("min_nig"),
+                        func.min(CvarSnapshot.cvar_ghst).label("min_ghst"), 
+                        func.min(CvarSnapshot.cvar_evar).label("min_evar")
+                    ).join(
+                        Symbols, Symbols.symbol == CvarSnapshot.symbol
+                    ).filter(
+                        Symbols.country == "UK",
+                        Symbols.valid == 1,
+                        CvarSnapshot.alpha_label == self.config.alpha_label
+                    )
+                    min_values = min_query.first()
+                    if min_values:
+                        _LOG.debug(
+                            f"UK minimum CVaR values - NIG: {min_values.min_nig}, " +
+                            f"GHST: {min_values.min_ghst}, EVAR: {min_values.min_evar}"
+                        )
+                        _LOG.debug(
+                            f"Current tolerance: {tolerance} (as absolute value: {abs(tolerance)}) - " +
+                            f"Values must be <= {abs(tolerance)} to pass the filter"
+                        )
+                except Exception as e:
+                    _LOG.warning(f"Failed to query minimum CVaR values: {e}")
 
             # Execute query
+            _LOG.debug("Executing survivor query...")
             rows = q.all()
+            _LOG.debug("Query returned %d potential survivors", len(rows))
             survivors = []
 
             for cvar_row, price_row in rows:
@@ -282,6 +441,8 @@ class CompassRecommendationsService:
                         str(e),
                     )
                     continue
+            
+            _LOG.debug("Final survivor count after validation: %d", len(survivors))
 
             return survivors
 
@@ -295,7 +456,9 @@ class CompassRecommendationsService:
         self, survivors: List[SurvivorData], country: str
     ) -> Tuple[float, float, float, float, float]:
         """Steps 2-3: Use configured anchors or fallback to absolute."""
+        _LOG.debug(f"Winsorizing and recalibrating for country={country}")
         if not survivors:
+            _LOG.error("No survivors to winsorize")
             raise ValueError("No survivors to winsorize")
 
         # Try to get properly calibrated anchors from database
@@ -304,12 +467,14 @@ class CompassRecommendationsService:
         # Priority 1: Country-specific calibrated anchors (e.g., GLOBAL:US)
         try:
             country_category = f"GLOBAL:{country.upper()}"
+            _LOG.debug(f"Looking up country-specific anchors: {country_category}")
             anchors = self._get_anchors_from_db(country_category)
             if anchors:
                 msg = "Found country-specific anchors: %s"
                 _LOG.info(msg, country_category)
-        except Exception:
-            pass
+                _LOG.debug("Anchor details: %s", json.dumps(anchors))
+        except Exception as e:
+            _LOG.warning(f"Error getting country-specific anchors: {e}")
 
         # Priority 2: Global calibrated anchors (GLOBAL:ALL)
         if not anchors:
@@ -366,10 +531,12 @@ class CompassRecommendationsService:
 
     def _get_anchors_from_db(self, category: str) -> Optional[Dict[str, Any]]:
         """Get the latest anchors from database for given category."""
+        _LOG.debug(f"Getting anchors from database for category: {category}")
         try:
             from core.models import CompassAnchor
             sess = get_db_session()
             if sess is None:
+                _LOG.error("Database session is None - cannot query anchors")
                 return None
 
             anchor = (
@@ -380,6 +547,10 @@ class CompassRecommendationsService:
             )
 
             if anchor:
+                _LOG.debug(
+                    f"Found anchor: category={anchor.category} version={anchor.version} " +
+                    f"mu_low={anchor.mu_low} mu_high={anchor.mu_high}"
+                )
                 return {
                     'category': anchor.category,
                     'version': anchor.version,
@@ -388,6 +559,7 @@ class CompassRecommendationsService:
                     'median_mu': (float(anchor.median_mu)
                                   if anchor.median_mu else None),
                 }
+            _LOG.debug(f"No anchors found for category: {category}")
             return None
         except Exception as e:
             _LOG.warning("Failed to get anchors from DB: %s", e)
@@ -401,6 +573,10 @@ class CompassRecommendationsService:
     ) -> List[RecommendationResult]:
         """Step 4: Calculate Compass Scores for all survivors."""
         mu_low, mu_high, _median_mu, _p1, _p99 = anchors
+        _LOG.debug(f"Calculating scores with anchors: mu_low={mu_low:.4f} mu_high={mu_high:.4f}")
+        # Convert to absolute value for score calculation
+        abs_tolerance = abs(tolerance)
+        _LOG.debug(f"Using tolerance: {tolerance:.4f} (converted to absolute for score calculation: {abs_tolerance:.4f})")
         results = []
 
         for survivor in survivors:
@@ -409,13 +585,17 @@ class CompassRecommendationsService:
 
             try:
                 # Calculate proprietary score using secure interface
+                _LOG.debug(
+                    f"Computing score for {survivor.symbol}: mu={survivor.mu:.4f} L={survivor.L:.4f}"
+                )
                 compass_score = self.compass.compute_score(
                     survivor.mu,
                     survivor.L,
                     mu_low,
                     mu_high,
-                    tolerance,
+                    abs_tolerance,  # Use absolute value for tolerance
                 )
+                _LOG.debug(f"Computed score for {survivor.symbol}: {compass_score}")
 
                 # Get normalized components from breakdown (for sorting only)
                 breakdown = self.compass.compute_score_with_breakdown(
@@ -423,7 +603,7 @@ class CompassRecommendationsService:
                     survivor.L,
                     mu_low,
                     mu_high,
-                    tolerance,
+                    abs_tolerance,  # Use absolute value for tolerance
                 )
                 breakdown_R = breakdown.get("R", 0.0)
                 breakdown_S = breakdown.get("S", 0.0)
@@ -434,10 +614,26 @@ class CompassRecommendationsService:
 
                 # Only include if score meets minimum threshold
                 if compass_score >= self.config.min_score_threshold:
+                    # Get country and currency from database if available
+                    country = None
+                    currency = None
+                    try:
+                        sess = get_db_session()
+                        if sess:
+                            ps = sess.query(Symbols).filter(Symbols.symbol == survivor.symbol).first()
+                            if ps:
+                                country = ps.country
+                                currency = ps.currency
+                            sess.close()
+                    except Exception as e:
+                        _LOG.warning(f"Failed to get country/currency for {survivor.symbol}: {e}")
+                                        
                     result = RecommendationResult(
                         symbol=survivor.symbol,
                         name=survivor.name,
                         type=survivor.instrument_type,
+                        country=country,
+                        currency=currency,
                         compass_score=int(compass_score),
                         nirvana_standard_pass=True,
                         annualized_return=survivor.mu,
@@ -447,6 +643,15 @@ class CompassRecommendationsService:
                         S=S,
                     )
                     results.append(result)
+                    _LOG.debug(
+                        f"Added {survivor.symbol} to results with score={compass_score} " +
+                        f"R={R:.4f} S={S:.4f}"
+                    )
+                else:
+                    _LOG.debug(
+                        f"Skipping {survivor.symbol}: score {compass_score} below threshold " +
+                        f"{self.config.min_score_threshold}"
+                    )
 
             except Exception as e:
                 _LOG.warning(
@@ -504,6 +709,8 @@ class CompassRecommendationsService:
             "symbol": result.symbol,
             "name": result.name,
             "type": result.type,
+            "country": result.country if hasattr(result, 'country') else None,
+            "currency": result.currency if hasattr(result, 'currency') else None,
             "compass_score": result.compass_score,
             "nirvana_standard_pass": result.nirvana_standard_pass,
             "annualized_return": result.annualized_return,

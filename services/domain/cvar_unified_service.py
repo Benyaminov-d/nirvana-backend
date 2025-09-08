@@ -29,6 +29,15 @@ from services.infrastructure.redis_cache_service import (
 
 logger = logging.getLogger(__name__)
 
+# Set up detailed logging
+logger.setLevel(logging.DEBUG)
+if not logger.handlers:
+    _h = logging.StreamHandler()
+    _h.setFormatter(
+        logging.Formatter("%(asctime)s CVAR_SERVICE %(levelname)s: %(message)s")
+    )
+    logger.addHandler(_h)
+
 
 class CvarUnifiedService:
     """
@@ -89,18 +98,32 @@ class CvarUnifiedService:
         Returns:
             CVaR calculation results with metadata
         """
+        logger.info(f"Getting CVaR data for symbol: {symbol} (force={force_recalculate} prefer_local={prefer_local})")
         
         # Route based on execution mode
+        logger.debug(f"Routing CVaR calculation for {symbol} using mode: {self.mode}")
         if self.mode == "local":
+            logger.debug(f"Using local execution mode for {symbol}")
             result = self._execute_local(symbol, force_recalculate, to_date, prefer_local)
         elif self.mode == "remote":
+            logger.debug(f"Using remote execution mode for {symbol}")
             result = self._execute_remote(symbol, force_recalculate, to_date)
         elif self.mode == "auto":
+            logger.debug(f"Using auto execution mode for {symbol}")
             result = self._execute_auto(symbol, force_recalculate, to_date, prefer_local)
         else:
             logger.warning(f"Unknown mode '{self.mode}', falling back to local")
             result = self._execute_local(symbol, force_recalculate, to_date, prefer_local)
         
+        # Log brief summary of result
+        if result.get("success"):
+            logger.info(f"CVaR calculation successful for {symbol}, mode: {result.get('execution_mode')}")
+        else:
+            logger.warning(
+                f"CVaR calculation failed for {symbol}: {result.get('error')} " +
+                f"(code={result.get('code', 'unknown')})"
+            )
+            
         return self._sanitize_result(result)
     
     def calculate_cvar_from_csv(
@@ -395,28 +418,43 @@ class CvarUnifiedService:
         """Execute CVaR calculation using local computation."""
         # Historical calculations bypass cache
         is_historical = bool(to_date)
+        logger.debug(
+            f"Local execution for {symbol}: historical={is_historical} force={force_recalculate}"
+        )
         
         # Try cache first (non-historical only)
         if not is_historical and not force_recalculate:
+            logger.debug(f"Checking cache for {symbol}")
             cached = self.get_cached(symbol)
             if cached and self._has_valid_values(cached):
+                logger.debug(f"Cache hit for {symbol}, returning cached result")
                 cached["cached"] = True
                 cached["execution_mode"] = "local_cached"
                 return cached
+            logger.debug(f"No valid cache entry for {symbol}")
         
         # Try database if not forced
         if not is_historical and not force_recalculate:
+            logger.debug(f"Checking database for {symbol}")
             db_result = self._load_from_database(symbol)
             if db_result and self._has_valid_values(db_result):
+                logger.debug(f"Database hit for {symbol}, caching and returning result")
                 # Cache database result in Redis for future requests
                 self.set_cached(symbol, db_result)
                 db_result["execution_mode"] = "local_database"
                 return db_result
+            logger.debug(f"No valid database entry for {symbol}")
         
         # Load price data using repository
+        logger.debug(f"Loading price data for {symbol}")
         prices_result = load_prices(symbol, to_date=to_date)
         if not prices_result.get("success"):
+            logger.warning(f"Failed to load price data for {symbol}: {prices_result.get('error')}")
             return prices_result
+        logger.debug(
+            f"Successfully loaded price data for {symbol} with " +
+            f"{len(prices_result.get('returns', []))} return points"
+        )
         
         # Compute CVaR blocks using unified compute function
         try:
@@ -439,12 +477,18 @@ class CvarUnifiedService:
                 **blocks
             }
             
+            logger.debug(
+                f"Local CVaR calculation successful for {symbol} from " +
+                f"{prices_result.get('start_date')} to {prices_result.get('as_of_date')}"
+            )
+            
             # Add anomalies if present
             if "anomalies_report" in prices_result:
                 result["anomalies_report"] = prices_result["anomalies_report"]
             
             # Cache and persist (non-historical only)
             if not is_historical and self._has_valid_values(result):
+                logger.debug(f"Caching and persisting results for {symbol}")
                 self.set_cached(symbol, result)
                 self._persist_result(symbol, result)
             
