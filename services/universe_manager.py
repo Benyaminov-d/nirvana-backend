@@ -8,12 +8,11 @@ and maintaining consistency of anchors and calculations.
 
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set, Tuple, Any
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 
-from sqlalchemy import and_, or_, func
-from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from core.db import get_db_session
 from core.models import Symbols, CompassInputs, CvarSnapshot, CompassAnchor
@@ -106,13 +105,17 @@ class HarvardUniverseManager:
                     return []
                 query = query.filter(Symbols.country == country)
             else:
-                # Filter to enabled countries only
+                # Filter to enabled countries and their normalized names
                 enabled_countries = list(self.config.get_enabled_countries().keys())
-                query = query.filter(Symbols.country.in_(enabled_countries))
+                # Get country code mapping from config
+                country_code_map = self.config.get_country_code_map()
+                # Invert the map to get from code to normalized name
+                normalized_countries = {code: name for name, code in country_code_map.items()}
+                expanded_countries = enabled_countries + [normalized_countries[c] for c in enabled_countries if c in normalized_countries]
+                query = query.filter(Symbols.country.in_(expanded_countries))
             
             # Apply basic filters
             query = query.filter(
-                Symbols.insufficient_history == 0,  # Has sufficient history
                 Symbols.symbol.isnot(None),
                 Symbols.instrument_type.isnot(None),
             )
@@ -391,8 +394,15 @@ class HarvardUniverseManager:
     
     def _is_product_eligible(self, symbols_row) -> bool:
         """Check if a Symbols row is eligible for Harvard universe."""
+        # Normalize country codes to match config (US, UK, CA)
+        country_code = symbols_row.country
+        # Convert normalized country names back to country codes using centralized mapping
+        country_map = self.config.get_country_code_map()
+        if country_code in country_map:
+            country_code = country_map[country_code]
+            
         return self.config.is_product_eligible(
-            country_code=symbols_row.country,
+            country_code=country_code,
             instrument_type=symbols_row.instrument_type,
             five_stars=symbols_row.five_stars,
             # Market cap and volume data would come from additional repository methods

@@ -118,6 +118,15 @@ class HarvardUniverseConfig:
         ]
         # Add global Harvard Universe category
         return country_categories + ["GLOBAL-HARVARD"]
+        
+    @classmethod
+    def get_country_code_map(cls) -> Dict[str, str]:
+        """Get mapping between normalized country names and country codes."""
+        return {
+            "USA": "US",
+            "United Kingdom": "UK", 
+            "Canada": "CA"
+        }
     
     @classmethod
     def is_product_eligible(
@@ -146,7 +155,7 @@ class HarvardUniverseConfig:
         if not config or not config.enabled:
             return False
         
-        # Map instrument type to category
+        # Map instrument type to category - more flexible matching
         category_mapping = {
             "ETF": ProductCategory.ETF,
             "Mutual Fund": ProductCategory.MUTUAL_FUND,
@@ -155,7 +164,17 @@ class HarvardUniverseConfig:
             "Stock": ProductCategory.COMMON_STOCK,
         }
         
+        # First try exact match
         product_category = category_mapping.get(instrument_type)
+        
+        # If no match, try to match substrings for more flexibility
+        if not product_category:
+            # Check if the instrument_type contains any of our known types
+            for known_type, category in category_mapping.items():
+                if known_type.lower() in instrument_type.lower() or instrument_type.lower() in known_type.lower():
+                    product_category = category
+                    break
+        
         if not product_category:
             return False
             
