@@ -4,7 +4,7 @@ from typing import Dict, List
 import csv
 from core.db import get_db_session
 from core.persistence import upsert_price_series_bulk
-from core.models import Symbols, PriceSeries  # PriceSeries is backward compatibility alias
+from core.models import Symbols, Symbols  # Symbols is backward compatibility alias
 from datetime import datetime as _dt
 from pathlib import Path as _Path
 import re

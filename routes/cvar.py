@@ -12,7 +12,7 @@ from utils.common import parse_csv_list as _parse_csv_list
 from utils.common import db_base_symbol as _db_base_symbol
 from utils.common import _eodhd_suffix_for as _suffix_for
 from core.db import get_db_session
-from core.models import PriceSeries
+from core.models import Symbols
 from core.db_models.snapshot import CvarSnapshot
 from core.persistence import upsert_snapshot_row
 from utils import service_bus as _sb
@@ -372,9 +372,9 @@ def cvar_recalc_symbol_remote(
                     try:
                         _base = _db_base_symbol(symbol)
                         rec = (
-                            sess.query(PriceSeries)
+                            sess.query(Symbols)
                             .filter(
-                                PriceSeries.symbol == _base  # type: ignore
+                                Symbols.symbol == _base  # type: ignore
                             )
                             .one_or_none()
                         )
@@ -543,8 +543,8 @@ def cvar_recalc_symbol_remote(
             sess = get_db_session()
             if sess is not None:
                 try:
-                    rec = sess.query(PriceSeries).filter(  # type: ignore
-                        PriceSeries.symbol == _base
+                    rec = sess.query(Symbols).filter(  # type: ignore
+                        Symbols.symbol == _base
                     ).one_or_none()
                     if rec is not None and getattr(rec, "insufficient_history", None) != 0:
                         rec.insufficient_history = 0
@@ -750,9 +750,9 @@ def cvar_curve_all(
                     try:
                         _base = _db_base_symbol(symbol)
                         rec = (
-                            sess.query(PriceSeries)
+                            sess.query(Symbols)
                             .filter(
-                                PriceSeries.symbol == _base  # type: ignore
+                                Symbols.symbol == _base  # type: ignore
                             )
                             .one_or_none()
                         )

@@ -12,7 +12,7 @@ import logging
 from sqlalchemy.orm import Session, Query  # type: ignore
 from sqlalchemy.sql import func, and_, or_  # type: ignore
 
-from core.models import PriceSeries, CvarSnapshot, CompassAnchor
+from core.models import Symbols, CvarSnapshot, CompassAnchor
 from core.db import get_db_session
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class CvarQueryBuilder:
     """
-    Optimized query builder for CVaR and PriceSeries data.
+    Optimized query builder for CVaR and Symbols data.
     
     Eliminates N+1 queries by providing batch operations and optimized JOINs.
     """
@@ -53,35 +53,35 @@ class CvarQueryBuilder:
         
         This replaces multiple scattered queries with a single optimized query.
         """
-        query = self.session.query(PriceSeries.symbol).distinct()
+        query = self.session.query(Symbols.symbol).distinct()
         
         # Five stars filter
         if five_stars:
-            query = query.filter(PriceSeries.five_stars == 1)
+            query = query.filter(Symbols.five_stars == 1)
         
         # History sufficiency filter
         if ready_only:
             if include_unknown:
                 query = query.filter(
                     or_(
-                        PriceSeries.insufficient_history == 0,
-                        PriceSeries.insufficient_history.is_(None)
+                        Symbols.insufficient_history == 0,
+                        Symbols.insufficient_history.is_(None)
                     )
                 )
             else:
-                query = query.filter(PriceSeries.insufficient_history == 0)
+                query = query.filter(Symbols.insufficient_history == 0)
         
         # Country filter
         if country:
-            query = query.filter(PriceSeries.country == country)
+            query = query.filter(Symbols.country == country)
         
         # Instrument types filter
         if instrument_types:
-            query = query.filter(PriceSeries.instrument_type.in_(instrument_types))
+            query = query.filter(Symbols.instrument_type.in_(instrument_types))
         
         # Exchange exclusion filter
         if exclude_exchanges:
-            query = query.filter(~PriceSeries.exchange.in_(exclude_exchanges))
+            query = query.filter(~Symbols.exchange.in_(exclude_exchanges))
         
         # Apply limit
         if limit and limit > 0:
@@ -188,10 +188,10 @@ class CvarQueryBuilder:
                 CvarSnapshot.cvar_nig,
                 CvarSnapshot.cvar_ghst,
                 CvarSnapshot.cvar_evar,
-                PriceSeries.name,
-                PriceSeries.country,
-                PriceSeries.instrument_type,
-                PriceSeries.five_stars
+                Symbols.name,
+                Symbols.country,
+                Symbols.instrument_type,
+                Symbols.five_stars
             )
             .join(
                 latest_subquery,
@@ -200,22 +200,22 @@ class CvarQueryBuilder:
                     CvarSnapshot.as_of_date == latest_subquery.c.max_date
                 )
             )
-            .join(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
+            .join(Symbols, Symbols.symbol == CvarSnapshot.symbol)
             .filter(
                 CvarSnapshot.alpha_label == alpha_label,
-                PriceSeries.insufficient_history == 0
+                Symbols.insufficient_history == 0
             )
         )
         
         # Apply filters
         if country:
-            query = query.filter(PriceSeries.country == country)
+            query = query.filter(Symbols.country == country)
         
         if five_stars:
-            query = query.filter(PriceSeries.five_stars == 1)
+            query = query.filter(Symbols.five_stars == 1)
         
         if instrument_types:
-            query = query.filter(PriceSeries.instrument_type.in_(instrument_types))
+            query = query.filter(Symbols.instrument_type.in_(instrument_types))
         
         # Order and limit
         query = query.order_by(CvarSnapshot.as_of_date.desc()).limit(limit)
@@ -259,8 +259,8 @@ class CvarQueryBuilder:
         
         try:
             query = (
-                self.session.query(PriceSeries)
-                .filter(PriceSeries.symbol.in_(symbols))
+                self.session.query(Symbols)
+                .filter(Symbols.symbol.in_(symbols))
             )
             
             results = query.all()
@@ -299,27 +299,27 @@ class CvarQueryBuilder:
         
         query = (
             self.session.query(
-                PriceSeries.symbol,
-                PriceSeries.name,
-                PriceSeries.country,
-                PriceSeries.instrument_type,
-                PriceSeries.exchange
+                Symbols.symbol,
+                Symbols.name,
+                Symbols.country,
+                Symbols.instrument_type,
+                Symbols.exchange
             )
             .filter(
                 or_(
-                    PriceSeries.symbol.ilike(search_pattern),
-                    PriceSeries.name.ilike(search_pattern)
+                    Symbols.symbol.ilike(search_pattern),
+                    Symbols.name.ilike(search_pattern)
                 )
             )
         )
         
         if ready_only:
-            query = query.filter(PriceSeries.insufficient_history == 0)
+            query = query.filter(Symbols.insufficient_history == 0)
         
         if country:
-            query = query.filter(PriceSeries.country == country)
+            query = query.filter(Symbols.country == country)
         
-        query = query.order_by(PriceSeries.symbol).limit(limit)
+        query = query.order_by(Symbols.symbol).limit(limit)
         
         try:
             results = query.all()
@@ -349,11 +349,11 @@ class CvarQueryBuilder:
             # Find symbols with multiple countries
             duplicate_query = (
                 self.session.query(
-                    PriceSeries.symbol,
-                    func.count(func.distinct(PriceSeries.country)).label('country_count')
+                    Symbols.symbol,
+                    func.count(func.distinct(Symbols.country)).label('country_count')
                 )
-                .group_by(PriceSeries.symbol)
-                .having(func.count(func.distinct(PriceSeries.country)) > 1)
+                .group_by(Symbols.symbol)
+                .having(func.count(func.distinct(Symbols.country)) > 1)
                 .all()
             )
             
@@ -361,8 +361,8 @@ class CvarQueryBuilder:
             for symbol, count in duplicate_query:
                 # Get all countries for this symbol in a single query
                 countries = (
-                    self.session.query(func.distinct(PriceSeries.country))
-                    .filter(PriceSeries.symbol == symbol)
+                    self.session.query(func.distinct(Symbols.country))
+                    .filter(Symbols.symbol == symbol)
                     .all()
                 )
                 country_list = [c[0] for c in countries if c[0]]
@@ -501,9 +501,9 @@ class CompassQueryBuilder:
             query = (
                 self.session.query(
                     CvarSnapshot,
-                    PriceSeries.name,
-                    PriceSeries.country,
-                    PriceSeries.instrument_type
+                    Symbols.name,
+                    Symbols.country,
+                    Symbols.instrument_type
                 )
                 .join(
                     latest_subquery,
@@ -512,19 +512,19 @@ class CompassQueryBuilder:
                         CvarSnapshot.as_of_date == latest_subquery.c.max_date
                     )
                 )
-                .outerjoin(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
+                .outerjoin(Symbols, Symbols.symbol == CvarSnapshot.symbol)
                 .filter(
                     CvarSnapshot.alpha_label == alpha,
-                    PriceSeries.insufficient_history == 0
+                    Symbols.insufficient_history == 0
                 )
             )
             
             # Apply filters
             if country:
-                query = query.filter(PriceSeries.country == country)
+                query = query.filter(Symbols.country == country)
             
             if instrument_types:
-                query = query.filter(PriceSeries.instrument_type.in_(instrument_types))
+                query = query.filter(Symbols.instrument_type.in_(instrument_types))
             
             query = query.limit(limit)
             

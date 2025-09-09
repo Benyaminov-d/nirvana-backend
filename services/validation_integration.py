@@ -2,7 +2,7 @@
 Validation Integration Service.
 
 Integrates the detailed ValidationFlags from nirvana_risk library
-with the backend database storage and price_series updates.
+with the backend database storage and symbols updates.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from typing import Any, Dict, Optional
 from sqlalchemy.orm import Session  # type: ignore
 
 from core.db import get_db_session
-from core.models import PriceSeries, ValidationFlags as DBValidationFlags
+from core.models import Symbols, ValidationFlags as DBValidationFlags
 
 # Import the library ValidationFlags and aggregator
 try:
@@ -136,12 +136,12 @@ class ValidationIntegrationService:
             # Save to database
             db_record = self._save_validation_flags(session, db_flags)
             
-            # Update both flags in price_series
+            # Update both flags in symbols
             has_history_issues = (
                 lib_flags.insufficient_total_history or 
                 lib_flags.insufficient_data_after_cleanup
             )
-            self._sync_price_series_flags(session, symbol, country, has_history_issues, lib_flags.valid)
+            self._sync_symbols_flags(session, symbol, country, has_history_issues, lib_flags.valid)
             
             session.commit()
             return db_record
@@ -225,7 +225,7 @@ class ValidationIntegrationService:
             session.add(db_flags)
             return db_flags
     
-    def _sync_price_series_flags(
+    def _sync_symbols_flags(
         self, 
         session: Session, 
         symbol: str, 
@@ -233,22 +233,22 @@ class ValidationIntegrationService:
         has_history_issues: bool,
         is_valid: bool
     ) -> None:
-        """Sync price_series flags with ValidationFlags."""
-        price_series = session.query(PriceSeries).filter(
-            PriceSeries.symbol == symbol,
-            PriceSeries.country == country
+        """Sync symbols flags with ValidationFlags."""
+        symbols = session.query(Symbols).filter(
+            Symbols.symbol == symbol,
+            Symbols.country == country
         ).one_or_none()
         
-        if price_series:
+        if symbols:
             # insufficient_history: only for data history problems
-            price_series.insufficient_history = 1 if has_history_issues else 0
+            symbols.insufficient_history = 1 if has_history_issues else 0
             
             # valid: general validity flag (any rejection reasons)
-            price_series.valid = 1 if is_valid else 0
+            symbols.valid = 1 if is_valid else 0
             
             _logger.debug(
-                f"Updated {symbol}: insufficient_history={price_series.insufficient_history}, "
-                f"valid={price_series.valid}"
+                f"Updated {symbol}: insufficient_history={symbols.insufficient_history}, "
+                f"valid={symbols.valid}"
             )
 
 
@@ -276,7 +276,7 @@ def process_ticker_validation(
 
 def sync_insufficient_history_flags(limit: int = 1000) -> int:
     """
-    Sync existing insufficient_history flags from price_series to validation_flags.
+    Sync existing insufficient_history flags from symbols to validation_flags.
     
     This is useful for migrating existing data.
     
@@ -291,12 +291,12 @@ def sync_insufficient_history_flags(limit: int = 1000) -> int:
     count = 0
     
     try:
-        # Get price_series records that have insufficient_history set but no validation_flags
-        price_series_records = session.query(PriceSeries).filter(
-            PriceSeries.insufficient_history.isnot(None)
+        # Get symbols records that have insufficient_history set but no validation_flags
+        symbols_records = session.query(Symbols).filter(
+            Symbols.insufficient_history.isnot(None)
         ).limit(limit).all()
         
-        for ps in price_series_records:
+        for ps in symbols_records:
             # Check if validation flags already exist
             existing = session.query(DBValidationFlags).filter(
                 DBValidationFlags.symbol == ps.symbol,

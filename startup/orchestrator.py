@@ -23,12 +23,10 @@ def run_startup_tasks() -> Dict[str, Union[str, Dict[str, Any], int]]:
     Returns:
         Summary of all bootstrap results
     """
-    print("STARTING APPLICATION BOOTSTRAP...")  # Force visibility
     logger.info("Starting application bootstrap...")
     all_results = {}
     
     # Phase 1: Infrastructure Bootstrap
-    print("Phase 1: Infrastructure bootstrap (DB, RAG)")  # Force visibility
     logger.info("Phase 1: Infrastructure bootstrap (DB, RAG)")
     try:
         infrastructure_results = run_infrastructure_bootstrap()
@@ -42,7 +40,6 @@ def run_startup_tasks() -> Dict[str, Union[str, Dict[str, Any], int]]:
             return all_results
         
         infra_count = len([k for k, v in infrastructure_results.items() if v not in ['error', 'skipped']])
-        print(f"  Infrastructure phase completed: {infra_count} tasks successful")  # Force visibility
         logger.info("Infrastructure bootstrap completed: %s", infrastructure_results)
     except Exception:
         logger.exception("Infrastructure bootstrap failed")
@@ -51,13 +48,11 @@ def run_startup_tasks() -> Dict[str, Union[str, Dict[str, Any], int]]:
         return all_results
     
     # Phase 2: Data Bootstrap
-    print("Phase 2: Data bootstrap (exchanges, symbols, market data)")  # Force visibility  
     logger.info("Phase 2: Data bootstrap (exchanges, symbols, market data)")
     try:
         data_results = run_data_bootstrap(db_ready)
         all_results['data'] = data_results
         data_count = len([k for k, v in data_results.items() if v not in ['error', 'skipped']])
-        print(f"  Data phase completed: {data_count} tasks successful")  # Force visibility  
         logger.info("Data bootstrap completed: %d tasks", len(data_results))
     except Exception:
         logger.exception("Data bootstrap failed")
@@ -65,13 +60,11 @@ def run_startup_tasks() -> Dict[str, Union[str, Dict[str, Any], int]]:
         # Continue with business bootstrap even if data bootstrap fails
     
     # Phase 3: Business Logic Bootstrap
-    print("Phase 3: Business logic bootstrap (CVaR, caching, Compass)")  # Force visibility
     logger.info("Phase 3: Business logic bootstrap (CVaR, caching, Compass)")
     try:
         business_results = run_business_bootstrap(db_ready)
         all_results['business'] = business_results
         business_count = len([k for k, v in business_results.items() if v not in ['error', 'skipped']])
-        print(f"  Business phase completed: {business_count} tasks successful")  # Force visibility
         logger.info("Business bootstrap completed: %d tasks", len(business_results))
     except Exception:
         logger.exception("Business bootstrap failed")
@@ -103,7 +96,6 @@ def run_startup_tasks() -> Dict[str, Union[str, Dict[str, Any], int]]:
                         successful_tasks += 1
     
     completion_msg = f"Application bootstrap completed: {successful_tasks} successful, {skipped_tasks} skipped, {failed_tasks} failed out of {total_tasks} total tasks"
-    print(f"COMPLETED: {completion_msg}")  # Force visibility
     logger.info("COMPLETED: %s", completion_msg)
     
     return all_results

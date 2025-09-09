@@ -14,7 +14,7 @@ from core.db import get_db_session, Base, engine
 from core.models import (
     CvarSnapshot,
     AnnualCvarViolation,
-    PriceSeries,
+    Symbols,
     InsufficientDataEvent,
     PriceLast,
     AnomalyReport,
@@ -39,73 +39,73 @@ def init_db_if_configured() -> bool:
                     "DO $$",
                     "BEGIN",
                     "    IF EXISTS (SELECT 1 FROM information_schema.columns",
-                    "                WHERE table_name='price_series'",
+                    "                WHERE table_name='symbols'",
                     "                  AND column_name='symbol'",
                     "                  AND character_maximum_length < 128)",
                     "                  THEN",
-                    "        ALTER TABLE price_series ALTER COLUMN",
+                    "        ALTER TABLE symbols ALTER COLUMN",
                     "        symbol TYPE VARCHAR(128);",
                     "    END IF;",
                     "    IF EXISTS (SELECT 1 FROM information_schema.columns",
-                    "                WHERE table_name='price_series'",
+                    "                WHERE table_name='symbols'",
                     "                  AND column_name='name'",
                     "                  AND data_type <> 'text') THEN",
-                    "        ALTER TABLE price_series ALTER COLUMN",
+                    "        ALTER TABLE symbols ALTER COLUMN",
                     "        name TYPE TEXT;",
                     "    END IF;",
-                    "    -- add five_stars flag to price_series if missing",
+                    "    -- add five_stars flag to symbols if missing",
                     "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='five_stars') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN five_stars INTEGER NOT NULL DEFAULT 0;",
+                    "        WHERE table_name='symbols' AND column_name='five_stars') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN five_stars INTEGER NOT NULL DEFAULT 0;",
                     "    END IF;",
-                    "    -- add new EODHD metadata columns to price_series if missing",
+                    "    -- add new EODHD metadata columns to symbols if missing",
                     "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='country') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN country VARCHAR(64) NULL;",
-                    "    END IF;",
-                    "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='exchange') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN exchange VARCHAR(64) NULL;",
+                    "        WHERE table_name='symbols' AND column_name='country') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN country VARCHAR(64) NULL;",
                     "    END IF;",
                     "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='currency') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN currency VARCHAR(32) NULL;",
+                    "        WHERE table_name='symbols' AND column_name='exchange') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN exchange VARCHAR(64) NULL;",
                     "    END IF;",
                     "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='type') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN type VARCHAR(64) NULL;",
+                    "        WHERE table_name='symbols' AND column_name='currency') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN currency VARCHAR(32) NULL;",
                     "    END IF;",
                     "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='isin') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN isin VARCHAR(64) NULL;",
-                    "    END IF;",
-                    "    -- add alternative_names JSONB to price_series if missing",
-                    "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='alternative_names') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN alternative_names JSONB NULL;",
-                    "    END IF;",
-                    "    -- add dropped_points diagnostics columns to price_series if missing",
-                    "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='dropped_points_recent') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN dropped_points_recent INTEGER NULL;",
+                    "        WHERE table_name='symbols' AND column_name='type') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN type VARCHAR(64) NULL;",
                     "    END IF;",
                     "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='has_dropped_points_recent') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN has_dropped_points_recent INTEGER NOT NULL DEFAULT 0;",
+                    "        WHERE table_name='symbols' AND column_name='isin') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN isin VARCHAR(64) NULL;",
+                    "    END IF;",
+                    "    -- add alternative_names JSONB to symbols if missing",
+                    "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
+                    "        WHERE table_name='symbols' AND column_name='alternative_names') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN alternative_names JSONB NULL;",
+                    "    END IF;",
+                    "    -- add dropped_points diagnostics columns to symbols if missing",
+                    "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
+                    "        WHERE table_name='symbols' AND column_name='dropped_points_recent') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN dropped_points_recent INTEGER NULL;",
+                    "    END IF;",
+                    "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
+                    "        WHERE table_name='symbols' AND column_name='has_dropped_points_recent') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN has_dropped_points_recent INTEGER NOT NULL DEFAULT 0;",
                     "    END IF;",
                     "    -- ensure insufficient_history exists and is nullable (tri-state: NULL|0|1)",
                     "    IF NOT EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='insufficient_history') THEN",
-                    "        ALTER TABLE price_series ADD COLUMN insufficient_history INTEGER NULL DEFAULT NULL;",
+                    "        WHERE table_name='symbols' AND column_name='insufficient_history') THEN",
+                    "        ALTER TABLE symbols ADD COLUMN insufficient_history INTEGER NULL DEFAULT NULL;",
                     "    END IF;",
                     "    -- relax NOT NULL / DEFAULT if previously created as NOT NULL DEFAULT 1",
                     "    IF EXISTS (SELECT 1 FROM information_schema.columns",
-                    "        WHERE table_name='price_series' AND column_name='insufficient_history' AND is_nullable='NO') THEN",
-                    "        ALTER TABLE price_series ALTER COLUMN insufficient_history DROP NOT NULL;",
+                    "        WHERE table_name='symbols' AND column_name='insufficient_history' AND is_nullable='NO') THEN",
+                    "        ALTER TABLE symbols ALTER COLUMN insufficient_history DROP NOT NULL;",
                     "    END IF;",
                     "    -- drop default if any to let NULL be the default",
                     "    BEGIN",
-                    "        ALTER TABLE price_series ALTER COLUMN insufficient_history DROP DEFAULT;",
+                    "        ALTER TABLE symbols ALTER COLUMN insufficient_history DROP DEFAULT;",
                     "    EXCEPTION WHEN OTHERS THEN",
                     "        -- ignore if no default",
                     "        NULL;",
@@ -113,18 +113,18 @@ def init_db_if_configured() -> bool:
                     "    -- migrate unique constraint from (symbol) to (symbol,country)",
                     "    -- drop old unique if present",
                     "    IF EXISTS (SELECT 1 FROM information_schema.table_constraints",
-                    "              WHERE table_name='price_series' AND constraint_name='uq_price_series_symbol') THEN",
+                    "              WHERE table_name='symbols' AND constraint_name='uq_symbols_symbol') THEN",
                     "        BEGIN",
-                    "            ALTER TABLE price_series DROP CONSTRAINT uq_price_series_symbol;",
+                    "            ALTER TABLE symbols DROP CONSTRAINT uq_symbols_symbol;",
                     "        EXCEPTION WHEN OTHERS THEN",
                     "            NULL;",
                     "        END;",
                     "    END IF;",
                     "    -- add new unique if missing",
                     "    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints",
-                    "        WHERE table_name='price_series' AND constraint_name='uq_price_series_symbol_country') THEN",
+                    "        WHERE table_name='symbols' AND constraint_name='uq_symbols_symbol_country') THEN",
                     "        BEGIN",
-                    "            ALTER TABLE price_series ADD CONSTRAINT uq_price_series_symbol_country UNIQUE(symbol, country);",
+                    "            ALTER TABLE symbols ADD CONSTRAINT uq_symbols_symbol_country UNIQUE(symbol, country);",
                     "        EXCEPTION WHEN OTHERS THEN",
                     "            NULL;",
                     "        END;",
@@ -162,7 +162,7 @@ def init_db_if_configured() -> bool:
                     "        ALTER TABLE cvar_snapshot ADD COLUMN instrument_id INTEGER NULL;",
                     "        BEGIN",
                     "            ALTER TABLE cvar_snapshot ADD CONSTRAINT fk_cvar_snapshot_instrument",
-                    "                FOREIGN KEY (instrument_id) REFERENCES price_series(id);",
+                    "                FOREIGN KEY (instrument_id) REFERENCES symbols(id);",
                     "        EXCEPTION WHEN OTHERS THEN",
                     "            NULL;",
                     "        END;",
@@ -174,7 +174,7 @@ def init_db_if_configured() -> bool:
                     "        -- backfill instrument_id by symbol match, preferring US when available",
                     "        BEGIN",
                     "            UPDATE cvar_snapshot cs SET instrument_id = (",
-                    "                SELECT ps.id FROM price_series ps ",
+                    "                SELECT ps.id FROM symbols ps ",
                     "                WHERE ps.symbol = cs.symbol ",
                     "                ORDER BY CASE WHEN upper(COALESCE(ps.country,'')) IN ('US','USA','UNITED STATES') THEN 0 ELSE 1 END, ps.id ",
                     "                LIMIT 1",
@@ -308,7 +308,7 @@ def init_db_if_configured() -> bool:
                 if engine.dialect.name in ("postgresql", "postgres"):
                     conn.execute(text(
                         """
-                        UPDATE price_series ps
+                        UPDATE symbols ps
                         SET insufficient_history = NULL
                         WHERE ps.insufficient_history = 1
                           AND NOT EXISTS (
@@ -323,7 +323,7 @@ def init_db_if_configured() -> bool:
                     # insufficient_data events (or insufficient_history code) and no snapshots
                     conn.execute(text(
                         """
-                        UPDATE price_series ps
+                        UPDATE symbols ps
                         SET insufficient_history = 1
                         WHERE (ps.insufficient_history IS NULL OR ps.insufficient_history <> 0)
                           AND EXISTS (
@@ -339,14 +339,14 @@ def init_db_if_configured() -> bool:
                 # best effort only
                 pass
                 
-            # Add 'valid' column to price_series for general validity flag
+            # Add 'valid' column to symbols for general validity flag
             try:
                 ddl_add_valid = """
                 DO $$
                 BEGIN
                     IF NOT EXISTS (SELECT 1 FROM information_schema.columns
-                                   WHERE table_name='price_series' AND column_name='valid') THEN
-                        ALTER TABLE price_series ADD COLUMN valid INTEGER NULL;
+                                   WHERE table_name='symbols' AND column_name='valid') THEN
+                        ALTER TABLE symbols ADD COLUMN valid INTEGER NULL;
                     END IF;
                 END$$;
                 """
@@ -364,7 +364,7 @@ def init_db_if_configured() -> bool:
                     country VARCHAR(64) NULL,
                     as_of_date DATE NOT NULL,
                     
-                    -- Overall validity (syncs with price_series.insufficient_history)
+                    -- Overall validity (syncs with symbols.insufficient_history)
                     valid INTEGER NOT NULL DEFAULT 1,
                     
                     -- History criteria
@@ -453,51 +453,51 @@ def init_db_if_configured() -> bool:
                         conn.exec_driver_sql(
                             "ALTER TABLE cvar_snapshot ADD COLUMN instrument_id INTEGER"
                         )
-                    # Add new price_series columns if missing
+                    # Add new symbols columns if missing
                     rows_ps = conn.exec_driver_sql(
-                        "PRAGMA table_info('price_series')"
+                        "PRAGMA table_info('symbols')"
                     ).fetchall()
                     pcols = {str(r[1]).lower() for r in rows_ps}
                     if "alternative_names" not in pcols:
                         # SQLite stores JSON as TEXT; clients should write JSON strings
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN alternative_names TEXT"
+                            "ALTER TABLE symbols ADD COLUMN alternative_names TEXT"
                         )
                     if "country" not in pcols:
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN country TEXT"
+                            "ALTER TABLE symbols ADD COLUMN country TEXT"
                         )
                     if "exchange" not in pcols:
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN exchange TEXT"
+                            "ALTER TABLE symbols ADD COLUMN exchange TEXT"
                         )
                     if "currency" not in pcols:
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN currency TEXT"
+                            "ALTER TABLE symbols ADD COLUMN currency TEXT"
                         )
                     if "type" not in pcols:
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN type TEXT"
+                            "ALTER TABLE symbols ADD COLUMN type TEXT"
                         )
                     if "isin" not in pcols:
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN isin TEXT"
+                            "ALTER TABLE symbols ADD COLUMN isin TEXT"
                         )
                     if "insufficient_history" not in pcols:
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN insufficient_history INTEGER"
+                            "ALTER TABLE symbols ADD COLUMN insufficient_history INTEGER"
                         )
                     if "five_stars" not in pcols:
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN five_stars INTEGER NOT NULL DEFAULT 0"
+                            "ALTER TABLE symbols ADD COLUMN five_stars INTEGER NOT NULL DEFAULT 0"
                         )
                     if "dropped_points_recent" not in pcols:
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN dropped_points_recent INTEGER"
+                            "ALTER TABLE symbols ADD COLUMN dropped_points_recent INTEGER"
                         )
                     if "has_dropped_points_recent" not in pcols:
                         conn.exec_driver_sql(
-                            "ALTER TABLE price_series ADD COLUMN has_dropped_points_recent INTEGER NOT NULL DEFAULT 0"
+                            "ALTER TABLE symbols ADD COLUMN has_dropped_points_recent INTEGER NOT NULL DEFAULT 0"
                         )
                     # Ensure user auth columns exist
                     rows_user = conn.exec_driver_sql(
@@ -718,7 +718,7 @@ def upsert_price_last(
                 pass
 
 
-def upsert_price_series_item(
+def upsert_symbols_item(
     *,
     code: str,
     name: str | None = None,
@@ -728,10 +728,10 @@ def upsert_price_series_item(
     instrument_type: str | None = None,
     isin: str | None = None,
 ) -> None:
-    """Insert or update a single PriceSeries row by (symbol, country).
+    """Insert or update a single Symbols row by (symbol, country).
 
-    - code maps to PriceSeries.symbol
-    - name maps to PriceSeries.name
+    - code maps to Symbols.symbol
+    - name maps to Symbols.name
     - uniqueness is enforced on (symbol, country)
     """
     session = get_db_session()
@@ -792,14 +792,14 @@ def upsert_price_series_item(
 
         inc_country = _infer_country(country, exchange, code)
         rec = (
-            session.query(PriceSeries)
-            .filter(PriceSeries.symbol == sym, PriceSeries.country == inc_country)
+            session.query(Symbols)
+            .filter(Symbols.symbol == sym, Symbols.country == inc_country)
             .one_or_none()
         )
         from datetime import datetime as _dt
         now = _dt.utcnow()
         if rec is None:
-            rec = PriceSeries(
+            rec = Symbols(
                 symbol=sym,
                 name=(name or sym),
                 country=inc_country,
@@ -911,7 +911,7 @@ def insert_insufficient_data_event(entry: dict) -> None:
             pass
 
 
-def upsert_price_series_bulk(items: list[dict]) -> int:
+def upsert_symbols_bulk(items: list[dict]) -> int:
     """Upsert many symbol rows. Returns count processed.
 
     Expected keys per item: Code, Name, Country, Exchange, Currency, Type, Isin
@@ -973,8 +973,8 @@ def upsert_price_series_bulk(items: list[dict]) -> int:
                     it.get("Country"), it.get("Exchange"), code
                 )
                 rec = (
-                    session.query(PriceSeries)
-                    .filter(PriceSeries.symbol == code, PriceSeries.country == inc_country)
+                    session.query(Symbols)
+                    .filter(Symbols.symbol == code, Symbols.country == inc_country)
                     .one_or_none()
                 )
                 mark_star = False
@@ -991,7 +991,7 @@ def upsert_price_series_bulk(items: list[dict]) -> int:
                     mark_star = False
 
                 if rec is None:
-                    rec = PriceSeries(
+                    rec = Symbols(
                         symbol=code,
                         name=name or code,
                         country=inc_country,
@@ -1107,8 +1107,8 @@ def save_cvar_result(symbol: str, payload: Dict[str, Any]) -> None:
         instrument_id_val: int | None = None
         try:
             row_ids = (
-                session.query(PriceSeries.id, PriceSeries.country)
-                .filter(PriceSeries.symbol == symbol)
+                session.query(Symbols.id, Symbols.country)
+                .filter(Symbols.symbol == symbol)
                 .all()
             )
             if row_ids:
@@ -1291,8 +1291,8 @@ def upsert_snapshot_row(
         if inst_id is None:
             try:
                 rows = (
-                    session.query(PriceSeries.id, PriceSeries.country)
-                    .filter(PriceSeries.symbol == symbol)
+                    session.query(Symbols.id, Symbols.country)
+                    .filter(Symbols.symbol == symbol)
                     .all()
                 )
                 if rows:

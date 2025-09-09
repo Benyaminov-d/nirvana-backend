@@ -225,7 +225,7 @@ def orchestrated_five_stars_analysis(
         # Add analytical methodology info
         analysis_result["methodology"] = {
             "data_integration": [
-                "Five-star flags from PriceSeries",
+                "Five-star flags from Symbols",
                 "Latest CVaR snapshots by alpha level",
                 "Statistical distribution analysis"
             ],

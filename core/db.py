@@ -41,3 +41,23 @@ def get_db_session():
     if SessionLocal is None:
         return None
     return SessionLocal()
+
+
+def init_db_engine():
+    """Initialize database engine.
+
+    This function is called during startup to ensure the database engine is
+    properly initialized. It re-initializes the global engine and SessionLocal.
+    """
+    global engine, SessionLocal
+
+    engine = _make_engine()
+    if engine is None:
+        raise ValueError(
+            "Failed to initialize database engine. "
+            "Check DATABASE_URL environment variable."
+        )
+
+    SessionLocal = sessionmaker(bind=engine)
+    return engine
+

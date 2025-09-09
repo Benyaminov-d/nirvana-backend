@@ -7,7 +7,7 @@ from core.persistence import (
     bootstrap_annual_violations_from_csv,
 )
 from core.db import get_db_session
-from core.models import PriceSeries  # type: ignore
+from core.models import Symbols  # type: ignore
 from utils.common import (  # type: ignore
     canonical_instrument_type as _canon_type,
 )
@@ -45,7 +45,7 @@ def normalize_instrument_types() -> int:
     if sess is None:
         return 0
     try:
-        rows = sess.query(PriceSeries).all()  # type: ignore
+        rows = sess.query(Symbols).all()  # type: ignore
         updated = 0
         for r in rows:
             try:
@@ -67,7 +67,7 @@ def normalize_instrument_types() -> int:
 
 
 def normalize_countries() -> int:
-    """Normalize `PriceSeries.country` values to canonical labels.
+    """Normalize `Symbols.country` values to canonical labels.
 
     Maps variants like 'us', 'USA', 'United States' → 'US';
     'ca', 'CAN', 'Canada' → 'Canada'. Returns number of rows updated.
@@ -76,7 +76,7 @@ def normalize_countries() -> int:
     if sess is None:
         return 0
     try:
-        rows = sess.query(PriceSeries).all()  # type: ignore
+        rows = sess.query(Symbols).all()  # type: ignore
         updated = 0
 
         def _canon_country(v: object | None) -> str | None:

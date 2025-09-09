@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, or_
 
 from repositories.base_repository import BaseRepository
-from core.models import PriceSeries, ValidationFlags
+from core.models import Symbols, ValidationFlags
 from services.infrastructure.redis_cache_service import (
     get_cache_service, 
     CacheKeyType, 
@@ -19,19 +19,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class PriceSeriesRepository(BaseRepository[PriceSeries]):
-    """Repository for PriceSeries operations."""
+class PriceSeriesRepository(BaseRepository[Symbols]):
+    """Repository for Symbols operations."""
     
     def __init__(self):
-        super().__init__(PriceSeries)
+        super().__init__(Symbols)
         self.cache_service = get_cache_service()
     
-    def get_by_symbol(self, symbol: str) -> Optional[PriceSeries]:
-        """Get PriceSeries by symbol."""
-        def query_func(session: Session) -> Optional[PriceSeries]:
+    def get_by_symbol(self, symbol: str) -> Optional[Symbols]:
+        """Get Symbols by symbol."""
+        def query_func(session: Session) -> Optional[Symbols]:
             return (
-                session.query(PriceSeries)
-                .filter(PriceSeries.symbol == symbol)
+                session.query(Symbols)
+                .filter(Symbols.symbol == symbol)
                 .first()
             )
         
@@ -49,35 +49,35 @@ class PriceSeriesRepository(BaseRepository[PriceSeries]):
     ) -> List[str]:
         """Get symbols filtered by various criteria."""
         def query_func(session: Session) -> List[str]:
-            query = session.query(PriceSeries.symbol).filter(PriceSeries.valid == 1)
+            query = session.query(Symbols.symbol).filter(Symbols.valid == 1)
             
             # Five stars filter
             if five_stars:
-                query = query.filter(PriceSeries.five_stars == 1)
+                query = query.filter(Symbols.five_stars == 1)
             
             # Country filter
             if country:
-                query = query.filter(PriceSeries.country == country)
+                query = query.filter(Symbols.country == country)
             
             # Instrument types filter
             if instrument_types:
-                query = query.filter(PriceSeries.instrument_type.in_(instrument_types))
+                query = query.filter(Symbols.instrument_type.in_(instrument_types))
             
             # Exclude exchanges filter
             if exclude_exchanges:
-                query = query.filter(~PriceSeries.exchange.in_(exclude_exchanges))
+                query = query.filter(~Symbols.exchange.in_(exclude_exchanges))
             
             # Readiness filter
             if ready_only:
                 if include_unknown:
                     query = query.filter(
                         or_(
-                            PriceSeries.insufficient_history == 0,
-                            PriceSeries.insufficient_history.is_(None)
+                            Symbols.insufficient_history == 0,
+                            Symbols.insufficient_history.is_(None)
                         )
                     )
                 else:
-                    query = query.filter(PriceSeries.insufficient_history == 0)
+                    query = query.filter(Symbols.insufficient_history == 0)
             
             # Apply limit
             if limit and limit > 0:
@@ -99,11 +99,11 @@ class PriceSeriesRepository(BaseRepository[PriceSeries]):
                 chunk = symbols[i:i + chunk_size]
                 chunk_results = (
                     session.query(
-                        PriceSeries.symbol,
-                        PriceSeries.country,
-                        PriceSeries.instrument_type
+                        Symbols.symbol,
+                        Symbols.country,
+                        Symbols.instrument_type
                     )
-                    .filter(PriceSeries.symbol.in_(chunk))
+                    .filter(Symbols.symbol.in_(chunk))
                     .all()
                 )
                 results.extend(chunk_results)
@@ -116,8 +116,8 @@ class PriceSeriesRepository(BaseRepository[PriceSeries]):
         """Get exchange and country for a symbol."""
         def query_func(session: Session) -> Tuple[Optional[str], Optional[str]]:
             result = (
-                session.query(PriceSeries.exchange, PriceSeries.country)
-                .filter(PriceSeries.symbol == symbol)
+                session.query(Symbols.exchange, Symbols.country)
+                .filter(Symbols.symbol == symbol)
                 .first()
             )
             return result if result else (None, None)
@@ -128,8 +128,8 @@ class PriceSeriesRepository(BaseRepository[PriceSeries]):
         """Get all records for potentially ambiguous symbols."""
         def query_func(session: Session) -> List[Tuple[str, Optional[str]]]:
             return (
-                session.query(PriceSeries.exchange, PriceSeries.country)
-                .filter(PriceSeries.symbol == symbol)
+                session.query(Symbols.exchange, Symbols.country)
+                .filter(Symbols.symbol == symbol)
                 .all()
             )
         
@@ -139,8 +139,8 @@ class PriceSeriesRepository(BaseRepository[PriceSeries]):
         """Update insufficient_history flag for a symbol."""
         def query_func(session: Session) -> bool:
             record = (
-                session.query(PriceSeries)
-                .filter(PriceSeries.symbol == symbol)
+                session.query(Symbols)
+                .filter(Symbols.symbol == symbol)
                 .first()
             )
             
@@ -179,15 +179,15 @@ class PriceSeriesRepository(BaseRepository[PriceSeries]):
         # Execute database query
         def query_func(session: Session) -> List[Tuple[str, Optional[str]]]:
             query = (
-                session.query(PriceSeries.symbol, PriceSeries.instrument_type)
-                .filter(PriceSeries.five_stars == 1)
+                session.query(Symbols.symbol, Symbols.instrument_type)
+                .filter(Symbols.five_stars == 1)
             )
             
             if country:
-                query = query.filter(PriceSeries.country == country)
+                query = query.filter(Symbols.country == country)
             
             if instrument_types:
-                query = query.filter(PriceSeries.instrument_type.in_(instrument_types))
+                query = query.filter(Symbols.instrument_type.in_(instrument_types))
             
             return query.all()
         
@@ -215,11 +215,11 @@ class PriceSeriesRepository(BaseRepository[PriceSeries]):
             # Get info for provided symbols
             results = (
                 session.query(
-                    PriceSeries.symbol,
-                    PriceSeries.country,
-                    PriceSeries.instrument_type
+                    Symbols.symbol,
+                    Symbols.country,
+                    Symbols.instrument_type
                 )
-                .filter(PriceSeries.symbol.in_(symbols))
+                .filter(Symbols.symbol.in_(symbols))
                 .all()
             )
             
@@ -242,11 +242,11 @@ class PriceSeriesRepository(BaseRepository[PriceSeries]):
         return self.execute_query(query_func) or {"countries": {}, "instrument_types": {}, "total": 0}
     
     def check_symbol_exists(self, symbol: str) -> bool:
-        """Check if symbol exists in PriceSeries."""
+        """Check if symbol exists in Symbols."""
         def query_func(session: Session) -> bool:
             return (
-                session.query(PriceSeries)
-                .filter(PriceSeries.symbol == symbol)
+                session.query(Symbols)
+                .filter(Symbols.symbol == symbol)
                 .count() > 0
             )
         
@@ -256,8 +256,8 @@ class PriceSeriesRepository(BaseRepository[PriceSeries]):
         """Get friendly name for a symbol."""
         def query_func(session: Session) -> Optional[str]:
             result = (
-                session.query(PriceSeries.name)
-                .filter(PriceSeries.symbol == symbol)
+                session.query(Symbols.name)
+                .filter(Symbols.symbol == symbol)
                 .first()
             )
             return result[0] if result and result[0] else None

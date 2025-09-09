@@ -10,7 +10,7 @@ from utils.auth import (
 )
 from services.domain.cvar_unified_service import CvarUnifiedService
 from core.db import get_db_session
-from core.models import CvarSnapshot, PriceSeries
+from core.models import CvarSnapshot, Symbols
 from functools import partial as _partial
 import threading
 import concurrent.futures
@@ -305,7 +305,7 @@ def five_stars_batch(
             .subquery()
         )
         q = (
-            sess.query(CvarSnapshot, PriceSeries)
+            sess.query(CvarSnapshot, Symbols)
             .join(
                 latest_per_symbol,
                 and_(
@@ -313,18 +313,18 @@ def five_stars_batch(
                     CvarSnapshot.as_of_date == latest_per_symbol.c.mx,
                 ),
             )
-            .outerjoin(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
+            .outerjoin(Symbols, Symbols.symbol == CvarSnapshot.symbol)
             .filter(CvarSnapshot.alpha_label == alpha)
-            .filter(PriceSeries.five_stars == 1)  # type: ignore
+            .filter(Symbols.five_stars == 1)  # type: ignore
         )
         if country:
             q = q.filter(
-                PriceSeries.country == country  # type: ignore
+                Symbols.country == country  # type: ignore
             )
         else:
             # Default to US
             q = q.filter(
-                PriceSeries.country.in_(
+                Symbols.country.in_(
                     ["US", "USA", "United States"]
                 )  # type: ignore
             )

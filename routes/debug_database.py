@@ -7,7 +7,7 @@ from typing import Dict, Any
 import logging
 
 from core.db import get_db_session
-from core.models import PriceSeries, CvarSnapshot
+from core.models import Symbols, CvarSnapshot
 from utils.auth import require_pub_or_basic as _require_auth
 
 router = APIRouter()
@@ -24,18 +24,18 @@ def database_status(_auth: None = Depends(_require_auth)) -> Dict[str, Any]:
     
     try:
         # Count symbols
-        total_symbols = session.query(PriceSeries).count()
+        total_symbols = session.query(Symbols).count()
         
         # Count by country
         country_counts = {}
         country_results = (
             session.query(
-                PriceSeries.country,
-                session.query(PriceSeries.id).filter(
-                    PriceSeries.country == PriceSeries.country
+                Symbols.country,
+                session.query(Symbols.id).filter(
+                    Symbols.country == Symbols.country
                 ).count()
             )
-            .group_by(PriceSeries.country)
+            .group_by(Symbols.country)
             .all()
         )
         for country, count in country_results:
@@ -43,8 +43,8 @@ def database_status(_auth: None = Depends(_require_auth)) -> Dict[str, Any]:
         
         # Count five_stars
         five_stars_count = (
-            session.query(PriceSeries)
-            .filter(PriceSeries.five_stars == 1)
+            session.query(Symbols)
+            .filter(Symbols.five_stars == 1)
             .count()
         )
         
@@ -52,7 +52,7 @@ def database_status(_auth: None = Depends(_require_auth)) -> Dict[str, Any]:
         cvar_count = session.query(CvarSnapshot).count()
         
         # Sample symbols
-        sample_symbols = session.query(PriceSeries).limit(10).all()
+        sample_symbols = session.query(Symbols).limit(10).all()
         sample_data = [
             {
                 "symbol": s.symbol,

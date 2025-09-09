@@ -197,27 +197,38 @@ class RedisConfig:
     max_connections: int = 10
     
     # Task queue settings  
-    queue_name: str = "eodhd_queue"
-    worker_timeout: int = 600  # 10 minutes
+    queue_prefix: str = "nirvana:"
+    queue_name: str = "nirvana:default"
     job_timeout: int = 300  # 5 minutes
-    
-    # Rate limiting
-    rate_limit_requests: int = 100  # Max requests per minute to EODHD
-    rate_limit_window: int = 60  # Rate limit window in seconds
+    rate_limit_requests: int = 100
+    rate_limit_window: int = 60  # 1 minute
     
     @classmethod
     def from_env(cls) -> 'RedisConfig':
+        url = os.getenv("REDIS_URL", "")
+        if not url:
+            # Build URL from components if not provided directly
+            host = os.getenv("REDIS_HOST", "localhost")
+            port = _get_int("REDIS_PORT", 6379)
+            db = _get_int("REDIS_DB", 0)
+            password = os.getenv("REDIS_PASSWORD", "")
+            
+            if password:
+                url = f"redis://:{password}@{host}:{port}/{db}"
+            else:
+                url = f"redis://{host}:{port}/{db}"
+        
         return cls(
-            url=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+            url=url,
             host=os.getenv("REDIS_HOST", "localhost"),
             port=_get_int("REDIS_PORT", 6379),
             db=_get_int("REDIS_DB", 0),
             password=os.getenv("REDIS_PASSWORD", ""),
-            cache_ttl=_get_int("REDIS_CACHE_TTL", 3600),
-            eodhd_cache_ttl=_get_int("REDIS_EODHD_CACHE_TTL", 86400),
+            cache_ttl=_get_int("CACHE_TTL", 3600),
+            eodhd_cache_ttl=_get_int("EODHD_CACHE_TTL", 86400),
             max_connections=_get_int("REDIS_MAX_CONNECTIONS", 10),
-            queue_name=os.getenv("REDIS_QUEUE_NAME", "eodhd_queue"),
-            worker_timeout=_get_int("REDIS_WORKER_TIMEOUT", 600),
+            queue_prefix=os.getenv("REDIS_QUEUE_PREFIX", "nirvana:"),
+            queue_name=os.getenv("REDIS_QUEUE_NAME", "nirvana:default"),
             job_timeout=_get_int("REDIS_JOB_TIMEOUT", 300),
             rate_limit_requests=_get_int("REDIS_RATE_LIMIT_REQUESTS", 100),
             rate_limit_window=_get_int("REDIS_RATE_LIMIT_WINDOW", 60),
@@ -226,73 +237,68 @@ class RedisConfig:
 
 @dataclass
 class ExternalServiceConfig:
-    """External service configuration."""
+    """Configuration for external services."""
     # EODHD API
     eodhd_api_key: str = ""
-    eodhd_base_url: str = "https://eodhd.com"
-    eodhd_timeout: int = 60
-    eodhd_connect_timeout: int = 30
-    eodhd_retries: int = 3
+    eodhd_base_url: str = "https://eodhistoricaldata.com/api"
+    eodhd_timeout: int = 30
+    eodhd_connect_timeout: int = 10
+    eodhd_max_retries: int = 3
     
-    # OpenAI Assistant
-    openai_api_key: str = ""
-    openai_assistant_id: str = ""
-    openai_model: str = "gpt-4o-mini"
-    openai_run_timeout: int = 30
-    assistant_system_prompt: str = ""
-    
-    # Email configuration
-    smtp_server: str = "smtp.gmail.com"
-    smtp_port: int = 587
-    
-    # Service Bus
-    sb_connection_string: str = ""
-    sb_queue_name: str = ""
+    # Circuit breaker settings
+    circuit_breaker_failure_threshold: int = 5
+    circuit_breaker_recovery_timeout: int = 300  # 5 minutes
     
     @classmethod
     def from_env(cls) -> 'ExternalServiceConfig':
         return cls(
             eodhd_api_key=os.getenv("EODHD_API_KEY", ""),
-            eodhd_base_url=os.getenv("EODHD_BASE_URL", "https://eodhd.com"),
-            eodhd_timeout=_get_int("EODHD_TIMEOUT", 60),
-            eodhd_connect_timeout=_get_int("EODHD_CONNECT_TIMEOUT", 30),
-            eodhd_retries=_get_int("EODHD_RETRIES", 3),
-            openai_api_key=os.getenv("OPENAI_API_KEY", ""),
-            openai_assistant_id=os.getenv("OPENAI_ASSISTANT_ID", ""),
-            openai_model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-            openai_run_timeout=_get_int("OPENAI_RUN_TIMEOUT_SEC", 30),
-            assistant_system_prompt=os.getenv("ASSISTANT_SYSTEM_PROMPT", ""),
-            smtp_server=os.getenv("SMTP_SERVER", "smtp.gmail.com"),
-            smtp_port=_get_int("SMTP_PORT", 587),
-            sb_connection_string=os.getenv("AZURE_SERVICE_BUS_CONNECTION_STRING", ""),
-            sb_queue_name=os.getenv("AZURE_SERVICE_BUS_QUEUE_NAME", ""),
+            eodhd_base_url=os.getenv(
+                "EODHD_BASE_URL", "https://eodhistoricaldata.com/api"
+            ),
+            eodhd_timeout=_get_int("EODHD_TIMEOUT", 30),
+            eodhd_connect_timeout=_get_int("EODHD_CONNECT_TIMEOUT", 10),
+            eodhd_max_retries=_get_int("EODHD_MAX_RETRIES", 3),
+            circuit_breaker_failure_threshold=_get_int(
+                "CIRCUIT_BREAKER_FAILURE_THRESHOLD", 5
+            ),
+            circuit_breaker_recovery_timeout=_get_int(
+                "CIRCUIT_BREAKER_RECOVERY_TIMEOUT", 300
+            ),
         )
 
 
 @dataclass
 class WorkerConfig:
-    """Worker and concurrency configuration."""
-    # Experiment workers
-    reprocess_workers: int = 8
-    validate_workers: int = 8
-    validate_years: int = 25
-    warm_workers: int = 4
-    
-    # Batch processing
-    batch_size: int = 100
-    max_concurrent_requests: int = 50
-    request_timeout: int = 30
+    """Configuration for background workers."""
+    enabled: bool = True
+    concurrency: int = 1
+    max_tasks_per_child: int = 100
     
     @classmethod
     def from_env(cls) -> 'WorkerConfig':
         return cls(
-            reprocess_workers=_get_int("EXP_REPROCESS_WORKERS", 8),
-            validate_workers=_get_int("EXP_VALIDATE_WORKERS", 8),
-            validate_years=_get_int("EXP_VALIDATE_YEARS", 25),
-            warm_workers=_get_int("NVAR_WARM_WORKERS", 4),
-            batch_size=_get_int("BATCH_SIZE", 100),
-            max_concurrent_requests=_get_int("MAX_CONCURRENT_REQUESTS", 50),
-            request_timeout=_get_int("REQUEST_TIMEOUT", 30),
+            enabled=_get_bool("WORKERS_ENABLED", True),
+            concurrency=_get_int("WORKER_CONCURRENCY", 1),
+            max_tasks_per_child=_get_int("WORKER_MAX_TASKS_PER_CHILD", 100),
+        )
+
+
+@dataclass
+class RAGConfig:
+    """Configuration for RAG (Retrieval-Augmented Generation) system."""
+    enabled: bool = True
+    embeddings_path: str = ""
+    chunk_size: int = 512
+    chunk_overlap: int = 50
+    
+    @classmethod
+    def from_env(cls) -> 'RAGConfig':
+        return cls(
+            enabled=_get_bool("RAG_ENABLED", True),
+            embeddings_path=os.getenv("RAG_EMBEDDINGS_PATH", ""),
+            chunk_size=_get_int("RAG_CHUNK_SIZE", 512),
+            chunk_overlap=_get_int("RAG_CHUNK_OVERLAP", 50),
         )
 
 
@@ -320,6 +326,7 @@ class BaseConfig:
         self.auth = AuthConfig.from_env()
         self.external_services = ExternalServiceConfig.from_env()
         self.workers = WorkerConfig.from_env()
+        self.rag = RAGConfig.from_env()
         
         # Initialize environment-specific settings
         self._setup_environment()

@@ -7,7 +7,7 @@ from utils.auth import (
     require_pub_or_basic as _require_pub_or_basic,
 )
 from core.db import get_db_session
-from core.models import CvarSnapshot, PriceSeries
+from core.models import CvarSnapshot, Symbols
 
 
 router = APIRouter()
@@ -81,7 +81,7 @@ def purge_symbol(
     symbol: str = Query(..., description="Symbol to purge from DB"),
     _auth: None = Depends(_require_pub_or_basic),
 ) -> dict:
-    """Delete all rows for a symbol from PriceSeries and CvarSnapshot.
+    """Delete all rows for a symbol from Symbols and CvarSnapshot.
 
     Auth: requires public or basic auth (same as other protected endpoints).
     """
@@ -102,8 +102,8 @@ def purge_symbol(
             raise
         try:
             deleted_ps = (
-                sess.query(PriceSeries)
-                .filter(PriceSeries.symbol == symbol)
+                sess.query(Symbols)
+                .filter(Symbols.symbol == symbol)
                 .delete(synchronize_session=False)
             )
         except Exception:

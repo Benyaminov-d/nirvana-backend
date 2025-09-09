@@ -144,7 +144,7 @@ def export_cvars_csv(
     ),
 ) -> Response:
     from core.db import get_db_session
-    from core.models import CvarSnapshot, PriceSeries
+    from core.models import CvarSnapshot, Symbols
     import io, csv as _csv
 
     sess = get_db_session()
@@ -181,20 +181,20 @@ def export_cvars_csv(
             token = prod_raw.upper()
             if token == "5STARS":
                 q = q.join(
-                    PriceSeries,
-                    PriceSeries.symbol == CvarSnapshot.symbol,
-                ).filter(PriceSeries.five_stars == 1)
+                    Symbols,
+                    Symbols.symbol == CvarSnapshot.symbol,
+                ).filter(Symbols.five_stars == 1)
             elif token == "5STARSUS":
                 q = (
-                    q.join(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
-                    .filter(PriceSeries.five_stars == 1)
-                    .filter(PriceSeries.country.in_(["US", "USA", "United States"]))  # type: ignore
+                    q.join(Symbols, Symbols.symbol == CvarSnapshot.symbol)
+                    .filter(Symbols.five_stars == 1)
+                    .filter(Symbols.country.in_(["US", "USA", "United States"]))  # type: ignore
                 )
             elif token == "5STARSCA":
                 q = (
-                    q.join(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
-                    .filter(PriceSeries.five_stars == 1)
-                    .filter(PriceSeries.country == "Canada")  # type: ignore
+                    q.join(Symbols, Symbols.symbol == CvarSnapshot.symbol)
+                    .filter(Symbols.five_stars == 1)
+                    .filter(Symbols.country == "Canada")  # type: ignore
                 )
             else:
                 sym_set = {

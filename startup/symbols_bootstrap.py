@@ -4,7 +4,7 @@ from datetime import datetime as _dt
 from pathlib import Path as _P
 
 from core.db import get_db_session
-from core.models import Symbols, PriceSeries
+from core.models import Symbols, Symbols
 
 
 def bootstrap_symbols_if_empty(db_ready: bool) -> None:

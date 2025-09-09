@@ -47,7 +47,7 @@ def products_search(
     country: str | None = Query(
         None,
         description=(
-            "Restrict to instruments where PriceSeries.country matches"
+            "Restrict to instruments where Symbols.country matches"
         ),
     ),
     limit: int = Query(
@@ -122,9 +122,9 @@ def products_search(
 def products_countries(
     _auth: None = Depends(_require_pub_or_basic),
 ) -> JSONResponse:
-    """Return distinct non-null countries from PriceSeries (sorted)."""
+    """Return distinct non-null countries from Symbols (sorted)."""
     from core.db import get_db_session
-    from core.models import PriceSeries
+    from core.models import Symbols
     from sqlalchemy import func  # type: ignore
 
     sess = get_db_session()
@@ -132,8 +132,8 @@ def products_countries(
         raise HTTPException(501, "Database not configured")
     try:
         rows = (
-            sess.query(func.distinct(PriceSeries.country))
-            .filter(PriceSeries.country.isnot(None))  # type: ignore
+            sess.query(func.distinct(Symbols.country))
+            .filter(Symbols.country.isnot(None))  # type: ignore
             .all()
         )
         vals = sorted([c for (c,) in rows if c])
@@ -151,7 +151,7 @@ def products_instrument_types(
 ) -> JSONResponse:
     """Return distinct non-null instrument types per country (sorted)."""
     from core.db import get_db_session
-    from core.models import PriceSeries
+    from core.models import Symbols
 
     sess = get_db_session()
     if sess is None:
@@ -159,11 +159,11 @@ def products_instrument_types(
     try:
         rows = (
             sess.query(
-                PriceSeries.country, PriceSeries.instrument_type
+                Symbols.country, Symbols.instrument_type
             )
             .filter(
-                PriceSeries.country.isnot(None),  # type: ignore
-                PriceSeries.instrument_type.isnot(None),  # type: ignore
+                Symbols.country.isnot(None),  # type: ignore
+                Symbols.instrument_type.isnot(None),  # type: ignore
             )
             .distinct()
             .all()

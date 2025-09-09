@@ -227,7 +227,7 @@ def resolve_eodhd_endpoint_symbol(symbol: str) -> str:
     - Support SYMBOL:SUFFIX syntax (e.g., "WFSPX:US")
     - If already qualified (contains a dot), return as-is
     - Special symbols (BTC, ETH, SP500TR) map to provider-specific codes
-    - Otherwise, try DB PriceSeries.exchange/country to choose suffix
+    - Otherwise, try DB Symbols.exchange/country to choose suffix
     - Fallback to env EODHD_DEFAULT_SUFFIX or .US
     """
     try:
@@ -275,7 +275,7 @@ def resolve_eodhd_endpoint_symbol(symbol: str) -> str:
         # WARNING: If multiple countries have same symbol, we need context to choose the right one!
         # For now, we'll prefer US, then Canada, then others as fallback for ambiguous symbols
         from core.db import get_db_session
-        from core.models import PriceSeries  # type: ignore
+        from core.models import Symbols  # type: ignore
         sess = get_db_session()
         exchange = None
         country = None
@@ -284,9 +284,9 @@ def resolve_eodhd_endpoint_symbol(symbol: str) -> str:
                 # Check if there are multiple records for this symbol
                 all_rows = (
                     sess.query(
-                        PriceSeries.exchange, PriceSeries.country
+                        Symbols.exchange, Symbols.country
                     )  # type: ignore
-                    .filter(PriceSeries.symbol == sym)  # type: ignore
+                    .filter(Symbols.symbol == sym)  # type: ignore
                     .all()
                 )
                 

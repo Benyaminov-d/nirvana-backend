@@ -16,7 +16,7 @@ from sqlalchemy import and_, or_, func
 from sqlalchemy.orm import Session
 
 from core.db import get_db_session
-from core.models import PriceSeries, CompassInputs, CvarSnapshot, CompassAnchor
+from core.models import Symbols, CompassInputs, CvarSnapshot, CompassAnchor
 from core.universe_config import (
     HarvardUniverseConfig, UniverseFeatureFlags, ProductCategory
 )
@@ -76,7 +76,11 @@ class HarvardUniverseManager:
         if not self.session:
             raise RuntimeError("Failed to create database session")
             
-        self.compass_service = CompassParametersService()
+        try:
+            self.compass_service = CompassParametersService()
+        except Exception as e:
+            _LOG.warning(f"Failed to initialize CompassParametersService: {e}")
+            self.compass_service = None
         self._cvar_calculator = None
         
         _LOG.info("HarvardUniverseManager initialized for countries: %s", 
@@ -93,24 +97,24 @@ class HarvardUniverseManager:
             List of universe products with their status
         """
         try:
-            query = self.session.query(PriceSeries)
+            query = self.session.query(Symbols)
             
             # Apply country filter if specified
             if country:
                 country_config = self.config.get_country_config(country)
                 if not country_config or not country_config.enabled:
                     return []
-                query = query.filter(PriceSeries.country == country)
+                query = query.filter(Symbols.country == country)
             else:
                 # Filter to enabled countries only
                 enabled_countries = list(self.config.get_enabled_countries().keys())
-                query = query.filter(PriceSeries.country.in_(enabled_countries))
+                query = query.filter(Symbols.country.in_(enabled_countries))
             
             # Apply basic filters
             query = query.filter(
-                PriceSeries.insufficient_history == 0,  # Has sufficient history
-                PriceSeries.symbol.isnot(None),
-                PriceSeries.instrument_type.isnot(None),
+                Symbols.insufficient_history == 0,  # Has sufficient history
+                Symbols.symbol.isnot(None),
+                Symbols.instrument_type.isnot(None),
             )
             
             products = []
@@ -385,12 +389,12 @@ class HarvardUniverseManager:
             "healthy": len(issues) == 0,
         }
     
-    def _is_product_eligible(self, price_series_row) -> bool:
-        """Check if a PriceSeries row is eligible for Harvard universe."""
+    def _is_product_eligible(self, symbols_row) -> bool:
+        """Check if a Symbols row is eligible for Harvard universe."""
         return self.config.is_product_eligible(
-            country_code=price_series_row.country,
-            instrument_type=price_series_row.instrument_type,
-            five_stars=price_series_row.five_stars,
+            country_code=symbols_row.country,
+            instrument_type=symbols_row.instrument_type,
+            five_stars=symbols_row.five_stars,
             # Market cap and volume data would come from additional repository methods
         )
     
@@ -429,13 +433,13 @@ class HarvardUniverseManager:
         except Exception:
             return False
     
-    def _get_product_category_info(self, price_series_row) -> Tuple[str, List[str]]:
+    def _get_product_category_info(self, symbols_row) -> Tuple[str, List[str]]:
         """Get category and special lists for a product."""
         # Simple mapping for now
-        category = price_series_row.instrument_type or "Unknown"
+        category = symbols_row.instrument_type or "Unknown"
         special_lists = []
         
-        if price_series_row.five_stars == 1:
+        if symbols_row.five_stars == 1:
             special_lists.append("FIVE_STARS")
         
         # Special index membership detection would use dedicated repository queries
@@ -459,13 +463,17 @@ class HarvardUniverseManager:
             _LOG.info("Computing μ for %s", product.symbol)
             
             # Get instrument ID from database
-            price_series = (
-                self.session.query(PriceSeries)
-                .filter(PriceSeries.symbol == product.symbol)
+            symbols = (
+                self.session.query(Symbols)
+                .filter(Symbols.symbol == product.symbol)
                 .first()
             )
             
-            if not price_series:
+            if not symbols:
+                return False
+                
+            if self.compass_service is None:
+                _LOG.error("Cannot compute μ for %s: CompassParametersService not initialized", product.symbol)
                 return False
             
             # Use compass parameters service to compute and store μ
@@ -474,7 +482,7 @@ class HarvardUniverseManager:
             
             # For now, just log what would be done
             _LOG.debug("Would compute and store μ for %s (id: %d)", 
-                      product.symbol, price_series.id)
+                      product.symbol, symbols.id)
             
             return True  # Simulate success
             
@@ -496,13 +504,13 @@ class HarvardUniverseManager:
             _LOG.info("Computing CVaR for %s", product.symbol)
             
             # Get instrument data
-            price_series = (
-                self.session.query(PriceSeries)
-                .filter(PriceSeries.symbol == product.symbol)
+            symbols = (
+                self.session.query(Symbols)
+                .filter(Symbols.symbol == product.symbol)
                 .first()
             )
             
-            if not price_series:
+            if not symbols:
                 return False
             
             # Use existing CVaR calculator
@@ -510,7 +518,7 @@ class HarvardUniverseManager:
             
             # For now, just log what would be done
             _LOG.debug("Would compute and store CVaR for %s (id: %d)", 
-                      product.symbol, price_series.id)
+                      product.symbol, symbols.id)
             
             return True  # Simulate success
             

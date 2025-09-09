@@ -15,7 +15,7 @@ from sqlalchemy import func, and_, or_
 from sqlalchemy.orm import Session
 
 from core.db import get_db_session
-from core.models import PriceSeries, CompassInputs, CvarSnapshot, CompassAnchor
+from core.models import Symbols, CompassInputs, CvarSnapshot, CompassAnchor
 from core.universe_config import HarvardUniverseConfig, UniverseFeatureFlags
 from services.universe_manager import get_harvard_universe_manager
 
@@ -357,7 +357,7 @@ class HarvardUniverseValidator:
                     recommended_action="Ensure CVaR computation for all products with μ data"
                 ))
             
-            # Check for products in universe but missing from price_series
+            # Check for products in universe but missing from symbols table
             # (This shouldn't happen but good to verify)
             
         except Exception as exc:
@@ -472,8 +472,8 @@ class HarvardUniverseValidator:
         try:
             # Query μ values from compass_inputs
             results = (
-                self.session.query(CompassInputs.instrument_id, CompassInputs.mu_i, PriceSeries.symbol)
-                .join(PriceSeries, PriceSeries.id == CompassInputs.instrument_id)
+                self.session.query(CompassInputs.instrument_id, CompassInputs.mu_i, Symbols.symbol)
+                .join(Symbols, Symbols.id == CompassInputs.instrument_id)
                 .filter(CompassInputs.mu_i.isnot(None))
                 .all()
             )

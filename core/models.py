@@ -1,8 +1,5 @@
 """Facade re-export for ORM models.
 
-Keeps backward-compatible imports like:
-    from core.models import PriceSeries
-
 All real model definitions live under backend/core/db_models/.
 """
 
@@ -10,7 +7,7 @@ All real model definitions live under backend/core/db_models/.
 
 from core.db import Base
 
-from core.db_models.symbols import Symbols, PriceSeries, InstrumentAlias
+from core.db_models.symbols import Symbols, InstrumentAlias
 from core.db_models.exchange import Exchange
 from core.db_models.snapshot import (
     PriceLast,
@@ -56,8 +53,7 @@ __all__ = [
     # Base
     "Base",
     # Instruments
-    "Symbols", 
-    "PriceSeries",  # Backward compatibility
+    "Symbols", # Backward compatibility
     "InstrumentAlias",
     # Exchanges
     "Exchange",

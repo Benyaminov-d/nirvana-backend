@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from utils.auth import require_pub_or_basic as _require_pub_or_basic
 from services.explain import generate_explanation
 from core.db import get_db_session
-from core.models import PriceSeries
+from core.models import Symbols
 
 
 router = APIRouter()
@@ -33,14 +33,14 @@ def explain(
         try:
             row = (
                 sess.query(
-                    PriceSeries.name,
-                    PriceSeries.country,
-                    PriceSeries.exchange,
-                    PriceSeries.currency,
-                    PriceSeries.instrument_type,
-                    PriceSeries.isin,
+                    Symbols.name,
+                    Symbols.country,
+                    Symbols.exchange,
+                    Symbols.currency,
+                    Symbols.instrument_type,
+                    Symbols.isin,
                 )  # type: ignore
-                .filter(PriceSeries.symbol == sym)
+                .filter(Symbols.symbol == sym)
                 .one_or_none()
             )
             if row:

@@ -160,7 +160,7 @@ def ticker_feed_optimized(
                 "performance_improvement": "~10x faster for large datasets"
             },
             "technical_details": {
-                "primary_query": "JOIN CvarSnapshot + PriceSeries with latest snapshot subquery",
+                "primary_query": "JOIN CvarSnapshot + Symbols with latest snapshot subquery",
                 "batch_query": "Single query for all alpha levels using GROUP BY optimization",
                 "session_management": "Automatic cleanup with QueryBuilderContext"
             },

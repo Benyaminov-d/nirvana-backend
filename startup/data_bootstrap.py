@@ -5,9 +5,10 @@ from __future__ import annotations
 import logging
 import os
 from typing import Dict, Any
+from datetime import datetime
 
 from core.db import get_db_session
-from core.models import PriceSeries, Symbols
+from core.models import Symbols, Symbols
 from core.persistence import bootstrap_annual_violations_from_csv
 from utils.common import (
     canonical_instrument_type as _canon_type,
@@ -35,8 +36,8 @@ def normalize_instrument_types() -> int:
     try:
         updated = 0
         rows = (
-            sess.query(PriceSeries)
-            .filter(PriceSeries.instrument_type.isnot(None))
+            sess.query(Symbols)
+            .filter(Symbols.instrument_type.isnot(None))
             .all()
         )
         for row in rows:
@@ -76,8 +77,8 @@ def normalize_countries() -> int:
         updated = 0
         for old_country, new_country in country_map.items():
             result = (
-                sess.query(PriceSeries)
-                .filter(PriceSeries.country == old_country)
+                sess.query(Symbols)
+                .filter(Symbols.country == old_country)
                 .update(
                     {'country': new_country}, synchronize_session=False
                 )
@@ -239,12 +240,69 @@ def import_five_stars_canada(db_ready: bool) -> None:
         logger.error("Five stars Canada import failed: %s", str(e))
 
 
+def validate_data_integrity(db_ready: bool) -> Dict[str, Any]:
+    """Validate data integrity on startup."""
+    if not db_ready:
+        return {"error": "Database not ready"}
+    
+    try:
+        from startup.data_validation import validate_all_data
+        
+        # Run validation
+        validation_flag = os.getenv("STARTUP_VALIDATE_DATA", "1").lower()
+        if validation_flag in ("1", "true", "yes"):
+            logger.info("Validating data integrity...")
+            validation_result = validate_all_data()
+            
+            # Log any critical issues
+            if not validation_result.get("success", False):
+                critical_issues = validation_result.get("critical_issues", [])
+                for issue in critical_issues:
+                    logger.error("Critical data issue: %s", issue)
+                    
+            return validation_result
+        else:
+            logger.info("Data validation skipped (STARTUP_VALIDATE_DATA=%s)", validation_flag)
+            return {"skipped": True}
+            
+    except Exception as e:
+        logger.exception("Data validation failed")
+        return {"error": str(e)}
+
+
 def run_data_bootstrap(db_ready: bool) -> Dict[str, Any]:
     """Run all data bootstrap tasks with environment variable controls."""
     if not db_ready:
         return {"error": "Database not ready"}
     
     results = {}
+    
+    # Validate data integrity
+    try:
+        print("  - Validating data integrity...")  # Force visibility
+        validation_result = validate_data_integrity(db_ready)
+        if validation_result.get("skipped", False):
+            print("  - Data validation skipped")  # Force visibility
+            results['data_validation'] = 'skipped'
+        elif validation_result.get("error"):
+            print(f"  - Data validation error: {validation_result['error']}")  # Force visibility
+            results['data_validation'] = 'error'
+        elif validation_result.get("critical_issues"):
+            print(f"  - Data validation found {len(validation_result.get('critical_issues', []))} critical issues")  # Force visibility
+            results['data_validation'] = {
+                'success': False,
+                'critical_issues': len(validation_result.get('critical_issues', [])),
+            }
+        else:
+            print("  - Data validation passed")  # Force visibility
+            results['data_validation'] = {
+                'success': True,
+                'timestamp': datetime.utcnow().isoformat(),
+            }
+    except Exception:
+        print("  - Data validation failed")  # Force visibility
+        logger.exception("Data validation failed")
+        results['data_validation'] = 'error'
     
     # Annual violations bootstrap
     try:
@@ -298,104 +356,75 @@ def run_data_bootstrap(db_ready: bool) -> Dict[str, Any]:
             print("  - Importing local symbol catalogs...")  # Force visibility
             count = import_local_symbol_catalogs(db_ready)
             print(f"  - Local symbols import completed: {count} catalogs processed")  # Force visibility
-            results['local_symbols'] = count
+            results['local_import'] = count
         else:
             print(f"  - Local symbols import skipped (STARTUP_LOCAL_SYMBOLS_IMPORT={local_import_flag})")  # Force visibility
             logger.info("Local symbols import skipped (STARTUP_LOCAL_SYMBOLS_IMPORT=%s)", local_import_flag)
-            results['local_symbols'] = 'skipped'
+            results['local_import'] = 'skipped'
     except Exception:
+        print("  - Local symbols import failed")  # Force visibility
         logger.exception("Local symbols import failed")
-        results['local_symbols'] = 'error'
+        results['local_import'] = 'error'
     
-    # Core symbols import - controlled via STARTUP_CORE_SYMBOLS_IMPORT
+    # Core symbols - controlled via STARTUP_CORE_SYMBOLS
     try:
-        core_import_flag = os.getenv("STARTUP_CORE_SYMBOLS_IMPORT", "1").lower()
-        if core_import_flag in ("1", "true", "yes"):
-            core_stats = load_core_symbols(db_ready=db_ready)
-            results['core_symbols'] = core_stats
+        core_flag = os.getenv("STARTUP_CORE_SYMBOLS", "1").lower()
+        if core_flag in ("1", "true", "yes"):
+            print("  - Loading core symbols...")  # Force visibility
+            core_result = load_core_symbols(db_ready)
+            if "error" in core_result:
+                print(f"  - Core symbols loading error: {core_result.get('error')}")  # Force visibility
+                results['core_symbols'] = 'error'
+            else:
+                print(f"  - Core symbols loaded: {core_result.get('count', 0)} processed")  # Force visibility
+                results['core_symbols'] = core_result.get('count', 0)
         else:
-            logger.info("Core symbols import skipped (STARTUP_CORE_SYMBOLS_IMPORT=%s)", core_import_flag)
+            print(f"  - Core symbols skipped (STARTUP_CORE_SYMBOLS={core_flag})")  # Force visibility
+            logger.info("Core symbols skipped (STARTUP_CORE_SYMBOLS=%s)", core_flag)
             results['core_symbols'] = 'skipped'
     except Exception:
-        logger.exception("Core symbols import failed")
+        print("  - Core symbols loading failed")  # Force visibility
+        logger.exception("Core symbols loading failed")
         results['core_symbols'] = 'error'
     
-    # EODHD symbols bootstrap - controlled via EODHD_BOOTSTRAP_SYMBOLS
+    # Five-star symbols - controlled via STARTUP_FIVE_STARS
     try:
-        bootstrap_flag = os.getenv("EODHD_BOOTSTRAP_SYMBOLS", "1").lower()
-        if bootstrap_flag in ("1", "true", "yes"):
-            count = bootstrap_eodhd_symbols_by_exchanges(db_ready)
-            results['eodhd_symbols'] = count
-        else:
-            logger.info("EODHD symbols bootstrap skipped (EODHD_BOOTSTRAP_SYMBOLS=%s)", bootstrap_flag)
-            results['eodhd_symbols'] = 'skipped'
-    except Exception:
-        logger.exception("EODHD symbols bootstrap failed")
-        results['eodhd_symbols'] = 'error'
-    
-    # Five stars processing - controlled via STARTUP_FIVE_STARS_PROCESSING
-    try:
-        five_stars_flag = os.getenv("STARTUP_FIVE_STARS_PROCESSING", "1").lower()
+        five_stars_flag = os.getenv("STARTUP_FIVE_STARS", "1").lower()
         if five_stars_flag in ("1", "true", "yes"):
+            print("  - Processing five-star symbols...")  # Force visibility
             mark_five_stars_from_files(db_ready)
-            results['five_stars'] = True
+            usa_result = reconcile_five_stars_usa(db_ready)
+            import_five_stars_canada(db_ready)
+            print("  - Five-star symbols processed")  # Force visibility
+            results['five_stars'] = usa_result
         else:
-            logger.info("Five stars processing skipped (STARTUP_FIVE_STARS_PROCESSING=%s)", five_stars_flag)
+            print(f"  - Five-star symbols skipped (STARTUP_FIVE_STARS={five_stars_flag})")  # Force visibility
+            logger.info("Five-star symbols skipped (STARTUP_FIVE_STARS=%s)", five_stars_flag)
             results['five_stars'] = 'skipped'
     except Exception:
-        logger.exception("Five stars processing failed")
+        print("  - Five-star symbols processing failed")  # Force visibility
+        logger.exception("Five-star symbols processing failed")
         results['five_stars'] = 'error'
     
-    # Normalize instrument types - controlled via STARTUP_NORMALIZE_TYPES
+    # Normalize instrument types and countries - controlled via STARTUP_NORMALIZE
     try:
-        normalize_types_flag = os.getenv("STARTUP_NORMALIZE_TYPES", "1").lower()
-        if normalize_types_flag in ("1", "true", "yes"):
-            updated = normalize_instrument_types()
-            results['normalize_types'] = updated
+        normalize_flag = os.getenv("STARTUP_NORMALIZE", "1").lower()
+        if normalize_flag in ("1", "true", "yes"):
+            print("  - Normalizing instrument types and countries...")  # Force visibility
+            updated_types = normalize_instrument_types()
+            updated_countries = normalize_countries()
+            print(f"  - Normalized {updated_types} instrument types and {updated_countries} countries")  # Force visibility
+            results['normalize'] = {
+                'instrument_types': updated_types,
+                'countries': updated_countries
+            }
         else:
-            logger.info("Normalize instrument types skipped (STARTUP_NORMALIZE_TYPES=%s)", normalize_types_flag)
-            results['normalize_types'] = 'skipped'
+            print(f"  - Normalization skipped (STARTUP_NORMALIZE={normalize_flag})")  # Force visibility
+            logger.info("Normalization skipped (STARTUP_NORMALIZE=%s)", normalize_flag)
+            results['normalize'] = 'skipped'
     except Exception:
-        logger.exception("Normalize instrument types failed")
-        results['normalize_types'] = 'error'
-    
-    # Normalize countries - controlled via STARTUP_NORMALIZE_COUNTRIES
-    try:
-        normalize_countries_flag = os.getenv("STARTUP_NORMALIZE_COUNTRIES", "1").lower()
-        if normalize_countries_flag in ("1", "true", "yes"):
-            updated = normalize_countries()
-            results['normalize_countries'] = updated
-        else:
-            logger.info("Normalize countries skipped (STARTUP_NORMALIZE_COUNTRIES=%s)", normalize_countries_flag)
-            results['normalize_countries'] = 'skipped'
-    except Exception:
-        logger.exception("Normalize countries failed")
-        results['normalize_countries'] = 'error'
-    
-    # Five stars USA reconciliation - controlled via STARTUP_FIVE_STARS_USA_RECONCILE
-    try:
-        five_stars_usa_flag = os.getenv("STARTUP_FIVE_STARS_USA_RECONCILE", "1").lower()
-        if five_stars_usa_flag in ("1", "true", "yes"):
-            res = reconcile_five_stars_usa(db_ready)
-            results['five_stars_usa'] = res
-        else:
-            logger.info("Five stars USA reconciliation skipped (STARTUP_FIVE_STARS_USA_RECONCILE=%s)", five_stars_usa_flag)
-            results['five_stars_usa'] = 'skipped'
-    except Exception:
-        logger.exception("Five stars USA reconciliation failed")
-        results['five_stars_usa'] = 'error'
-    
-    # Five stars Canada import - controlled via STARTUP_FIVE_STARS_CANADA_IMPORT
-    try:
-        five_stars_canada_flag = os.getenv("STARTUP_FIVE_STARS_CANADA_IMPORT", "1").lower()
-        if five_stars_canada_flag in ("1", "true", "yes"):
-            import_five_stars_canada(db_ready)
-            results['five_stars_canada'] = True
-        else:
-            logger.info("Five stars Canada import skipped (STARTUP_FIVE_STARS_CANADA_IMPORT=%s)", five_stars_canada_flag)
-            results['five_stars_canada'] = 'skipped'
-    except Exception:
-        logger.exception("Five stars Canada import failed")
-        results['five_stars_canada'] = 'error'
+        print("  - Normalization failed")  # Force visibility
+        logger.exception("Normalization failed")
+        results['normalize'] = 'error'
     
     return results

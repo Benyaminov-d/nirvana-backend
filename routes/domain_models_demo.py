@@ -558,7 +558,7 @@ def demo_architecture_comparison(
         ],
         "example_code": '''
 # Old way - Database model with mixed concerns
-class PriceSeries(Base):
+class Symbols(Base):
     symbol = Column(String)
     cvar_95 = Column(Float)  # Just a number, no validation
     

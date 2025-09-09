@@ -14,6 +14,8 @@ import time as _time
 import threading
 import logging
 
+from logging_config import configure_logging
+
 from dotenv import load_dotenv  # type: ignore
 from fastapi import FastAPI  # type: ignore
 from fastapi import HTTPException  # type: ignore
@@ -22,7 +24,7 @@ from fastapi.responses import RedirectResponse  # type: ignore
 from fastapi.responses import PlainTextResponse  # type: ignore
 
 from services.domain.cvar_unified_service import CvarUnifiedService
-from core.models import PriceSeries
+from core.models import Symbols
 # AnnualCvarViolation model is used via persistence helpers; no direct use here
 from core.db import get_db_session
 from utils.common import (
@@ -55,7 +57,7 @@ from routes.ticker_check import router as ticker_check_router
 from routes.rag import router as rag_router
 from routes.universe import router as universe_router
 from routes.cvar_refactored_demo import router as cvar_refactored_router
-from routes.ticker_refactored import router as ticker_refactored_router
+# Removed missing import: from routes.ticker_refactored import router as ticker_refactored_router
 from routes.ticker_country_specific import router as ticker_country_specific_router
 from routes.refactoring_tools import router as refactoring_tools_router
 from routes.application_services_demo import router as application_services_demo_router
@@ -64,6 +66,7 @@ from routes.data_access_demo import router as data_access_demo_router
 from routes.shared_demo import router as shared_demo_router
 from routes.domain_models_demo import router as domain_models_demo_router
 from routes.debug_database import router as debug_database_router
+from routes.maintenance import router as maintenance_router
 
 # ───────────────────── env / init ─────────────────────
 load_dotenv()
@@ -73,6 +76,9 @@ os.environ.setdefault("NIR_LAMBERT_STRICT", "0")
 os.environ.setdefault("NVAR_BOOTSTRAP_THRESHOLD", "0")
 os.environ.setdefault("NVAR_BOOTSTRAP_BLOCK", "100")
 os.environ.setdefault("NVAR_SYMBOLS_FILTER", "ready")
+
+# Configure logging
+configure_logging()
 
 app = FastAPI(
     title="Nirvana App",
@@ -101,7 +107,7 @@ app.include_router(rag_router)
 app.include_router(ticker_check_router)
 app.include_router(universe_router, prefix="/api")
 app.include_router(cvar_refactored_router, prefix="/api")
-app.include_router(ticker_refactored_router, prefix="/api")
+# Removed missing router: app.include_router(ticker_refactored_router, prefix="/api")
 app.include_router(ticker_country_specific_router, prefix="/api")
 app.include_router(refactoring_tools_router, prefix="/api")
 app.include_router(application_services_demo_router, prefix="/api")
@@ -110,6 +116,7 @@ app.include_router(data_access_demo_router, prefix="/api")
 app.include_router(shared_demo_router, prefix="/api")
 app.include_router(domain_models_demo_router, prefix="/api")
 app.include_router(debug_database_router, prefix="/api")
+app.include_router(maintenance_router, prefix="/api/maintenance")
 
 # Static files (HTML, PDFs, images) are now served by the frontend container
 # under /spa/public/static/ - backend no longer serves static content
@@ -220,7 +227,7 @@ def _db_symbols(
         sess = get_db_session()
         if sess is None:
             raise RuntimeError("no session")
-        from core.models import PriceSeries
+        from core.models import Symbols
         # Determine filter mode
         mode = (os.getenv("NVAR_SYMBOLS_FILTER", "all") or "all").lower()
         if ready_only is None and include_unknown is None:
@@ -234,20 +241,20 @@ def _db_symbols(
                 ready_only = False
                 include_unknown = False
         # Base query
-        q = sess.query(PriceSeries.symbol)
+        q = sess.query(Symbols.symbol)
         if five_stars:
-            q = q.filter(PriceSeries.five_stars == 1)  # type: ignore
+            q = q.filter(Symbols.five_stars == 1)  # type: ignore
         # Apply readiness filter
         if ready_only:
             if include_unknown:
                 # insufficient_history in (0, NULL)
                 q = q.filter(
-                    (PriceSeries.insufficient_history == 0)
-                    | (PriceSeries.insufficient_history.is_(None))
+                    (Symbols.insufficient_history == 0)
+                    | (Symbols.insufficient_history.is_(None))
                 )  # type: ignore
             else:
                 q = q.filter(
-                    PriceSeries.insufficient_history == 0
+                    Symbols.insufficient_history == 0
                 )  # type: ignore
         rows = q.all()  # type: ignore
         syms = [s for (s,) in rows]
@@ -297,12 +304,12 @@ def _sync_symbols_if_empty() -> None:
     try:
         has_any = (
             sess
-            .query(PriceSeries.id)
+            .query(Symbols.id)
             .limit(1)
             .all()
         )
         if not has_any:
-            _sym_logger.info("price_series empty; running initial sync")
+            _sym_logger.info("symbols empty; running initial sync")
             _sync_symbols_once(force=True)
     finally:
         try:

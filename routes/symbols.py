@@ -7,7 +7,7 @@ from fastapi import (  # type: ignore
 )
 from utils.auth import require_pub_or_basic as _require_pub_or_basic
 from core.db import get_db_session
-from core.models import PriceSeries, InstrumentAlias
+from core.models import Symbols, InstrumentAlias
 from sqlalchemy import or_  # type: ignore
 from sqlalchemy.sql import func  # type: ignore
 from services.symbols_sync import sync_symbols_once
@@ -30,9 +30,9 @@ def list_tickers(_auth: None = Depends(_require_pub_or_basic)) -> dict:
         return {"items": []}
     try:
         rows = (
-            sess.query(PriceSeries)
-            .filter(PriceSeries.insufficient_history == 0)  # type: ignore
-            .order_by(PriceSeries.symbol.asc())  # type: ignore
+            sess.query(Symbols)
+            .filter(Symbols.insufficient_history == 0)  # type: ignore
+            .order_by(Symbols.symbol.asc())  # type: ignore
             .all()
         )
         items = [
@@ -70,16 +70,16 @@ def symbols_search(
     try:
         # Normalize for case-insensitive contains
         needle = f"%{query.lower()}%"
-        base = sess.query(PriceSeries)
+        base = sess.query(Symbols)
         if ready_only:
             base = base.filter(
-                PriceSeries.insufficient_history == 0  # type: ignore
+                Symbols.insufficient_history == 0  # type: ignore
             )
 
         # Build filters: symbol ILIKE, name ILIKE, alternative_names contains
         filters = [
-            func.lower(PriceSeries.symbol).like(needle),  # type: ignore
-            func.lower(PriceSeries.name).like(needle),  # type: ignore
+            func.lower(Symbols.symbol).like(needle),  # type: ignore
+            func.lower(Symbols.name).like(needle),  # type: ignore
         ]
 
         # Prefetch window for ranking:
@@ -102,7 +102,7 @@ def symbols_search(
 
                 sql = _text(
                     (
-                        "SELECT id FROM price_series "
+                        "SELECT id FROM symbols "
                         "WHERE (:ready_only = 0 OR insufficient_history = 0) "
                         "AND (lower(symbol) LIKE :needle OR "
                         "lower(COALESCE(name, '')) LIKE :needle OR "
@@ -126,9 +126,9 @@ def symbols_search(
                 ids = [r[0] for r in rows]
                 if ids:
                     recs = (
-                        sess.query(PriceSeries)
+                        sess.query(Symbols)
                         .filter(
-                            PriceSeries.id.in_(ids)  # type: ignore[arg-type]
+                            Symbols.id.in_(ids)  # type: ignore[arg-type]
                         )
                         .all()
                     )
@@ -138,12 +138,12 @@ def symbols_search(
                 # SQLite/text fallback: join aliases, LIKE across fields
                 base = base.outerjoin(
                     InstrumentAlias,
-                    InstrumentAlias.instrument_id == PriceSeries.id,
+                    InstrumentAlias.instrument_id == Symbols.id,
                 )
                 try:
                     alt_like = func.lower(
                         func.coalesce(
-                            PriceSeries.alternative_names, ""
+                            Symbols.alternative_names, ""
                         )
                     ).like(needle)  # type: ignore
                     filters.append(alt_like)
@@ -158,14 +158,14 @@ def symbols_search(
                     pass
                 recs = (
                     base.filter(or_(*filters))
-                    .order_by(PriceSeries.symbol.asc())  # type: ignore
+                    .order_by(Symbols.symbol.asc())  # type: ignore
                     .limit(int(max(1, prefetch)))
                     .all()
                 )
         except Exception:
             recs = (
                 base.filter(or_(*filters))
-                .order_by(PriceSeries.symbol.asc())  # type: ignore
+                .order_by(Symbols.symbol.asc())  # type: ignore
                 .limit(int(max(1, prefetch)))
                 .all()
             )
@@ -175,7 +175,7 @@ def symbols_search(
         # shorter name wins
         ql = query.lower()
 
-        def _rank(rec: PriceSeries) -> tuple:
+        def _rank(rec: Symbols) -> tuple:
             try:
                 sy = (rec.symbol or "").lower()
                 nm = (rec.name or "").lower()
@@ -334,16 +334,16 @@ def symbols_resync_and_recalc(
                 # Work with the US row specifically;
                 # do not overwrite other countries
                 rec = (
-                    sess.query(PriceSeries)
+                    sess.query(Symbols)
                     .filter(
-                        PriceSeries.symbol == sym,
-                        PriceSeries.country == "US",
+                        Symbols.symbol == sym,
+                        Symbols.country == "US",
                     )
                     .one_or_none()
                 )
                 is_new = False
                 if rec is None:
-                    rec = PriceSeries(symbol=sym, country="US")
+                    rec = Symbols(symbol=sym, country="US")
                     is_new = True
                 try:
                     if isinstance(best, dict):

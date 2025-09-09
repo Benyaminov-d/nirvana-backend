@@ -1,7 +1,7 @@
 """
 Symbols model - Financial instrument symbols and metadata.
 
-This is the renamed and enhanced version of the former PriceSeries model,
+This is the renamed and enhanced version of the former Symbols model,
 with added support for categorical flags based on folder structure.
 """
 
@@ -26,7 +26,7 @@ class Symbols(Base):
     Financial instrument symbols and metadata.
     
     Supports categorical flags for various indices and classifications.
-    Previously known as PriceSeries.
+    Previously known as Symbols.
     """
     __tablename__ = "symbols"
 
@@ -193,7 +193,7 @@ class Symbols(Base):
 
 
 # Backward compatibility alias
-PriceSeries = Symbols
+Symbols = Symbols
 
 
 class InstrumentAlias(Base):

@@ -7,7 +7,7 @@ import os
 from typing import Dict, Any, Union
 
 from core.db import get_db_session
-from core.models import CvarSnapshot
+from core.models import CvarSnapshot, CompassAnchor
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Ensure detailed bootstrap logs are visible
@@ -128,6 +128,80 @@ def setup_compass_parameters() -> None:
         logger.error("Compass parameters creation failed: %s", str(e))
 
 
+def verify_anchors_quality() -> Dict[str, Any]:
+    """Verify that anchors are properly calibrated and within expected ranges."""
+    session = get_db_session()
+    if not session:
+        return {"success": False, "error": "Database not available"}
+        
+    issues = {}
+    current_quarter = None
+    
+    try:
+        from services.compass_anchors import current_quarter_version
+        current_quarter = current_quarter_version()
+    except Exception as e:
+        logger.error(f"Failed to get current quarter: {e}")
+        current_quarter = "Unknown"
+    
+    # Get all anchors
+    anchors = session.query(CompassAnchor).all()
+    
+    # No anchors at all is a critical issue
+    if not anchors:
+        return {
+            "success": False, 
+            "error": "No anchors found in database",
+            "action_required": "Run calibration"
+        }
+    
+    # Check critical anchors exist
+    critical_categories = ["GLOBAL:US", "GLOBAL:UK", "HARVARD-US", "GLOBAL-HARVARD"]
+    for category in critical_categories:
+        anchor = session.query(CompassAnchor).filter(
+            CompassAnchor.category == category,
+            CompassAnchor.version == current_quarter
+        ).one_or_none()
+        
+        if not anchor:
+            issues[f"missing_{category}"] = f"Missing critical anchor {category} for {current_quarter}"
+            
+    # Check anchor values are in reasonable ranges
+    for anchor in anchors:
+        # Check if outdated
+        if anchor.version != current_quarter:
+            issues[f"outdated_{anchor.category}"] = f"Outdated anchor: {anchor.version} should be {current_quarter}"
+            
+        # Check mu_low
+        if anchor.mu_low < -0.10:
+            issues[f"low_mu_low_{anchor.category}"] = f"Suspiciously low mu_low: {anchor.mu_low:.4f}"
+            
+        # Check mu_high
+        if anchor.mu_high > 0.50:
+            issues[f"high_mu_high_{anchor.category}"] = f"Suspiciously high mu_high: {anchor.mu_high:.4f}"
+            
+        # Check spread
+        spread = anchor.mu_high - anchor.mu_low
+        if spread < 0.05:
+            issues[f"small_spread_{anchor.category}"] = f"Spread too small: {spread:.4f}"
+        elif spread > 0.40:
+            issues[f"large_spread_{anchor.category}"] = f"Spread too large: {spread:.4f}"
+            
+        # Check median
+        if not (anchor.mu_low <= anchor.median_mu <= anchor.mu_high):
+            issues[f"invalid_median_{anchor.category}"] = f"Median {anchor.median_mu:.4f} outside range [{anchor.mu_low:.4f}, {anchor.mu_high:.4f}]"
+    
+    # Critical issue if any GLOBAL: or HARVARD- category has problems
+    critical_issue = any(k for k in issues.keys() if any(c in k for c in ["GLOBAL:", "HARVARD-"]))
+    
+    return {
+        "success": len(issues) == 0,
+        "critical_issue": critical_issue,
+        "issues": issues,
+        "anchors_count": len(anchors),
+        "current_quarter": current_quarter
+    }
+
 def calibrate_compass_anchors(scope: str = "default") -> Dict[str, Any]:
     """Auto-calibrate Compass anchors based on scope."""
     try:
@@ -136,18 +210,33 @@ def calibrate_compass_anchors(scope: str = "default") -> Dict[str, Any]:
             auto_calibrate_global_per_country_from_db,
             auto_calibrate_by_type_country_from_db,
             calibrate_validated_universe_anchors,
+            calibrate_harvard_universe_anchors,
         )
         
         results = {}
         
-        if scope == "validated":
+        # Check if we need calibration
+        anchor_check = verify_anchors_quality()
+        if anchor_check.get("success", False) and scope == "auto":
+            logger.info("Anchors quality check passed, skipping calibration")
+            results["status"] = "skipped_not_needed"
+            results["check"] = anchor_check
+            return results
+        
+        if scope == "validated" or scope == "full" or scope == "auto":
             # Validated universe anchors (filters: US/UK/CA)
             logger.info("Calibrating validated universe anchors")
             res_validated = calibrate_validated_universe_anchors()
             results['validated'] = res_validated
             logger.info("Validated anchors summary: %s", res_validated)
             
-        elif scope == "global":
+            # Also calibrate Harvard anchors for full/validated scope
+            logger.info("Calibrating Harvard universe anchors")
+            res_harvard = calibrate_harvard_universe_anchors()
+            results['harvard'] = res_harvard
+            logger.info("Harvard anchors summary: %s", res_harvard)
+            
+        elif scope == "global" or scope == "full":
             # Per-country GLOBAL (discover from DB)
             res1 = auto_calibrate_global_per_country_from_db()
             results['per_country'] = res1
@@ -158,6 +247,13 @@ def calibrate_compass_anchors(scope: str = "default") -> Dict[str, Any]:
             results['by_type_country'] = res2
             logger.info("Anchors by-type-country summary: %s", res2)
             
+        elif scope == "harvard_only":
+            # Only calibrate Harvard universe anchors
+            logger.info("Calibrating Harvard universe anchors")
+            res_harvard = calibrate_harvard_universe_anchors()
+            results['harvard'] = res_harvard
+            logger.info("Harvard anchors summary: %s", res_harvard)
+            
         else:
             # Default US-Equity-Returns calibration
             if auto_calibrate_from_db("US-Equity-Returns"):
@@ -166,6 +262,14 @@ def calibrate_compass_anchors(scope: str = "default") -> Dict[str, Any]:
             else:
                 results['default'] = "present_or_skipped"
                 logger.info("Compass anchors present or skipped (US-Equity-Returns)")
+        
+        # Re-check anchor quality after calibration
+        if scope in ["full", "validated", "harvard_only", "auto"]:
+            post_check = verify_anchors_quality()
+            results["post_calibration_check"] = post_check
+            
+            if not post_check.get("success", False):
+                logger.warning("Anchor quality issues remain after calibration: %s", post_check.get("issues", {}))
         
         return results
     except Exception as e:
@@ -214,9 +318,17 @@ def run_business_bootstrap(db_ready: bool) -> Dict[str, Union[bool, str, Dict[st
         compass_anchors_flag = os.getenv("STARTUP_COMPASS_ANCHORS", "1").lower()
         if compass_anchors_flag in ("1", "true", "yes"):
             print("  - Calibrating Compass anchors...")  # Force visibility
-            scope = os.getenv("COMPASS_ANCHOR_SCOPE", "").lower()
+            scope = os.getenv("COMPASS_ANCHOR_SCOPE", "auto").lower()
+            
+            # Check anchor quality first
+            print("  - Checking anchor quality...")  # Force visibility
+            anchor_check = verify_anchors_quality()
+            if anchor_check.get("issues"):
+                print(f"  - Anchor quality issues detected: {len(anchor_check.get('issues', {}))}")  # Force visibility
+                
+            # Calibrate anchors - if scope is "auto", it will only calibrate if needed
             anchor_results = calibrate_compass_anchors(scope)
-            print(f"  - Compass anchors calibrated: {anchor_results}")  # Force visibility
+            print(f"  - Compass anchors calibration complete: {anchor_results.get('status', 'completed')}")  # Force visibility
             results['compass_anchors'] = anchor_results
             
             # Optional experiment anchors - controlled via COMPASS_EXPERIMENT_ANCHORS

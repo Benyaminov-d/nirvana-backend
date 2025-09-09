@@ -11,7 +11,7 @@ from utils.auth import (
     basic_auth_if_configured as _basic_auth_if_configured,
 )
 from core.db import get_db_session
-from core.models import CvarSnapshot, PriceSeries
+from core.models import CvarSnapshot, Symbols
 from services.compass_anchors import calibrate_special_sets
 from utils.common import canonical_instrument_type as _canon_type
 from core.persistence import upsert_snapshot_row
@@ -58,10 +58,10 @@ def exp_validate_mf_etf(
     try:
         sym = (symbol or "").strip().upper()
         if sym:
-            q = sess.query(PriceSeries).filter(PriceSeries.symbol == sym)
+            q = sess.query(Symbols).filter(Symbols.symbol == sym)
         else:
-            q = sess.query(PriceSeries).filter(
-                PriceSeries.instrument_type.in_(["Mutual Fund", "ETF"])  # type: ignore
+            q = sess.query(Symbols).filter(
+                Symbols.instrument_type.in_(["Mutual Fund", "ETF"])  # type: ignore
             )
         rows = q.limit(max(1, int(limit))).all()
         if sym and not rows:
@@ -185,7 +185,7 @@ def exp_validate_mf_etf(
             workers = max(2, min(16, int(_CONFIG.exp_validate_workers)))
             since = (_dt.utcnow().date() - _td(days=int(years * 365.25))).isoformat()
 
-            def _job(ps: PriceSeries) -> dict[str, object]:
+            def _job(ps: Symbols) -> dict[str, object]:
                 sym = ps.symbol
                 endpoint_symbol = resolve_eodhd_endpoint_symbol(sym)
                 url = f"https://eodhistoricaldata.com/api/eod/{endpoint_symbol}"
@@ -338,7 +338,7 @@ def exp_reprocess_all(
     import os as _os
     from datetime import datetime as _dt
     from core.db import get_db_session as _get_sess
-    from core.models import PriceSeries as _PS
+    from core.models import Symbols as _PS
 
     logger = _log.getLogger("experiments")
     if not logger.handlers:
@@ -1301,7 +1301,7 @@ def _latest_snapshots(sess) -> Any:
         .subquery()
     )
     q = (
-        sess.query(CvarSnapshot, PriceSeries)
+        sess.query(CvarSnapshot, Symbols)
         .join(
             latest,
             and_(
@@ -1309,8 +1309,8 @@ def _latest_snapshots(sess) -> Any:
                 CvarSnapshot.as_of_date == latest.c.mx,
             ),
         )
-        .outerjoin(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
-        .filter(PriceSeries.valid == 1)  # Only use valid products
+        .outerjoin(Symbols, Symbols.symbol == CvarSnapshot.symbol)
+        .filter(Symbols.valid == 1)  # Only use valid products
     )
     return q
 
@@ -1327,10 +1327,10 @@ def exp_take_products(
     try:
         q = _latest_snapshots(sess)
         if category == "ALL-MUTUAL-FUND-ETF":
-            q = q.filter(PriceSeries.instrument_type.in_(["Mutual Fund", "ETF"]))  # type: ignore
+            q = q.filter(Symbols.instrument_type.in_(["Mutual Fund", "ETF"]))  # type: ignore
         if category == "US-MUTUAL-FUND-ETF":
-            q = q.filter(PriceSeries.country == "US")  # type: ignore
-            q = q.filter(PriceSeries.instrument_type.in_(["Mutual Fund", "ETF"]))  # type: ignore
+            q = q.filter(Symbols.country == "US")  # type: ignore
+            q = q.filter(Symbols.instrument_type.in_(["Mutual Fund", "ETF"]))  # type: ignore
         rows = q.limit(max(1, int(n))).all()
         items = []
         for r, ps in rows:
@@ -1519,7 +1519,7 @@ def exp_top(
             .subquery()
         )
         q = (
-            sess.query(CvarSnapshot, PriceSeries)
+            sess.query(CvarSnapshot, Symbols)
             .join(
                 latest,
                 and_(
@@ -1527,15 +1527,15 @@ def exp_top(
                     CvarSnapshot.as_of_date == latest.c.mx,
                 ),
             )
-            .outerjoin(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
-            .filter(PriceSeries.insufficient_history == 0)  # type: ignore
+            .outerjoin(Symbols, Symbols.symbol == CvarSnapshot.symbol)
+            .filter(Symbols.insufficient_history == 0)  # type: ignore
         )
         if country:
-            q = q.filter(PriceSeries.country == country)  # type: ignore
+            q = q.filter(Symbols.country == country)  # type: ignore
         if types:
             allowed = [t.strip() for t in types.split(",") if t.strip()]
             if allowed:
-                q = q.filter(PriceSeries.instrument_type.in_(allowed))  # type: ignore
+                q = q.filter(Symbols.instrument_type.in_(allowed))  # type: ignore
 
         # Take top candidates by return_annual as a proxy for speed, then score
         rows = (

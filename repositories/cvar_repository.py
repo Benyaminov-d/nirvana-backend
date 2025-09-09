@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, desc
 
 from repositories.base_repository import BaseRepository
-from core.models import CvarSnapshot, PriceSeries
+from core.models import CvarSnapshot, Symbols
 import logging
 
 logger = logging.getLogger(__name__)
@@ -81,8 +81,8 @@ class CvarRepository(BaseRepository[CvarSnapshot]):
             from datetime import date, timedelta
             cutoff_date = date.today() - timedelta(days=max_age_days)
             
-            # Get all symbols from PriceSeries
-            all_symbols_query = session.query(PriceSeries.symbol).distinct()
+            # Get all symbols from Symbols
+            all_symbols_query = session.query(Symbols.symbol).distinct()
             all_symbols = {s[0] for s in all_symbols_query.all()}
             
             # Get symbols with recent CVaR data  
@@ -133,15 +133,15 @@ class CvarRepository(BaseRepository[CvarSnapshot]):
                 existing.updated_at = datetime.utcnow()
             else:
                 # Create new snapshot
-                # First, get instrument_id from PriceSeries
+                # First, get instrument_id from Symbols
                 price_series = (
-                    session.query(PriceSeries)
-                    .filter(PriceSeries.symbol == symbol)
+                    session.query(Symbols)
+                    .filter(Symbols.symbol == symbol)
                     .first()
                 )
                 
                 if not price_series:
-                    logger.warning(f"PriceSeries not found for symbol: {symbol}")
+                    logger.warning(f"Symbols not found for symbol: {symbol}")
                     return False
                 
                 new_snapshot = CvarSnapshot(
@@ -186,9 +186,9 @@ class CvarRepository(BaseRepository[CvarSnapshot]):
                 .subquery()
             )
             
-            # Join with latest snapshots and PriceSeries
+            # Join with latest snapshots and Symbols
             query = (
-                session.query(CvarSnapshot, PriceSeries)
+                session.query(CvarSnapshot, Symbols)
                 .join(
                     latest_per_symbol,
                     and_(
@@ -196,18 +196,18 @@ class CvarRepository(BaseRepository[CvarSnapshot]):
                         CvarSnapshot.as_of_date == latest_per_symbol.c.mx
                     )
                 )
-                .outerjoin(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
+                .outerjoin(Symbols, Symbols.symbol == CvarSnapshot.symbol)
                 .filter(CvarSnapshot.alpha_label == alpha_label)
-                .filter(PriceSeries.five_stars == 1)
+                .filter(Symbols.five_stars == 1)
             )
             
             # Apply country filter
             if country:
-                query = query.filter(PriceSeries.country == country)
+                query = query.filter(Symbols.country == country)
             else:
                 # Default to US
                 query = query.filter(
-                    PriceSeries.country.in_(["US", "USA", "United States"])
+                    Symbols.country.in_(["US", "USA", "United States"])
                 )
             
             # Apply limit
@@ -247,18 +247,18 @@ class CvarRepository(BaseRepository[CvarSnapshot]):
             # Base query joining snapshots with price series
             query = (
                 session.query(CvarSnapshot)
-                .join(PriceSeries, CvarSnapshot.instrument_id == PriceSeries.id)
+                .join(Symbols, CvarSnapshot.instrument_id == Symbols.id)
             )
             
             # Apply country filter
             if country:
                 country_list = [c.strip() for c in country.split(",") if c.strip()]
                 if country_list:
-                    query = query.filter(PriceSeries.country.in_(country_list))
+                    query = query.filter(Symbols.country.in_(country_list))
             
             # Apply instrument types filter
             if types:
-                query = query.filter(PriceSeries.instrument_type.in_(types))
+                query = query.filter(Symbols.instrument_type.in_(types))
             
             # Filter out NULL values
             query = query.filter(

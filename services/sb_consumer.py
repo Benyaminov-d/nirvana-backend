@@ -39,7 +39,7 @@ _sb_insufficient_data_raw: list[dict] = []
 
 
 def _resolve_instrument_id(symbol: str, suffix: str | None) -> int | None:
-    """Best-effort resolve PriceSeries.id for a symbol with optional suffix.
+    """Best-effort resolve Symbols.id for a symbol with optional suffix.
 
     Suffix examples: ".US", ".TO", ".V". When provided, we map common
     Canadian suffixes to country=Canada. Otherwise prefer US if multiple.
@@ -48,8 +48,8 @@ def _resolve_instrument_id(symbol: str, suffix: str | None) -> int | None:
         sess = get_db_session()
         if sess is None:
             return None
-        from core.models import PriceSeries  # local import to avoid cycles
-        q = sess.query(PriceSeries.id, PriceSeries.country).filter(PriceSeries.symbol == symbol)
+        from core.models import Symbols  # local import to avoid cycles
+        q = sess.query(Symbols.id, Symbols.country).filter(Symbols.symbol == symbol)
         rows = q.all()
         if not rows:
             return None
@@ -576,11 +576,11 @@ def start_consumer_loop() -> None:
                                 try:
                                     sess = db_sess or get_db_session()
                                     if sess is not None:
-                                        from core.models import PriceSeries
+                                        from core.models import Symbols
 
                                         row = (
-                                            sess.query(PriceSeries)
-                                            .filter(PriceSeries.symbol == sym)
+                                            sess.query(Symbols)
+                                            .filter(Symbols.symbol == sym)
                                             .one_or_none()
                                         )
                                         if row is not None:
@@ -659,12 +659,12 @@ def start_consumer_loop() -> None:
                                         if code in ("insufficient_history", "insufficient_data"):
                                             sess = db_sess or get_db_session()
                                             if sess is not None:
-                                                from core.models import PriceSeries
+                                                from core.models import Symbols
                                                 from services.validation_integration import process_ticker_validation
 
                                                 row = (
-                                                    sess.query(PriceSeries)
-                                                    .filter(PriceSeries.symbol == sym)
+                                                    sess.query(Symbols)
+                                                    .filter(Symbols.symbol == sym)
                                                     .one_or_none()
                                                 )
                                                 if row is not None:

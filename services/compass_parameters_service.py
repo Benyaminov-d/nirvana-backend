@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, func
 
 from core.db import get_db_session
-from core.models import PriceSeries, ValidationFlags, CompassInputs, CvarSnapshot, RiskModels, MuPolicies
+from core.models import Symbols, ValidationFlags, CompassInputs, CvarSnapshot, RiskModels, MuPolicies
 from utils.common import _eodhd_suffix_for
 from services.infrastructure.redis_eodhd_client import RedisCachedEODHDClient
 
@@ -138,12 +138,12 @@ class CompassParametersService:
             # Latest validation subquery (one record per symbol + country)
             latest_validations = _get_latest_validation_subquery(self.session)
             
-            # Base query: PriceSeries joined with latest ValidationFlags
+            # Base query: Symbols joined with latest ValidationFlags
             query = (
-                self.session.query(PriceSeries)
+                self.session.query(Symbols)
                 .join(latest_validations, and_(
-                    PriceSeries.symbol == latest_validations.c.symbol,
-                    PriceSeries.country == latest_validations.c.country
+                    Symbols.symbol == latest_validations.c.symbol,
+                    Symbols.country == latest_validations.c.country
                 ))
                 .join(ValidationFlags, and_(
                     ValidationFlags.symbol == latest_validations.c.symbol,
@@ -151,7 +151,7 @@ class CompassParametersService:
                     ValidationFlags.as_of_date == latest_validations.c.latest_date
                 ))
                 .filter(
-                    PriceSeries.country == country,
+                    Symbols.country == country,
                     ValidationFlags.valid == 1,
                     ValidationFlags.insufficient_total_history == 0,
                 )
@@ -162,26 +162,26 @@ class CompassParametersService:
                 # US: ETF, Mutual Fund, Common Stock (non-PINK exchange) + five_stars=1
                 query = query.filter(
                     or_(
-                        PriceSeries.instrument_type.ilike("ETF"),
-                        PriceSeries.instrument_type.ilike("Mutual Fund"),
+                        Symbols.instrument_type.ilike("ETF"),
+                        Symbols.instrument_type.ilike("Mutual Fund"),
                         and_(
-                            PriceSeries.instrument_type.ilike("Common Stock"),
-                            ~PriceSeries.exchange.ilike("PINK")
+                            Symbols.instrument_type.ilike("Common Stock"),
+                            ~Symbols.exchange.ilike("PINK")
                         ),
-                        PriceSeries.five_stars == 1
+                        Symbols.five_stars == 1
                     )
                 )
             elif country == "UK":
                 # UK: ETF, Common Stock
                 query = query.filter(
                     or_(
-                        PriceSeries.instrument_type.ilike("ETF"),
-                        PriceSeries.instrument_type.ilike("Common Stock")
+                        Symbols.instrument_type.ilike("ETF"),
+                        Symbols.instrument_type.ilike("Common Stock")
                     )
                 )
             elif country == "CA":
                 # Canada: ETF only
-                query = query.filter(PriceSeries.instrument_type.ilike("ETF"))
+                query = query.filter(Symbols.instrument_type.ilike("ETF"))
             
             symbols = query.all()
             
@@ -247,46 +247,42 @@ class CompassParametersService:
         """
         Process a single symbol: fetch EODHD → compute μ → retrieve L → store.
         
-        Core architecture: NO time series storage, only parameters.
+        Args:
+            symbol_data: Symbol metadata with id, symbol, exchange, etc.
+            
+        Returns:
+            Result dictionary or None if processing failed
         """
-        # Create dedicated session and EODHD client for this worker thread
-        session = get_db_session()
-        if not session:
-            _LOG.error("Failed to create DB session for %s", symbol_data.get('symbol', 'UNKNOWN'))
+        symbol = symbol_data.get('symbol')
+        eodhd_symbol = symbol_data.get('eodhd_symbol', symbol)
+        instrument_id = symbol_data.get('id')
+        category_id = symbol_data.get('category_id', 'US')  # Default to US
+        
+        if not symbol or not instrument_id:
+            _LOG.warning("Invalid symbol data: %s", symbol_data)
             return None
             
-        # Thread-safe Redis EODHD client instance
-        eodhd_client = RedisCachedEODHDClient()
+        # Create new session for thread safety
+        session = get_db_session()
+        if not session:
+            _LOG.error("Failed to create session for %s", symbol)
+            return None
             
         try:
-            symbol = symbol_data['symbol']
-            eodhd_symbol = symbol_data['eodhd_symbol']
-            instrument_id = symbol_data['id']
-            category_id = symbol_data['category_id']
-            
-            # 1. FETCH TIME SERIES (Redis-cached, with rate limiting and retry logic)
-            from datetime import date, timedelta
-            
-            # Calculate from_date for 5 years of data
-            to_date = date.today()
-            from_date = to_date - timedelta(days=1825)  # 5 years
-            
-            # Extract symbol and exchange from eodhd_symbol (format: SYMBOL.EXCHANGE)
-            if '.' in eodhd_symbol:
-                symbol_part, exchange_part = eodhd_symbol.rsplit('.', 1)
-            else:
-                symbol_part, exchange_part = eodhd_symbol, 'US'
-            
-            raw_data = eodhd_client.get_historical_prices_cached(
-                symbol=symbol_part,
-                exchange=exchange_part, 
-                from_date=from_date,
-                to_date=to_date
+            # 1. FETCH EODHD DATA
+            _LOG.debug("Fetching EODHD data for %s", eodhd_symbol)
+            raw_data = self.eodhd_client.get_historical_prices_cached(
+                eodhd_symbol, 
+                exchange="",  # Exchange is part of the symbol for EODHD
+                period="d",  # Daily data
+                from_date=(datetime.now().date() - date(1970, 1, 1)).days - 365*3,  # 3 years
+                to_date=None  # Latest available
             )
-            if not raw_data or len(raw_data) < 252:  # Minimum 1 year
-                _LOG.debug("Insufficient data for %s: %d records", symbol, len(raw_data) if raw_data else 0)
-                return None
             
+            if not raw_data or len(raw_data) < 252:  # Need at least 1 year
+                _LOG.warning("Insufficient data for %s: %d points", symbol, len(raw_data) if raw_data else 0)
+                return None
+                
             # 2. COMPUTE μ (expected annual return)
             mu_annual = self._compute_expected_annual_return(raw_data)
             if mu_annual is None:
@@ -346,7 +342,7 @@ class CompassParametersService:
             except Exception:
                 pass
 
-    def _compute_expected_annual_return(self, raw_data: List[Dict]) -> Optional[float]:
+    def _compute_expected_annual_return(self, raw_data: List[Dict[str, Any]]) -> Optional[float]:
         """
         Compute μ (expected annual return) from EODHD time series.
         
@@ -417,11 +413,11 @@ class CompassParametersService:
                 
             # Extract CVaR value (prefer GHST > NIG > EVaR for robustness)
             cvar_value = None
-            if snapshot.cvar_ghst and np.isfinite(snapshot.cvar_ghst):
+            if snapshot.cvar_ghst is not None and np.isfinite(snapshot.cvar_ghst):
                 cvar_value = snapshot.cvar_ghst
-            elif snapshot.cvar_nig and np.isfinite(snapshot.cvar_nig):
+            elif snapshot.cvar_nig is not None and np.isfinite(snapshot.cvar_nig):
                 cvar_value = snapshot.cvar_nig
-            elif snapshot.cvar_evar and np.isfinite(snapshot.cvar_evar):
+            elif snapshot.cvar_evar is not None and np.isfinite(snapshot.cvar_evar):
                 cvar_value = snapshot.cvar_evar
                 
             if cvar_value is not None:
@@ -442,8 +438,11 @@ def create_compass_parameters_for_validated_universe() -> None:
     Creates financial parameters for validated universe symbols.
     Computes μ from EODHD and retrieves L from existing CVaR snapshots.
     """
-    service = CompassParametersService()
-    service.create_parameters_for_validated_universe()
+    try:
+        service = CompassParametersService()
+        service.create_parameters_for_validated_universe()
+    except Exception as e:
+        _LOG.error(f"Failed to create compass parameters: {e}")
 
 
 def setup_reference_data() -> None:

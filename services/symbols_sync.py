@@ -3,7 +3,7 @@ import logging
 from typing import List, Dict
 
 from core.db import get_db_session
-from core.persistence import upsert_price_series_bulk
+from core.persistence import upsert_symbols_bulk
 from utils.common import parse_exchanges_env as _parse_exchanges_env
 from utils.common import should_include_instrument_type, should_exclude_exchange
 
@@ -95,7 +95,7 @@ def sync_symbols_once(force: bool = False) -> int:
         if not items:
             _sym_logger.info("no items fetched; exchanges=%s", exchanges)
             return 0
-        n = upsert_price_series_bulk(items)
+        n = upsert_symbols_bulk(items)
         _sym_logger.info(
             "upserted items=%d exchanges=%s", int(n), exchanges
         )

@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple
 from sqlalchemy import text as _text  # type: ignore
 
 from core.db import get_db_session
-from core.models import PriceSeries  # type: ignore
+from core.models import Symbols  # type: ignore
 from utils.common import _eodhd_suffix_for  # type: ignore
 from utils import service_bus as _sb
 
@@ -42,12 +42,12 @@ def reconcile_cvar_snapshots() -> Dict[str, int]:
         # Build groups by symbol
         rows = (
             sess.query(
-                PriceSeries.symbol,
-                PriceSeries.id,
-                PriceSeries.exchange,
-                PriceSeries.country,
+                Symbols.symbol,
+                Symbols.id,
+                Symbols.exchange,
+                Symbols.country,
             )  # type: ignore
-            .order_by(PriceSeries.symbol.asc())
+            .order_by(Symbols.symbol.asc())
             .all()
         )
         sym_to_variants: Dict[str, List[Tuple[int, str | None, str | None]]] = {}

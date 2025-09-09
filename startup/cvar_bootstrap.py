@@ -5,7 +5,7 @@ import json as _json
 import importlib
 
 from core.db import get_db_session
-from core.models import PriceSeries, CvarSnapshot
+from core.models import Symbols, CvarSnapshot
 from utils import service_bus as _sb
 
 
@@ -14,11 +14,11 @@ def _build_symbol_list() -> list[str]:
     if sess is None:
         return []
     try:
-        q = sess.query(PriceSeries.symbol)
+        q = sess.query(Symbols.symbol)
         # include_unknown=True
         q = q.filter(
-            (PriceSeries.insufficient_history == 0)
-            | (PriceSeries.insufficient_history.is_(None))
+            (Symbols.insufficient_history == 0)
+            | (Symbols.insufficient_history.is_(None))
         )
         rows = q.all()
         return [s for (s,) in rows]

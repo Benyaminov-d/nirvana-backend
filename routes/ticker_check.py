@@ -8,8 +8,8 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import func
 
 from core.db import get_db_session
-from core.models import PriceSeries
-from core.persistence import upsert_price_series_bulk
+from core.models import Symbols
+from core.persistence import upsert_symbols_bulk
 from utils.auth import require_pub_or_basic as _require_pub_or_basic
 
 router = APIRouter()
@@ -75,12 +75,12 @@ def get_countries(
         # Get distinct countries with counts
         countries = (
             session.query(
-                PriceSeries.country,
-                func.count(PriceSeries.id).label('count')
+                Symbols.country,
+                func.count(Symbols.id).label('count')
             )
-            .filter(PriceSeries.country.isnot(None))
-            .group_by(PriceSeries.country)
-            .order_by(func.count(PriceSeries.id).desc())
+            .filter(Symbols.country.isnot(None))
+            .group_by(Symbols.country)
+            .order_by(func.count(Symbols.id).desc())
             .all()
         )
 
@@ -114,12 +114,12 @@ def get_instrument_types(
         # Get distinct instrument types with counts
         types = (
             session.query(
-                PriceSeries.instrument_type,
-                func.count(PriceSeries.id).label('count')
+                Symbols.instrument_type,
+                func.count(Symbols.id).label('count')
             )
-            .filter(PriceSeries.instrument_type.isnot(None))
-            .group_by(PriceSeries.instrument_type)
-            .order_by(func.count(PriceSeries.id).desc())
+            .filter(Symbols.instrument_type.isnot(None))
+            .group_by(Symbols.instrument_type)
+            .order_by(func.count(Symbols.id).desc())
             .all()
         )
 
@@ -152,11 +152,11 @@ def get_symbols(
         raise HTTPException(500, "Database not available")
 
     try:
-        query = session.query(PriceSeries)
+        query = session.query(Symbols)
 
         # Apply country filter
         if country:
-            query = query.filter(PriceSeries.country == country)
+            query = query.filter(Symbols.country == country)
 
         # Apply instrument types filter
         if instrument_types:
@@ -165,11 +165,11 @@ def get_symbols(
             ]
             if types_list:
                 query = query.filter(
-                    PriceSeries.instrument_type.in_(types_list)
+                    Symbols.instrument_type.in_(types_list)
                 )
 
         # Get symbols with relevant info
-        symbols = query.order_by(PriceSeries.symbol).all()
+        symbols = query.order_by(Symbols.symbol).all()
 
         result = []
         for symbol in symbols:
@@ -272,10 +272,10 @@ def parse_csv(
 
         try:
             # Build query for database symbols
-            query = session.query(PriceSeries)
+            query = session.query(Symbols)
 
             if country:
-                query = query.filter(PriceSeries.country == country)
+                query = query.filter(Symbols.country == country)
 
             if instrument_types:
                 types_list = [
@@ -283,7 +283,7 @@ def parse_csv(
                 ]
                 if types_list:
                     query = query.filter(
-                        PriceSeries.instrument_type.in_(types_list)
+                        Symbols.instrument_type.in_(types_list)
                     )
 
             db_symbols = query.all()
@@ -393,7 +393,7 @@ def sync_missing_symbols(
             raise HTTPException(400, "No valid symbols to sync")
 
         # Use existing bulk upsert function
-        count = upsert_price_series_bulk(items)
+        count = upsert_symbols_bulk(items)
 
         _logger.info("Synced %d symbols from CSV to database", count)
 

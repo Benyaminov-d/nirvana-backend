@@ -21,7 +21,7 @@ from sqlalchemy import and_, func, select  # type: ignore
 
 from utils.auth import basic_auth_if_configured as _basic_auth_if_configured
 from core.db import get_db_session
-from core.models import PriceSeries, ValidationFlags
+from core.models import Symbols, ValidationFlags
 
 _logger = logging.getLogger("nirvana.validation_analytics")
 
@@ -49,27 +49,27 @@ def get_validation_summary(
     
     try:
         # Base queries
-        ps_query = session.query(PriceSeries)
+        ps_query = session.query(Symbols)
         vf_query = session.query(ValidationFlags)
         
         # Apply filters
         if country:
-            ps_query = ps_query.filter(PriceSeries.country == country)
+            ps_query = ps_query.filter(Symbols.country == country)
             vf_query = vf_query.filter(ValidationFlags.country == country)
             
         if instrument_types:
             # Parse comma-separated instrument types
             types_list = [t.strip() for t in instrument_types.split(',') if t.strip()]
             if types_list:
-                ps_query = ps_query.filter(PriceSeries.instrument_type.in_(types_list))
-                # Apply instrument_types filter to vf_query via join with PriceSeries (BOTH symbol AND country)
+                ps_query = ps_query.filter(Symbols.instrument_type.in_(types_list))
+                # Apply instrument_types filter to vf_query via join with Symbols (BOTH symbol AND country)
                 vf_query = vf_query.join(
-                    PriceSeries, 
+                    Symbols, 
                     and_(
-                        PriceSeries.symbol == ValidationFlags.symbol,
-                        PriceSeries.country == ValidationFlags.country
+                        Symbols.symbol == ValidationFlags.symbol,
+                        Symbols.country == ValidationFlags.country
                     )
-                ).filter(PriceSeries.instrument_type.in_(types_list))
+                ).filter(Symbols.instrument_type.in_(types_list))
             
         if as_of_date:
             try:
@@ -98,8 +98,8 @@ def get_validation_summary(
                 types_list = [t.strip() for t in instrument_types.split(',') if t.strip()]
                 if types_list:
                     latest_validations_base = latest_validations_base.join(
-                        PriceSeries, ValidationFlags.symbol == PriceSeries.symbol
-                    ).filter(PriceSeries.instrument_type.in_(types_list))
+                        Symbols, ValidationFlags.symbol == Symbols.symbol
+                    ).filter(Symbols.instrument_type.in_(types_list))
                 
             latest_validations = latest_validations_base.group_by(ValidationFlags.symbol, ValidationFlags.country).subquery()
             
@@ -286,7 +286,7 @@ def search_validation_flags(
     try:
         # Base query
         query = session.query(ValidationFlags).join(
-            PriceSeries, ValidationFlags.symbol == PriceSeries.symbol
+            Symbols, ValidationFlags.symbol == Symbols.symbol
         )
         
         # Apply filters
@@ -296,7 +296,7 @@ def search_validation_flags(
             # Parse comma-separated instrument types
             types_list = [t.strip() for t in instrument_types.split(',') if t.strip()]
             if types_list:
-                query = query.filter(PriceSeries.instrument_type.in_(types_list))
+                query = query.filter(Symbols.instrument_type.in_(types_list))
         if valid is not None:
             query = query.filter(ValidationFlags.valid == (1 if valid else 0))
         if symbol_search:
@@ -371,9 +371,9 @@ def search_validation_flags(
         results = []
         for vf in items:
             # Get price series data (MUST match both symbol AND country)
-            ps = session.query(PriceSeries).filter(
-                PriceSeries.symbol == vf.symbol,
-                PriceSeries.country == vf.country
+            ps = session.query(Symbols).filter(
+                Symbols.symbol == vf.symbol,
+                Symbols.country == vf.country
             ).first()
             
             # Extract years_actual from validation_summary JSON
@@ -458,8 +458,8 @@ def get_validation_by_symbol(
             raise HTTPException(status_code=404, detail=f"No validation data found for symbol {symbol}")
         
         # Get price series info
-        price_series = session.query(PriceSeries).filter(
-            PriceSeries.symbol == symbol
+        price_series = session.query(Symbols).filter(
+            Symbols.symbol == symbol
         ).first()
         
         # Format results
@@ -656,7 +656,7 @@ def test_validation_processing(
         from services.prices import load_prices
         from services.validation_integration import process_ticker_validation
         from core.db import get_db_session
-        from core.models import PriceSeries
+        from core.models import Symbols
         
         # Load price data
         try:
@@ -670,8 +670,8 @@ def test_validation_processing(
         
         # Get symbol info
         session = get_db_session()
-        price_series = session.query(PriceSeries).filter(
-            PriceSeries.symbol == symbol
+        price_series = session.query(Symbols).filter(
+            Symbols.symbol == symbol
         ).first()
         
         country = price_series.country if price_series else None
@@ -739,21 +739,21 @@ def test_batch_validation_processing(
     from services.prices import load_prices
     from services.validation_integration import process_ticker_validation
     from core.db import get_db_session
-    from core.models import PriceSeries, ValidationFlags
+    from core.models import Symbols, ValidationFlags
     
     session = get_db_session()
     
     try:
         # Build query for symbols to process
-        query = session.query(PriceSeries).filter(PriceSeries.symbol.isnot(None))
+        query = session.query(Symbols).filter(Symbols.symbol.isnot(None))
         
         if country:
-            query = query.filter(PriceSeries.country == country)
+            query = query.filter(Symbols.country == country)
         
         if skip_existing:
             # Skip symbols that already have validation records
             existing_symbols = session.query(ValidationFlags.symbol).distinct()
-            query = query.filter(~PriceSeries.symbol.in_(existing_symbols))
+            query = query.filter(~Symbols.symbol.in_(existing_symbols))
         
         # Get symbols to process
         symbols_to_process = query.limit(limit).all()
@@ -780,8 +780,8 @@ def test_batch_validation_processing(
                 _logger.info(f"Processing validation for {symbol} ({country_code})")
                 
                 # Check if this symbol has duplicates (exists in multiple countries)
-                duplicate_count = session.query(PriceSeries).filter(
-                    PriceSeries.symbol == symbol
+                duplicate_count = session.query(Symbols).filter(
+                    Symbols.symbol == symbol
                 ).count()
                 
                 try:
@@ -837,9 +837,9 @@ def test_batch_validation_processing(
                         })
                     
                     # Check if price_series was updated (MUST match both symbol AND country)
-                    updated_ps = worker_session.query(PriceSeries).filter(
-                        PriceSeries.symbol == symbol,
-                        PriceSeries.country == country_code
+                    updated_ps = worker_session.query(Symbols).filter(
+                        Symbols.symbol == symbol,
+                        Symbols.country == country_code
                     ).first()
                     if updated_ps and updated_ps.valid is not None:
                         symbol_result["price_series_valid"] = bool(updated_ps.valid)
@@ -967,10 +967,10 @@ def get_instrument_types(
     session = get_db_session()
     try:
         # Get all unique instrument types
-        instrument_types = session.query(PriceSeries.instrument_type).distinct().filter(
-            PriceSeries.instrument_type.isnot(None),
-            PriceSeries.instrument_type != ''
-        ).order_by(PriceSeries.instrument_type).all()
+        instrument_types = session.query(Symbols.instrument_type).distinct().filter(
+            Symbols.instrument_type.isnot(None),
+            Symbols.instrument_type != ''
+        ).order_by(Symbols.instrument_type).all()
         
         # Extract the values from tuples
         types_list = [t[0] for t in instrument_types if t[0]]
@@ -1008,24 +1008,24 @@ def get_validation_db_status(
         if instrument_types:
             types_list = [t.strip() for t in instrument_types.split(',') if t.strip()]
         
-        # Base query for PriceSeries with filters
-        ps_query = session.query(PriceSeries)
+        # Base query for Symbols with filters
+        ps_query = session.query(Symbols)
         if country:
-            ps_query = ps_query.filter(PriceSeries.country == country)
+            ps_query = ps_query.filter(Symbols.country == country)
         if types_list:
-            ps_query = ps_query.filter(PriceSeries.instrument_type.in_(types_list))
+            ps_query = ps_query.filter(Symbols.instrument_type.in_(types_list))
         
         # Count symbols in price_series with different validation statuses (filtered)
         total_symbols = ps_query.count()
         
         # Price series flags status (filtered)
-        valid_count = ps_query.filter(PriceSeries.valid == 1).count()
-        invalid_count = ps_query.filter(PriceSeries.valid == 0).count()
-        unprocessed_valid = ps_query.filter(PriceSeries.valid.is_(None)).count()
+        valid_count = ps_query.filter(Symbols.valid == 1).count()
+        invalid_count = ps_query.filter(Symbols.valid == 0).count()
+        unprocessed_valid = ps_query.filter(Symbols.valid.is_(None)).count()
         
-        insufficient_history_count = ps_query.filter(PriceSeries.insufficient_history == 1).count()
-        sufficient_history_count = ps_query.filter(PriceSeries.insufficient_history == 0).count()
-        unprocessed_history = ps_query.filter(PriceSeries.insufficient_history.is_(None)).count()
+        insufficient_history_count = ps_query.filter(Symbols.insufficient_history == 1).count()
+        sufficient_history_count = ps_query.filter(Symbols.insufficient_history == 0).count()
+        unprocessed_history = ps_query.filter(Symbols.insufficient_history.is_(None)).count()
         
         # Base query for ValidationFlags with filters
         vf_query = session.query(ValidationFlags)
@@ -1033,12 +1033,12 @@ def get_validation_db_status(
             vf_query = vf_query.filter(ValidationFlags.country == country)
         if types_list:
             vf_query = vf_query.join(
-                PriceSeries, 
+                Symbols, 
                 and_(
-                    PriceSeries.symbol == ValidationFlags.symbol,
-                    PriceSeries.country == ValidationFlags.country
+                    Symbols.symbol == ValidationFlags.symbol,
+                    Symbols.country == ValidationFlags.country
                 )
-            ).filter(PriceSeries.instrument_type.in_(types_list))
+            ).filter(Symbols.instrument_type.in_(types_list))
         
         # ValidationFlags records (filtered)
         validation_flags_count = vf_query.count()
@@ -1067,9 +1067,9 @@ def get_validation_db_status(
         
         # Countries breakdown (also filtered by instrument types if specified)
         countries_query = ps_query.with_entities(
-            PriceSeries.country, 
-            func.count(PriceSeries.symbol).label('count')
-        ).group_by(PriceSeries.country).all()
+            Symbols.country, 
+            func.count(Symbols.symbol).label('count')
+        ).group_by(Symbols.country).all()
         
         countries_breakdown = {country or 'Unknown': count for country, count in countries_query}
         
@@ -1149,7 +1149,7 @@ def _execute_validation_job(
     from services.prices import load_prices
     from services.validation_integration import process_ticker_validation
     from core.db import get_db_session
-    from core.models import PriceSeries, ValidationFlags
+    from core.models import Symbols, ValidationFlags
     import os
     from concurrent.futures import ThreadPoolExecutor, as_completed
     
@@ -1168,20 +1168,20 @@ def _execute_validation_job(
             types_list = [t.strip() for t in instrument_types.split(',') if t.strip()]
         
         # Build query for symbols to process
-        query = session.query(PriceSeries).filter(PriceSeries.symbol.isnot(None))
+        query = session.query(Symbols).filter(Symbols.symbol.isnot(None))
         
         if country:
-            query = query.filter(PriceSeries.country == country)
+            query = query.filter(Symbols.country == country)
             
         if types_list:
-            query = query.filter(PriceSeries.instrument_type.in_(types_list))
+            query = query.filter(Symbols.instrument_type.in_(types_list))
         
         if skip_existing:
             # Skip symbols that already have validation records
             existing_symbols = session.query(ValidationFlags.symbol).distinct()
             existing_set = {symbol for (symbol,) in existing_symbols.all()}
             if existing_set:
-                query = query.filter(~PriceSeries.symbol.in_(existing_set))
+                query = query.filter(~Symbols.symbol.in_(existing_set))
         
         # Apply limit if specified
         if limit > 0:
@@ -1227,14 +1227,14 @@ def _execute_validation_job(
                 _logger.info(f"Processing validation for {symbol_name}")
                 
                 # Get country info from database FIRST to determine correct data source
-                price_series_record = local_session.query(PriceSeries).filter(
-                    PriceSeries.symbol == symbol_name
+                price_series_record = local_session.query(Symbols).filter(
+                    Symbols.symbol == symbol_name
                 ).first()
                 country = price_series_record.country if price_series_record else None
                 
                 # Check if this symbol has duplicates (exists in multiple countries)
-                duplicate_count = local_session.query(PriceSeries).filter(
-                    PriceSeries.symbol == symbol_name
+                duplicate_count = local_session.query(Symbols).filter(
+                    Symbols.symbol == symbol_name
                 ).count()
                 
                 # Load price data with correct country-specific suffix for duplicates
@@ -1504,21 +1504,21 @@ def validate_missing_symbols(
             # Step 1: Find missing symbols
             if duplicates_only:
                 # Find symbols with duplicates (same symbol name in different countries)
-                duplicate_symbols_query = session.query(PriceSeries.symbol).group_by(PriceSeries.symbol).having(func.count(PriceSeries.symbol) > 1).subquery()
+                duplicate_symbols_query = session.query(Symbols.symbol).group_by(Symbols.symbol).having(func.count(Symbols.symbol) > 1).subquery()
                 
-                missing_symbols_query = session.query(PriceSeries).filter(
-                    PriceSeries.symbol.in_(select(duplicate_symbols_query.c.symbol))
+                missing_symbols_query = session.query(Symbols).filter(
+                    Symbols.symbol.in_(select(duplicate_symbols_query.c.symbol))
                 ).outerjoin(ValidationFlags, and_(
-                    ValidationFlags.symbol == PriceSeries.symbol,
-                    ValidationFlags.country == PriceSeries.country
+                    ValidationFlags.symbol == Symbols.symbol,
+                    ValidationFlags.country == Symbols.country
                 )).filter(ValidationFlags.id == None)
                 
                 _logger.info("Looking for duplicate symbols missing validation")
             else:
                 # Find all symbols in price_series that don't have validation_flags
-                missing_symbols_query = session.query(PriceSeries).outerjoin(ValidationFlags, and_(
-                    ValidationFlags.symbol == PriceSeries.symbol,
-                    ValidationFlags.country == PriceSeries.country
+                missing_symbols_query = session.query(Symbols).outerjoin(ValidationFlags, and_(
+                    ValidationFlags.symbol == Symbols.symbol,
+                    ValidationFlags.country == Symbols.country
                 )).filter(ValidationFlags.id == None)
                 
                 _logger.info(f"DEBUG: Looking for all missing validations...")
@@ -1534,8 +1534,8 @@ def validate_missing_symbols(
                 missing_symbol_names = set([s.symbol for s in missing_symbols])
                 
                 # Find all symbols (including validated ones) that share these names
-                duplicate_symbols_for_revalidation = session.query(PriceSeries).filter(
-                    PriceSeries.symbol.in_(missing_symbol_names)
+                duplicate_symbols_for_revalidation = session.query(Symbols).filter(
+                    Symbols.symbol.in_(missing_symbol_names)
                 ).all()
                 
                 # Remove missing symbols (already in symbols_to_validate) and keep only existing validated ones
@@ -1643,8 +1643,8 @@ def diagnose_symbol_data(
     session = get_db_session()
     try:
         # Get all price_series records for this symbol
-        price_records = session.query(PriceSeries).filter(
-            PriceSeries.symbol == symbol
+        price_records = session.query(Symbols).filter(
+            Symbols.symbol == symbol
         ).all()
         
         # Get all validation_flags for this symbol  
@@ -1734,9 +1734,9 @@ def force_revalidate_specific_symbols(
         _logger.info(f"PROCESSING: Force revalidating symbols: {symbol_list}, countries: {country_list}")
         
         # Find symbols to revalidate
-        query = session.query(PriceSeries).filter(PriceSeries.symbol.in_(symbol_list))
+        query = session.query(Symbols).filter(Symbols.symbol.in_(symbol_list))
         if country_list:
-            query = query.filter(PriceSeries.country.in_(country_list))
+            query = query.filter(Symbols.country.in_(country_list))
         
         symbols_to_revalidate = query.all()
         
@@ -1912,15 +1912,15 @@ def whatif_years_analysis(
         if country:
             vf_query = vf_query.filter(ValidationFlags.country == country)
             
-        # Apply instrument type filter by joining with PriceSeries
+        # Apply instrument type filter by joining with Symbols
         if instrument_types_list:
             vf_query = vf_query.join(
-                PriceSeries, 
+                Symbols, 
                 and_(
-                    PriceSeries.symbol == ValidationFlags.symbol,
-                    PriceSeries.country == ValidationFlags.country
+                    Symbols.symbol == ValidationFlags.symbol,
+                    Symbols.country == ValidationFlags.country
                 )
-            ).filter(PriceSeries.instrument_type.in_(instrument_types_list))
+            ).filter(Symbols.instrument_type.in_(instrument_types_list))
         
         all_records = vf_query.all()
         _logger.info(f"STATS: Found {len(all_records)} records with validation_summary")
@@ -2120,9 +2120,9 @@ def debug_duplicate_symbols(
         
         # Simple query to see what we have
         all_symbols = session.query(
-            PriceSeries.symbol,
-            PriceSeries.country
-        ).order_by(PriceSeries.symbol).all()
+            Symbols.symbol,
+            Symbols.country
+        ).order_by(Symbols.symbol).all()
         
         # Manual duplicate detection
         from collections import defaultdict
@@ -2145,10 +2145,10 @@ def debug_duplicate_symbols(
         
         # Now try the SQL query
         sql_duplicates = session.query(
-            PriceSeries.symbol,
-            func.count(func.distinct(PriceSeries.country)).label('country_count')
-        ).group_by(PriceSeries.symbol).having(
-            func.count(func.distinct(PriceSeries.country)) > 1
+            Symbols.symbol,
+            func.count(func.distinct(Symbols.country)).label('country_count')
+        ).group_by(Symbols.symbol).having(
+            func.count(func.distinct(Symbols.country)) > 1
         ).all()
         
         _logger.info(f"STATS: SQL query found {len(sql_duplicates)} duplicates")
@@ -2203,18 +2203,18 @@ def fix_all_duplicate_symbols(
         
         # Find symbols that appear in multiple countries
         duplicate_symbols_query = session.query(
-            PriceSeries.symbol,
-            func.count(func.distinct(PriceSeries.country)).label('country_count')
-        ).group_by(PriceSeries.symbol).having(
-            func.count(func.distinct(PriceSeries.country)) > 1
+            Symbols.symbol,
+            func.count(func.distinct(Symbols.country)).label('country_count')
+        ).group_by(Symbols.symbol).having(
+            func.count(func.distinct(Symbols.country)) > 1
         ).all()
         
         # Get detailed info for each duplicate symbol
         duplicate_symbols = []
         for row in duplicate_symbols_query:
             # Get all countries for this symbol
-            countries = session.query(func.distinct(PriceSeries.country)).filter(
-                PriceSeries.symbol == row.symbol
+            countries = session.query(func.distinct(Symbols.country)).filter(
+                Symbols.symbol == row.symbol
             ).all()
             countries_list = [c[0] for c in countries]
             duplicate_symbols.append((row.symbol, row.country_count, ','.join(countries_list)))
@@ -2231,9 +2231,9 @@ def fix_all_duplicate_symbols(
         # STEP 2: Get all price_series records for duplicate symbols
         duplicate_symbol_names = [symbol for symbol, _, _ in duplicate_symbols]
         
-        all_duplicate_records = session.query(PriceSeries).filter(
-            PriceSeries.symbol.in_(duplicate_symbol_names)
-        ).order_by(PriceSeries.symbol, PriceSeries.country).all()
+        all_duplicate_records = session.query(Symbols).filter(
+            Symbols.symbol.in_(duplicate_symbol_names)
+        ).order_by(Symbols.symbol, Symbols.country).all()
         
         _logger.info(f"STATS: Found {len(all_duplicate_records)} total records to process")
         
@@ -2462,7 +2462,7 @@ def validate_all_symbols_sync(
     from services.prices import load_prices
     from services.validation_integration import process_ticker_validation
     from core.db import get_db_session
-    from core.models import PriceSeries, ValidationFlags
+    from core.models import Symbols, ValidationFlags
     import os
     from concurrent.futures import ThreadPoolExecutor, as_completed
     
@@ -2485,14 +2485,14 @@ def validate_all_symbols_sync(
             types_list = [t.strip() for t in instrument_types.split(',') if t.strip()]
         
         # Build query for symbols to process
-        query = session.query(PriceSeries).filter(PriceSeries.symbol.isnot(None))
+        query = session.query(Symbols).filter(Symbols.symbol.isnot(None))
         
         if country:
-            query = query.filter(PriceSeries.country == country)
+            query = query.filter(Symbols.country == country)
             _logger.info(f"LOADING Filtering by country: {country}")
             
         if types_list:
-            query = query.filter(PriceSeries.instrument_type.in_(types_list))
+            query = query.filter(Symbols.instrument_type.in_(types_list))
             _logger.info(f"DATA Filtering by instrument types: {', '.join(types_list)}")
         
         if skip_existing:
@@ -2500,7 +2500,7 @@ def validate_all_symbols_sync(
             existing_symbols = session.query(ValidationFlags.symbol).distinct()
             existing_set = {symbol for (symbol,) in existing_symbols.all()}
             if existing_set:
-                query = query.filter(~PriceSeries.symbol.in_(existing_set))
+                query = query.filter(~Symbols.symbol.in_(existing_set))
                 _logger.info(f"⏭️  Skipping {len(existing_set)} symbols with existing validation")
         
         # Apply limit if specified
@@ -2544,14 +2544,14 @@ def validate_all_symbols_sync(
                 _logger.info(f"PROCESSING: Processing: {symbol_name}")
                 
                 # Get country info from database FIRST to determine correct data source
-                price_series_record = local_session.query(PriceSeries).filter(
-                    PriceSeries.symbol == symbol_name
+                price_series_record = local_session.query(Symbols).filter(
+                    Symbols.symbol == symbol_name
                 ).first()
                 symbol_country = price_series_record.country if price_series_record else None
                 
                 # Check if this symbol has duplicates (exists in multiple countries)
-                duplicate_count = local_session.query(PriceSeries).filter(
-                    PriceSeries.symbol == symbol_name
+                duplicate_count = local_session.query(Symbols).filter(
+                    Symbols.symbol == symbol_name
                 ).count()
                 
                 # Load price data with correct country-specific suffix for duplicates

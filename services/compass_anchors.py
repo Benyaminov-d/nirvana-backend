@@ -10,7 +10,7 @@ import numpy as np
 
 from core.db import get_db_session
 from core.models import CompassAnchor, CvarSnapshot
-from core.models import PriceSeries  # type: ignore
+from core.models import Symbols  # type: ignore
 from core.compass_config import AnchorCalibConfig
 # Lazy import to avoid circular dependency
 import os
@@ -133,8 +133,8 @@ def auto_calibrate_from_db(
                     CvarSnapshot.as_of_date == latest.c.mx,
                 ),
             )
-            .outerjoin(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
-            .filter(PriceSeries.insufficient_history == 0)  # type: ignore
+            .outerjoin(Symbols, Symbols.symbol == CvarSnapshot.symbol)
+            .filter(Symbols.insufficient_history == 0)  # type: ignore
         )
         rows = q.all()
         mu_vals: list[float] = []
@@ -232,7 +232,7 @@ def auto_calibrate_global_from_db(
                 pass
             return False
 
-        # Build latest-per-symbol snapshot, then join to PriceSeries
+        # Build latest-per-symbol snapshot, then join to Symbols
         from sqlalchemy import and_, func  # type: ignore
 
         latest = (
@@ -245,7 +245,7 @@ def auto_calibrate_global_from_db(
         )
 
         q = (
-            sess.query(CvarSnapshot, PriceSeries)
+            sess.query(CvarSnapshot, Symbols)
             .join(
                 latest,
                 and_(
@@ -253,11 +253,11 @@ def auto_calibrate_global_from_db(
                     CvarSnapshot.as_of_date == latest.c.mx,
                 ),
             )
-            .outerjoin(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
+            .outerjoin(Symbols, Symbols.symbol == CvarSnapshot.symbol)
         )
         # Only include instruments with sufficient history and valid data
-        q = q.filter(PriceSeries.insufficient_history == 0)  # type: ignore
-        q = q.filter(PriceSeries.valid == 1)  # Only use valid products
+        q = q.filter(Symbols.insufficient_history == 0)  # type: ignore
+        q = q.filter(Symbols.valid == 1)  # Only use valid products
 
         # Optional env filters
         def _parse_list(env_name: str) -> list[str]:
@@ -272,11 +272,11 @@ def auto_calibrate_global_from_db(
         types = [v for v in _parse_list("COMPASS_ANCHOR_TYPES")]
         if countries:
             q = q.filter(
-                PriceSeries.country.in_(countries)
+                Symbols.country.in_(countries)
             )  # type: ignore
         if types:
             q = q.filter(
-                PriceSeries.instrument_type.in_(types)
+                Symbols.instrument_type.in_(types)
             )  # type: ignore
 
         rows = q.all()
@@ -365,13 +365,13 @@ def auto_calibrate_global_per_country_from_db(
         return summary
     try:
         ver = current_quarter_version()
-        # Distinct non-null countries from PriceSeries
+        # Distinct non-null countries from Symbols
         from sqlalchemy import func  # type: ignore
 
         countries: list[str] = []
         for (c,) in (
-            sess.query(func.distinct(PriceSeries.country))
-            .filter(PriceSeries.country.isnot(None))  # type: ignore
+            sess.query(func.distinct(Symbols.country))
+            .filter(Symbols.country.isnot(None))  # type: ignore
             .all()
         ):
             if c:
@@ -420,7 +420,7 @@ def auto_calibrate_global_per_country_from_db(
                 continue
 
             q = (
-                sess.query(CvarSnapshot, PriceSeries)
+                sess.query(CvarSnapshot, Symbols)
                 .join(
                     latest,
                     and_(
@@ -429,13 +429,13 @@ def auto_calibrate_global_per_country_from_db(
                     ),
                 )
                 .outerjoin(
-                    PriceSeries,
-                    PriceSeries.symbol == CvarSnapshot.symbol,
+                    Symbols,
+                    Symbols.symbol == CvarSnapshot.symbol,
                 )
-                .filter(PriceSeries.country == co)  # type: ignore
+                .filter(Symbols.country == co)  # type: ignore
             )
             # Only include instruments with sufficient history
-            q = q.filter(PriceSeries.insufficient_history == 0)  # type: ignore
+            q = q.filter(Symbols.insufficient_history == 0)  # type: ignore
             rows = q.all()
 
             mu_vals: list[float] = []
@@ -528,10 +528,10 @@ def auto_calibrate_by_type_country_from_db(
 
         pairs: list[tuple[str, str]] = []
         for (t, c) in (
-            sess.query(PriceSeries.instrument_type, PriceSeries.country)
+            sess.query(Symbols.instrument_type, Symbols.country)
             .filter(
-                PriceSeries.country.isnot(None),  # type: ignore
-                PriceSeries.instrument_type.isnot(None),  # type: ignore
+                Symbols.country.isnot(None),  # type: ignore
+                Symbols.instrument_type.isnot(None),  # type: ignore
             )
             .distinct()
             .all()
@@ -578,7 +578,7 @@ def auto_calibrate_by_type_country_from_db(
                 continue
 
             q = (
-                sess.query(CvarSnapshot, PriceSeries)
+                sess.query(CvarSnapshot, Symbols)
                 .join(
                     latest,
                     and_(
@@ -587,15 +587,15 @@ def auto_calibrate_by_type_country_from_db(
                     ),
                 )
                 .outerjoin(
-                    PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol
+                    Symbols, Symbols.symbol == CvarSnapshot.symbol
                 )
                 .filter(
-                    PriceSeries.country == co,  # type: ignore
-                    PriceSeries.instrument_type == typ,  # type: ignore
+                    Symbols.country == co,  # type: ignore
+                    Symbols.instrument_type == typ,  # type: ignore
                 )
             )
             # Only include instruments with sufficient history
-            q = q.filter(PriceSeries.insufficient_history == 0)  # type: ignore
+            q = q.filter(Symbols.insufficient_history == 0)  # type: ignore
             rows = q.all()
 
             mu_vals: list[float] = []
@@ -771,17 +771,17 @@ def _calibrate_country_specific(
         
         # Try to use compass parameters data first (μ values with Level 1 winsorization)
         params_q = (
-            sess.query(CompassInputs, PriceSeries)
-            .join(PriceSeries, CompassInputs.instrument_id == PriceSeries.id)
+            sess.query(CompassInputs, Symbols)
+            .join(Symbols, CompassInputs.instrument_id == Symbols.id)
             .filter(CompassInputs.category_id == country)  # Match category to country
-            .filter(PriceSeries.country == country)
-            .filter(PriceSeries.valid == 1)  # Only valid products
-            .filter(PriceSeries.insufficient_history == 0)  # Sufficient history
+            .filter(Symbols.country == country)
+            .filter(Symbols.valid == 1)  # Only valid products
+            .filter(Symbols.insufficient_history == 0)  # Sufficient history
         )
         
         # Fallback to CvarSnapshot if no clean data available
         q = (
-            sess.query(CvarSnapshot, PriceSeries)
+            sess.query(CvarSnapshot, Symbols)
             .join(
                 latest,
                 and_(
@@ -789,16 +789,16 @@ def _calibrate_country_specific(
                     CvarSnapshot.as_of_date == latest.c.mx,
                 ),
             )
-            .outerjoin(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
-            .filter(PriceSeries.country == country)
-            .filter(PriceSeries.valid == 1)  # Only valid products
-            .filter(PriceSeries.insufficient_history == 0)  # Sufficient history
+            .outerjoin(Symbols, Symbols.symbol == CvarSnapshot.symbol)
+            .filter(Symbols.country == country)
+            .filter(Symbols.valid == 1)  # Only valid products
+            .filter(Symbols.insufficient_history == 0)  # Sufficient history
         )
         
         # Apply filters to compass parameters query
         if instrument_types:
             type_filters = [
-                func.lower(PriceSeries.instrument_type) == itype.lower() 
+                func.lower(Symbols.instrument_type) == itype.lower() 
                 for itype in instrument_types
             ]
             if len(type_filters) == 1:
@@ -808,7 +808,7 @@ def _calibrate_country_specific(
         
         if exclude_exchanges:
             params_q = params_q.filter(
-                ~func.upper(PriceSeries.exchange).in_(
+                ~func.upper(Symbols.exchange).in_(
                     [ex.upper() for ex in exclude_exchanges]
                 )
             )
@@ -844,7 +844,7 @@ def _calibrate_country_specific(
             
             if exclude_exchanges:
                 q = q.filter(
-                    ~func.upper(PriceSeries.exchange).in_(
+                    ~func.upper(Symbols.exchange).in_(
                         [ex.upper() for ex in exclude_exchanges]
                     )
                 )
@@ -980,7 +980,7 @@ def _calibrate_with_filters(
             .subquery()
         )
         q = (
-            sess.query(CvarSnapshot, PriceSeries)
+            sess.query(CvarSnapshot, Symbols)
             .join(
                 latest,
                 and_(
@@ -988,19 +988,19 @@ def _calibrate_with_filters(
                     CvarSnapshot.as_of_date == latest.c.mx,
                 ),
             )
-            .outerjoin(PriceSeries, PriceSeries.symbol == CvarSnapshot.symbol)
+            .outerjoin(Symbols, Symbols.symbol == CvarSnapshot.symbol)
         )
         if countries:
             q = q.filter(
-                PriceSeries.country.in_(countries)
+                Symbols.country.in_(countries)
             )  # type: ignore
         if types:
             q = q.filter(
-                PriceSeries.instrument_type.in_(types)
+                Symbols.instrument_type.in_(types)
             )  # type: ignore
         # Only include instruments with sufficient history and valid data
-        q = q.filter(PriceSeries.insufficient_history == 0)  # type: ignore
-        q = q.filter(PriceSeries.valid == 1)  # Only use valid products
+        q = q.filter(Symbols.insufficient_history == 0)  # type: ignore
+        q = q.filter(Symbols.valid == 1)  # Only use valid products
         rows = q.all()
 
         mu_vals: list[float] = []
