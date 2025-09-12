@@ -1,9 +1,10 @@
 """
-Harvard Universe Manager
+Universe Manager
 
-Manages the frozen universe of products for Harvard release.
+Manages universes of products for Nirvana.
 Handles adding/removing products, auto-computing missing data,
 and maintaining consistency of anchors and calculations.
+Supports multiple universe types (Harvard, Cambridge, etc).
 """
 
 import logging
@@ -15,11 +16,12 @@ from dataclasses import dataclass
 from sqlalchemy import or_
 
 from core.db import get_db_session
-from core.models import Symbols, CompassInputs, CvarSnapshot, CompassAnchor
+from core.models import Symbols, CompassInputs, CvarSnapshot, CompassAnchor, ValidationFlags
 from core.universe_config import (
-    HarvardUniverseConfig, UniverseFeatureFlags, ProductCategory
+    UniverseType, ACTIVE_UNIVERSE,
+    UniverseFeatureFlags, ProductCategory, UniverseFactory
 )
-from services.compass_parameters_service import CompassParametersService
+# Removed import of CompassParametersService to avoid circular dependency
 from services.compass_anchors import auto_calibrate_from_db
 from services.domain.cvar_unified_service import CvarUnifiedService
 
@@ -38,9 +40,9 @@ class UniverseStats:
     last_updated: Optional[datetime] = None
 
 
-@dataclass  
+@dataclass
 class UniverseProduct:
-    """Product in Harvard universe."""
+    """Product in universe."""
     symbol: str
     name: str
     country: str
@@ -48,6 +50,8 @@ class UniverseProduct:
     category: str
     has_mu: bool
     has_cvar: bool
+    id: Optional[int] = None  # Database ID
+    exchange: Optional[str] = None  # Exchange code
     five_stars: bool = False
     special_lists: List[str] = None
     
@@ -56,9 +60,9 @@ class UniverseProduct:
             self.special_lists = []
 
 
-class HarvardUniverseManager:
+class UniverseManager:
     """
-    Manages Harvard release universe with automatic dependency management.
+    Manages universe with automatic dependency management.
     
     Features:
     - Defines eligible products based on configuration
@@ -66,28 +70,35 @@ class HarvardUniverseManager:
     - Auto-recalibrates anchors when universe changes
     - Provides APIs for adding/removing product categories
     - Maintains consistency and validation
+    - Supports multiple universe types (Harvard, Cambridge, etc)
     """
     
-    def __init__(self):
-        self.config = HarvardUniverseConfig()
-        self.flags = UniverseFeatureFlags()
+    def __init__(self, universe_type: str = ACTIVE_UNIVERSE):
+        """
+        Initialize Universe manager.
+        
+        Args:
+            universe_type: Universe type to manage (from UniverseType enum)
+        """
+        self.universe_type = universe_type
+        self.config = UniverseFactory.get_config(universe_type)
+        self.flags = UniverseFeatureFlags(universe_type)
         self.session = get_db_session()
         if not self.session:
             raise RuntimeError("Failed to create database session")
             
-        try:
-            self.compass_service = CompassParametersService()
-        except Exception as e:
-            _LOG.warning(f"Failed to initialize CompassParametersService: {e}")
-            self.compass_service = None
+        # Compass service initialization removed to avoid circular dependency
+        self.compass_service = None
         self._cvar_calculator = None
         
-        _LOG.info("HarvardUniverseManager initialized for countries: %s", 
+        universe_name = self.config.get_universe_name()
+        _LOG.info("%s Universe Manager initialized for countries: %s",
+                 universe_name,
                  list(self.config.get_enabled_countries().keys()))
     
     def get_universe_products(self, country: Optional[str] = None) -> List[UniverseProduct]:
         """
-        Get all products in Harvard universe.
+        Get all products in universe.
         
         Args:
             country: Filter by country code (optional)
@@ -96,7 +107,10 @@ class HarvardUniverseManager:
             List of universe products with their status
         """
         try:
-            query = self.session.query(Symbols)
+            # Join with ValidationFlags to filter only valid symbols
+            query = self.session.query(Symbols)\
+                .join(ValidationFlags, Symbols.symbol == ValidationFlags.symbol)\
+                .filter(ValidationFlags.valid == 1)
             
             # Apply country filter if specified
             if country:
@@ -141,12 +155,15 @@ class HarvardUniverseManager:
                     category=category,
                     has_mu=has_mu,
                     has_cvar=has_cvar,
+                    id=row.id,  # Pass database ID
+                    exchange=row.exchange,  # Pass exchange code
                     five_stars=(row.five_stars == 1),
                     special_lists=special_lists,
                 )
                 products.append(product)
             
-            _LOG.info("Found %d products in Harvard universe", len(products))
+            universe_name = self.config.get_universe_name()
+            _LOG.info("Found %d products in %s universe", len(products), universe_name)
             return products
             
         except Exception as exc:
@@ -354,7 +371,8 @@ class HarvardUniverseManager:
         Returns:
             Validation report with any issues found
         """
-        _LOG.info("Validating Harvard universe integrity...")
+        universe_name = self.config.get_universe_name()
+        _LOG.info("Validating %s universe integrity...", universe_name)
         
         issues = []
         stats = self.get_universe_stats()
@@ -617,12 +635,17 @@ class HarvardUniverseManager:
             return {"computed": computed, "errors": [str(exc)]}
 
 
-# Global manager instance
-_universe_manager: Optional[HarvardUniverseManager] = None
+# Global manager instances for different universe types
+_universe_managers: Dict[str, UniverseManager] = {}
 
-def get_harvard_universe_manager() -> HarvardUniverseManager:
-    """Get the Harvard universe manager singleton."""
-    global _universe_manager
-    if _universe_manager is None:
-        _universe_manager = HarvardUniverseManager()
-    return _universe_manager
+def get_universe_manager(universe_type: str = ACTIVE_UNIVERSE) -> UniverseManager:
+    """Get the universe manager singleton for the specified type."""
+    global _universe_managers
+    if universe_type not in _universe_managers:
+        _universe_managers[universe_type] = UniverseManager(universe_type)
+    return _universe_managers[universe_type]
+
+# For backward compatibility
+def get_harvard_universe_manager() -> UniverseManager:
+    """Get the Harvard universe manager singleton (backward compatibility)."""
+    return get_universe_manager(UniverseType.HARVARD.value)

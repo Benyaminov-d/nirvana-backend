@@ -52,6 +52,7 @@ from routes.auth import router as auth_router
 from routes.demo import router as demo_router
 from routes.contact import router as contact_router
 from routes.maintenance import router as maintenance_router
+from routes.data_processing import router as data_processing_router
 from routes.validation_analytics import router as validation_analytics_router
 from routes.ticker_check import router as ticker_check_router
 from routes.rag import router as rag_router
@@ -117,6 +118,7 @@ app.include_router(shared_demo_router, prefix="/api")
 app.include_router(domain_models_demo_router, prefix="/api")
 app.include_router(debug_database_router, prefix="/api")
 app.include_router(maintenance_router, prefix="/api/maintenance")
+app.include_router(data_processing_router)
 
 # Static files (HTML, PDFs, images) are now served by the frontend container
 # under /spa/public/static/ - backend no longer serves static content

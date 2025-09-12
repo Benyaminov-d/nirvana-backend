@@ -28,5 +28,5 @@ rq>=1.15.0
 # Nirvana Risk packages from Azure Artifacts
 --only-binary=:all:
 --extra-index-url https://pypi.org/simple
-nirvana-risk==0.6.3
-nirvana-risk-core==0.6.3
+nirvana-risk==0.6.4
+nirvana-risk-core==0.6.4

@@ -48,6 +48,7 @@ from core.db_models.validation import ValidationFlags
 from core.db_models.compass_anchor_versions import CompassAnchorVersions
 from core.db_models.compass_inputs import CompassInputs
 from core.db_models.compass_metadata import RiskModels, MuPolicies
+from core.db_models.price_time_series import PriceTimeSeries
 
 __all__ = [
     # Base
@@ -95,6 +96,8 @@ __all__ = [
     "CompassInputs", 
     "RiskModels",
     "MuPolicies",
+    # Time Series
+    "PriceTimeSeries",
 ]
 
 

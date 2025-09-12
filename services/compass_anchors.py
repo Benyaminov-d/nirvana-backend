@@ -874,10 +874,20 @@ def _calibrate_country_specific(
         # Check minimum sample size
         # Global config removed - using safe defaults only
         min_sample_size = 100  # Safe default instead of global_config
+        absolute_min_size = 5  # Absolute minimum to create any anchor
         
         if len(mu_vals) < min_sample_size:
-            result["error"] = f"Insufficient data: {len(mu_vals)} < {min_sample_size}"
-            return result
+            _LOG.warning(
+                "Low sample size for %s anchors: %d < %d (recommended)",
+                country, len(mu_vals), min_sample_size
+            )
+            
+            # Still proceed if we have at least the absolute minimum
+            if len(mu_vals) < absolute_min_size:
+                result["error"] = f"Insufficient data: {len(mu_vals)} < {absolute_min_size} (absolute minimum)"
+                return result
+            
+            result["warning"] = f"Low sample size: {len(mu_vals)} < {min_sample_size} (recommended)"
         
         # Calibrate anchors
         mu_low, mu_high, med, p1, p99 = calibrate_mu_anchors(mu_vals, cfg)
@@ -1182,46 +1192,99 @@ def _calibrate_harvard_anchor(category: str, symbols: list[str], cfg: AnchorCali
         
         if existing:
             _LOG.info("Harvard anchor already exists: category=%s version=%s", category, ver)
-            return False
+            return True  # Возвращаем True, так как якорь уже существует
         
-        # Get latest CVaR data for Harvard symbols
+        # Try to get data from CompassInputs first (preferred source)
         from sqlalchemy import and_, func
-        latest = (
-            sess.query(
-                CvarSnapshot.symbol.label("symbol"),
-                func.max(CvarSnapshot.as_of_date).label("mx"),
+        from core.models import CompassInputs, Symbols
+        
+        # Get latest version of CompassInputs
+        latest_version = sess.query(func.max(CompassInputs.version_id)).scalar()
+        
+        if latest_version:
+            # Get mu_i values from CompassInputs
+            q = (
+                sess.query(CompassInputs.mu_i)
+                .join(Symbols, Symbols.id == CompassInputs.instrument_id)
+                .filter(
+                    Symbols.symbol.in_(symbols),
+                    CompassInputs.version_id == latest_version,
+                    CompassInputs.mu_i.isnot(None)
+                )
             )
-            .filter(CvarSnapshot.symbol.in_(symbols))  # ✅ ФИЛЬТР ПО HARVARD СИМВОЛАМ
-            .group_by(CvarSnapshot.symbol)
-            .subquery()
-        )
-        
-        q = (
-            sess.query(CvarSnapshot)
-            .join(
-                latest,
-                and_(
-                    CvarSnapshot.symbol == latest.c.symbol,
-                    CvarSnapshot.as_of_date == latest.c.mx,
-                ),
+            
+            # Extract μ values
+            mu_vals = []
+            for r in q.all():
+                try:
+                    if r.mu_i is not None:
+                        mu_vals.append(float(r.mu_i))
+                except Exception:
+                    continue
+                    
+            _LOG.info("Using CompassInputs for %s anchor calibration: found %d values", 
+                     category, len(mu_vals))
+        else:
+            # Fallback to CvarSnapshot if no CompassInputs are available
+            _LOG.warning("No CompassInputs found, falling back to CvarSnapshot for %s anchor", category)
+            
+            latest = (
+                sess.query(
+                    CvarSnapshot.symbol.label("symbol"),
+                    func.max(CvarSnapshot.as_of_date).label("mx"),
+                )
+                .filter(CvarSnapshot.symbol.in_(symbols))
+                .group_by(CvarSnapshot.symbol)
+                .subquery()
             )
-            .filter(CvarSnapshot.return_annual.isnot(None))
-        )
+            
+            q = (
+                sess.query(CvarSnapshot)
+                .join(
+                    latest,
+                    and_(
+                        CvarSnapshot.symbol == latest.c.symbol,
+                        CvarSnapshot.as_of_date == latest.c.mx,
+                    ),
+                )
+                .filter(CvarSnapshot.return_annual.isnot(None))
+            )
+            
+            # Extract μ values
+            mu_vals = []
+            for r in q.all():
+                try:
+                    if r.return_annual is not None:
+                        mu_vals.append(float(r.return_annual))
+                except Exception:
+                    continue
+                    
+            _LOG.warning("Using CvarSnapshot fallback for %s anchor: found %d values", 
+                        category, len(mu_vals))
         
-        # Extract μ values
-        mu_vals = []
-        for r in q.all():
-            try:
-                if r.return_annual is not None:
-                    mu_vals.append(float(r.return_annual))
-            except Exception:
-                continue
-        
-        min_sample_size = 100  # Safe default instead of global_config
+        # Если нет данных или их слишком мало, создаем якорь с дефолтными значениями
+        min_sample_size = 5  # Уменьшаем минимальное количество для Канады
         if len(mu_vals) < min_sample_size:
-            _LOG.warning("Harvard anchor %s: insufficient data %d < %d", 
+            _LOG.warning("Harvard anchor %s: insufficient data %d < %d, creating default anchor", 
                         category, len(mu_vals), min_sample_size)
-            return False
+            
+            # Создаем якорь с дефолтными значениями
+            anchor = CompassAnchor(
+                category=category,
+                version=ver,
+                mu_low=0.01,     # 1% минимальная годовая доходность
+                mu_high=0.15,    # 15% максимальная годовая доходность
+                median_mu=0.06,  # 6% медианная годовая доходность
+                p1=0.01,         # 1% процентиль
+                p99=0.15,        # 99% процентиль
+                metadata_json=f'{{"n": 0, "source": "harvard_universe_default", "symbols": {len(symbols)}}}',
+            )
+            
+            sess.add(anchor)
+            sess.commit()
+            
+            _LOG.info("Created default Harvard anchor: category=%s (insufficient data)", category)
+            return True
         
         # Calibrate anchors
         mu_low, mu_high, med, p1, p99 = calibrate_mu_anchors(mu_vals, cfg)

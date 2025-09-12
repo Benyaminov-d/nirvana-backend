@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Dict, Any, Union
+import time
+from typing import Dict, Any, Union, List, Tuple
 
 from core.db import get_db_session
-from core.models import CvarSnapshot, CompassAnchor
+from core.models import CvarSnapshot, CompassAnchor, ValidationFlags
+from core.models import Symbols
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Ensure detailed bootstrap logs are visible
@@ -87,14 +89,256 @@ def warm_cache_from_db(db_ready: bool) -> None:
         logger.exception("Cache warming failed")
 
 
+def get_valid_symbols() -> List[str]:
+    """Get all symbols marked as valid in validation_flags."""
+    session = get_db_session()
+    if not session:
+        logger.error("Failed to create database session")
+        return []
+
+    try:
+        query = (
+            session.query(ValidationFlags.symbol)
+            .filter(ValidationFlags.valid == 1)
+            .distinct()
+        )
+        symbols = [row[0] for row in query.all()]
+        logger.info("Found %d valid symbols", len(symbols))
+        return symbols
+    except Exception as e:
+        logger.error("Error retrieving valid symbols: %s", e)
+        return []
+    finally:
+        session.close()
+
+
+def check_cvar_processing_status() -> Tuple[bool, Dict[str, Any]]:
+    """
+    Check if all valid symbols have been processed for CVaR.
+
+    Returns:
+        Tuple of (is_complete, status_dict)
+    """
+    valid_symbols = get_valid_symbols()
+    if not valid_symbols:
+        logger.error("No valid symbols found")
+        return False, {"error": "No valid symbols found"}
+
+    session = get_db_session()
+    if not session:
+        logger.error("Failed to create database session")
+        return False, {"error": "Database session failed"}
+
+    try:
+        # Create a set of valid symbols for faster lookups
+        valid_set = set(valid_symbols)
+        total = len(valid_set)
+
+        # Get processed symbols (with alpha_label=99 for consistency)
+        processed_query = (
+            session.query(CvarSnapshot.symbol)
+            .filter(CvarSnapshot.alpha_label == 99)
+            .distinct()
+        )
+        processed_symbols = set(row[0] for row in processed_query.all())
+
+        # Filter to only include valid symbols
+        processed_valid = processed_symbols.intersection(valid_set)
+        processed_count = len(processed_valid)
+
+        # Calculate remaining symbols
+        remaining = valid_set - processed_valid
+        remaining_count = len(remaining)
+
+        # Calculate completion percentage
+        completion_pct = (processed_count / total) * 100 if total > 0 else 0
+
+        logger.info(
+            "CVaR processing status: %d/%d symbols completed (%.1f%%)",
+            processed_count, total, completion_pct
+        )
+
+        # Print first 10 remaining symbols as a sample if not complete
+        if remaining:
+            # Grace period before first retry to allow workers to start consuming
+            try:
+                import time as _t
+                grace_min = int(os.getenv("CVAR_RETRY_GRACE_MINUTES", "60"))
+                start_ts = int(os.getenv("CVAR_BOOTSTRAP_START_TS", "0"))
+                now_ts = int(_t.time())
+                within_grace = start_ts > 0 and (now_ts - start_ts) < (grace_min * 60)
+            except Exception:
+                within_grace = False
+
+            sample = list(remaining)[:10]
+            logger.info("Sample of remaining symbols: %s", ", ".join(sample))
+            
+            # Check if we should retry missing symbols
+            retry_enabled = os.getenv("CVAR_RETRY_MISSING", "1").lower() in ("1", "true", "yes")
+
+            # Do not retry during grace window when nothing processed yet
+            if within_grace and processed_count == 0:
+                logger.info(
+                    "Skipping retry during grace period (%d min) to allow workers to start",
+                    int(os.getenv("CVAR_RETRY_GRACE_MINUTES", "60"))
+                )
+                return False, {
+                    "completed": False,
+                    "processed": processed_count,
+                    "total": total,
+                    "remaining": remaining_count,
+                    "percentage": completion_pct,
+                    "grace": True,
+                }
+            retry_count = int(os.getenv("CVAR_RETRY_COUNT", "3"))
+            retry_batch_size = int(os.getenv("CVAR_RETRY_BATCH_SIZE", "100"))
+            
+            if retry_enabled and retry_count > 0:
+                # Get current retry attempt from environment
+                current_retry = int(os.getenv("CVAR_CURRENT_RETRY", "0"))
+                
+                if current_retry < retry_count:
+                    logger.info(
+                        "Retrying missing symbols (attempt %d/%d): %d symbols", 
+                        current_retry + 1, retry_count, len(remaining)
+                    )
+                    
+                    # Increment retry counter
+                    os.environ["CVAR_CURRENT_RETRY"] = str(current_retry + 1)
+                    
+                    # Retry in batches to avoid overwhelming the system
+                    remaining_list = list(remaining)
+                    for i in range(0, len(remaining_list), retry_batch_size):
+                        batch = remaining_list[i:i+retry_batch_size]
+                        logger.info("Retrying batch %d: %d symbols", i//retry_batch_size + 1, len(batch))
+                        
+                        try:
+                            from startup.cvar_bootstrap import _enqueue_via_servicebus
+                            result = _enqueue_via_servicebus(batch)
+                            logger.info("Retry batch result: %s", result)
+                        except Exception as e:
+                            logger.error("Error retrying symbols: %s", e)
+
+        status = {
+            "completed": remaining_count == 0,
+            "processed": processed_count,
+            "total": total,
+            "remaining": remaining_count,
+            "percentage": completion_pct
+        }
+
+        return remaining_count == 0, status
+    except Exception as e:
+        logger.error("Error checking CVaR processing status: %s", e)
+        return False, {"error": str(e)}
+    finally:
+        session.close()
+
 def enqueue_all_if_snapshots_empty(db_ready: bool) -> Union[dict, None]:
-    """If snapshots are empty, enqueue all symbols for CVaR calculation."""
+    """
+    If snapshots are empty, enqueue all symbols for CVaR calculation.
+    Then wait for processing to complete before returning.
+    """
     if not db_ready:
         return None
     
     try:
+        # Use the existing function to enqueue symbols
         from startup.cvar_bootstrap import enqueue_all_if_snapshots_empty as _enqueue_all
-        return _enqueue_all(db_ready)
+        result = _enqueue_all(db_ready)
+
+        # If nothing was enqueued (snapshots not empty or no symbols), return immediately
+        if result is None or result.get("mode") == "none" or result.get("symbols", 0) == 0:
+            return result
+
+        # If symbols were enqueued, wait for processing to complete
+        logger.info(
+            "Waiting for CVaR processing to complete for %d symbols...",
+            result.get('symbols', 0)
+        )
+
+        # Check if wait is enabled
+        wait_enabled = os.getenv("WAIT_FOR_CVAR_PROCESSING", "1").lower() in ("1", "true", "yes")
+        if not wait_enabled:
+            logger.info("Skipping wait for CVaR processing (WAIT_FOR_CVAR_PROCESSING=0)")
+            return result
+
+        # Wait parameters
+        check_interval_minutes = int(os.getenv("CVAR_CHECK_INTERVAL_MINUTES", "15"))
+        max_wait_hours = int(os.getenv("CVAR_MAX_WAIT_HOURS", "24"))
+        max_checks = (max_wait_hours * 60) // check_interval_minutes
+
+        logger.info(
+            "Will check every %d minutes, max wait time: %d hours",
+            check_interval_minutes, max_wait_hours
+        )
+
+        # Initial check
+        is_complete, status = check_cvar_processing_status()
+        if is_complete:
+            logger.info("All symbols already processed")
+            result["processing_status"] = status
+            return result
+
+        # Wait and check periodically
+        for check_num in range(1, max_checks + 1):
+            # Wait for the specified interval
+            wait_seconds = check_interval_minutes * 60
+            logger.info("Waiting %d minutes before next check...", check_interval_minutes)
+
+            # Print progress to stdout for visibility
+            print(
+                "  - CVaR processing: %d/%d symbols (%.1f%%), next check in %d minutes" % (
+                    status.get('processed', 0),
+                    status.get('total', 0),
+                    status.get('percentage', 0),
+                    check_interval_minutes
+                )
+            )
+
+            time.sleep(wait_seconds)
+
+            # Check status
+            is_complete, status = check_cvar_processing_status()
+
+            # If all symbols processed, break the loop
+            if is_complete:
+                logger.info("All symbols processed successfully")
+                print(
+                    "  - CVaR processing completed: %d/%d symbols",
+                    status.get('processed', 0),
+                    status.get('total', 0)
+                )
+                break
+
+            # Log progress
+            logger.info(
+                "Check %d/%d: %d/%d symbols processed (%.1f%%)",
+                check_num, max_checks,
+                status.get('processed', 0), status.get('total', 0),
+                status.get('percentage', 0)
+            )
+
+            # If reached max checks, log warning but continue
+            if check_num >= max_checks:
+                logger.warning(
+                    "Reached maximum wait time of %d hours, but only %d/%d symbols processed",
+                    max_wait_hours,
+                    status.get('processed', 0), status.get('total', 0)
+                )
+                print(
+                    "  - WARNING: CVaR processing incomplete after %d hours: %d/%d symbols (%.1f%%)" % (
+                        max_wait_hours,
+                        status.get('processed', 0),
+                        status.get('total', 0),
+                        status.get('percentage', 0)
+                    )
+                )
+                break
+
+        # Add processing status to result
+        result["processing_status"] = status
+        return result
     except Exception as e:
         logger.error("CVaR bootstrap failed: %s", str(e))
         return {"error": str(e)}
@@ -113,16 +357,15 @@ def reconcile_cvar_snapshots() -> Dict[str, Union[int, str]]:
 def setup_compass_parameters() -> None:
     """Setup Compass parameters for validated universe."""
     try:
-        from services.compass_parameters_service import (
-            create_compass_parameters_for_validated_universe,
-            setup_reference_data,
-        )
-        logger.info("Creating compass parameters for validated universe")
-        # Setup minimal reference data first
-        setup_reference_data()
+        from services.compass_parameters_service import CompassParametersService
+        from core.universe_config import ACTIVE_UNIVERSE
         
-        # Process parameters (μ from EODHD, L from CVaR snapshots)
-        create_compass_parameters_for_validated_universe()
+        logger.info("Creating compass parameters for validated universe")
+        
+        # Create service and process parameters (μ from EODHD, L from CVaR snapshots)
+        service = CompassParametersService()
+        service.create_parameters_for_validated_universe(universe_type=ACTIVE_UNIVERSE)
+        
         logger.info("Compass parameters processing completed")
     except Exception as e:
         logger.error("Compass parameters creation failed: %s", str(e))
@@ -296,12 +539,154 @@ def run_business_bootstrap(db_ready: bool) -> Dict[str, Union[bool, str, Dict[st
         return {"error": "Database not ready"}
     
     results = {}
+
+    # Unified symbols pipeline enqueue (optional) - controlled via STARTUP_SYMBOLS_PIPELINE
+    # If enabled, the backend will enqueue symbols to the Service Bus 'symbols-q'
+    # based on env-provided symbols or universe filters. This powers the end-to-end
+    # pipeline: validation → CVaR → Compass params → series write.
+    try:
+        pipeline_flag = os.getenv("STARTUP_SYMBOLS_PIPELINE", "0").lower()
+        test_mode = pipeline_flag == "test"
+        if pipeline_flag in ("1", "true", "yes", "test"):
+            print("  - Enqueuing symbols pipeline%s..." % (" (TEST mode)" if test_mode else ""))  # Force visibility
+            from services.application.queue_orchestration_service import (
+                QueueOrchestrationService,
+            )
+
+            svc = QueueOrchestrationService()
+
+            # Determine symbols or filters from env
+            raw_syms = (os.getenv("PIPELINE_SYMBOLS") or "").strip()
+            symbols: list[str] = []
+            if raw_syms:
+                symbols = [s.strip().upper() for s in raw_syms.split(",") if s.strip()]
+            elif os.getenv("PIPELINE_SYMBOLS_FILE"):
+                fpath = os.getenv("PIPELINE_SYMBOLS_FILE", "").strip()
+                try:
+                    import pathlib
+                    p = pathlib.Path(fpath)
+                    if p.exists():
+                        text = p.read_text(encoding="utf-8", errors="ignore")
+                        for line in text.splitlines():
+                            for part in line.split(","):
+                                tok = part.strip().upper()
+                                if tok:
+                                    symbols.append(tok)
+                except Exception as _e:
+                    logger.warning("Failed to read PIPELINE_SYMBOLS_FILE=%s: %s", fpath, _e)
+
+            source = (os.getenv("PIPELINE_SOURCE") or "eodhd").strip()
+            as_of = (os.getenv("PIPELINE_AS_OF") or "").strip() or None
+
+            # Option to include ALL symbols (valid and non-valid)
+            include_all_symbols = (
+                (os.getenv("STARTUP_SYMBOLS_PIPELINE_VALIDANDNONVALID", "0") or "")
+                .lower()
+                in ("1", "true", "yes")
+            )
+
+            if not symbols:
+                # If explicitly requested, include ALL symbols (valid and non-valid)
+                if include_all_symbols:
+                    try:
+                        sess = get_db_session()
+                        if sess:
+                            db_syms = [row[0] for row in sess.query(Symbols.symbol).distinct().all()]
+                            symbols = [s for s in db_syms if isinstance(s, str) and s.strip()]
+                            try:
+                                sess.close()
+                            except Exception:
+                                pass
+                            if symbols:
+                                logger.info(
+                                    "Symbols pipeline (ALL): using %d symbols from DB "
+                                    "(valid and non-valid)",
+                                    len(symbols),
+                                )
+                    except Exception as _all_err:
+                        logger.warning("Symbols pipeline (ALL) DB load failed: %s", _all_err)
+                else:
+                    # Default: build from existing UniverseManager (validated only)
+                    try:
+                        from services.universe_manager import get_universe_manager
+                        from core.universe_config import ACTIVE_UNIVERSE
+                        um = get_universe_manager(ACTIVE_UNIVERSE)
+                        products = um.get_universe_products()
+                        symbols = [p.symbol for p in products if getattr(p, "symbol", None)]
+                    except Exception as _ue:
+                        logger.warning("UniverseManager fallback failed: %s", _ue)
+
+            if not symbols:
+                # Universe is empty (likely no valid symbols yet) → fallback to DB symbols
+                try:
+                    sess = get_db_session()
+                    if sess:
+                        db_syms = [row[0] for row in sess.query(Symbols.symbol).distinct().all()]
+                        symbols = [s for s in db_syms if isinstance(s, str) and s.strip()]
+                        try:
+                            sess.close()
+                        except Exception:
+                            pass
+                        if symbols:
+                            logger.info("Symbols pipeline fallback: using %d symbols from DB", len(symbols))
+                except Exception as _db_fallback_err:
+                    logger.warning("DB fallback for symbols failed: %s", _db_fallback_err)
+
+            # In TEST mode, limit the number of symbols enqueued (default 200)
+            if test_mode and symbols:
+                try:
+                    cap = int(os.getenv("STARTUP_SYMBOLS_TEST_LIMIT", "200"))
+                except Exception:
+                    cap = 200
+                if cap > 0:
+                    symbols = symbols[:cap]
+                    logger.info("STARTUP_SYMBOLS_PIPELINE=TEST → limiting symbols to %d", len(symbols))
+
+            if symbols:
+                res = svc.enqueue_symbol_batch(symbols, source=source, as_of=as_of)
+                results["symbols_pipeline"] = res
+            else:
+                results["symbols_pipeline"] = {"success": False, "error": "no symbols resolved"}
+            print(
+                "  - Symbols pipeline enqueued%s"
+                % (" (TEST mode, limited)" if test_mode else "")
+            )  # Force visibility
+        else:
+            results["symbols_pipeline"] = "skipped"
+    except Exception:
+        logger.exception("Symbols pipeline enqueue failed")
+        results["symbols_pipeline"] = "error"
+    
+    # CVaR bootstrap - controlled via STARTUP_CVAR_BOOTSTRAP
+    # This must run first to ensure we have CVaR data for compass parameters
+    try:
+        cvar_bootstrap_flag = os.getenv("STARTUP_CVAR_BOOTSTRAP", "1").lower()
+        if cvar_bootstrap_flag in ("1", "true", "yes"):
+            print("  - Running CVaR bootstrap...")  # Force visibility
+            res_boot = enqueue_all_if_snapshots_empty(db_ready)
+            print(f"  - CVaR bootstrap completed: {res_boot}")  # Force visibility
+            results['cvar_bootstrap'] = res_boot
+            if res_boot is not None:
+                logger.info("CVaR bootstrap summary: %s", res_boot)
+        else:
+            print(f"  - CVaR bootstrap skipped (STARTUP_CVAR_BOOTSTRAP={cvar_bootstrap_flag})")  # Force visibility
+            logger.info(
+                "CVaR bootstrap skipped (STARTUP_CVAR_BOOTSTRAP=%s)",
+                cvar_bootstrap_flag,
+            )
+            results['cvar_bootstrap'] = 'skipped'
+    except Exception:
+        logger.exception("CVaR bootstrap enqueue failed")
+        results['cvar_bootstrap'] = 'error'
     
     # Compass parameters - controlled via STARTUP_COMPASS_PARAMETERS
+    # This must run before anchors calibration
     try:
-        compass_params_flag = os.getenv("STARTUP_COMPASS_PARAMETERS", "0").lower()
+        compass_params_flag = os.getenv("STARTUP_COMPASS_PARAMETERS", "1").lower()  # Default to 1 (enabled)
         if compass_params_flag in ("1", "true", "yes"):
+            print("  - Creating Compass parameters...")  # Force visibility
             setup_compass_parameters()
+            print("  - Compass parameters created")  # Force visibility
             results['compass_parameters'] = True
         else:
             logger.info(
@@ -314,6 +699,7 @@ def run_business_bootstrap(db_ready: bool) -> Dict[str, Union[bool, str, Dict[st
         results['compass_parameters'] = 'error'
     
     # Compass anchors - controlled via STARTUP_COMPASS_ANCHORS
+    # This must run after compass parameters are created
     try:
         compass_anchors_flag = os.getenv("STARTUP_COMPASS_ANCHORS", "1").lower()
         if compass_anchors_flag in ("1", "true", "yes"):
@@ -348,26 +734,6 @@ def run_business_bootstrap(db_ready: bool) -> Dict[str, Union[bool, str, Dict[st
         results['compass_anchors'] = 'error'
         results['experiment_anchors'] = 'error'
     
-    # CVaR bootstrap - controlled via STARTUP_CVAR_BOOTSTRAP
-    try:
-        cvar_bootstrap_flag = os.getenv("STARTUP_CVAR_BOOTSTRAP", "1").lower()
-        if cvar_bootstrap_flag in ("1", "true", "yes"):
-            print("  - Running CVaR bootstrap...")  # Force visibility
-            res_boot = enqueue_all_if_snapshots_empty(db_ready)
-            print(f"  - CVaR bootstrap completed: {res_boot}")  # Force visibility
-            results['cvar_bootstrap'] = res_boot
-            if res_boot is not None:
-                logger.info("CVaR bootstrap summary: %s", res_boot)
-        else:
-            print(f"  - CVaR bootstrap skipped (STARTUP_CVAR_BOOTSTRAP={cvar_bootstrap_flag})")  # Force visibility
-            logger.info(
-                "CVaR bootstrap skipped (STARTUP_CVAR_BOOTSTRAP=%s)",
-                cvar_bootstrap_flag,
-            )
-            results['cvar_bootstrap'] = 'skipped'
-    except Exception:
-        logger.exception("CVaR bootstrap enqueue failed")
-        results['cvar_bootstrap'] = 'error'
     
     # Reconcile CVaR snapshots - controlled via NIR_RECONCILE_SNAPSHOTS
     try:

@@ -263,20 +263,72 @@ def validate_harvard_universe() -> Dict[str, Any]:
             for country, products in products_by_country.items():
                 stats[f"{country}_count"] = len(products)
                 
-                if country == "US" and len(products) < 500:
-                    issues.append(f"Low US symbols count for Harvard Universe: {len(products)} (expected >500)")
+                # Check US or USA symbols
+                if country == "US" or country == "USA":
+                    # If this is a US/USA check, we need to combine counts from both
+                    us_count = len(products_by_country.get("US", []))
+                    usa_count = len(products_by_country.get("USA", []))
+                    total_us = us_count + usa_count
+                    
+                    if total_us < 500:
+                        issues.append(f"Low US symbols count for Harvard Universe: {total_us} (expected >500)")
+                    else:
+                        # If we already processed US or USA, skip the next one
+                        if country == "USA" and "US" in products_by_country:
+                            continue
+                        if country == "US" and "USA" in products_by_country:
+                            continue
+                # Check for other countries and their normalized versions
+                elif country in ["UK", "United Kingdom"]:
+                    uk_count = len(products_by_country.get("UK", []))
+                    uk_full_count = len(products_by_country.get("United Kingdom", []))
+                    total_uk = uk_count + uk_full_count
+                    
+                    if total_uk < 100:
+                        warnings.append(f"Low UK symbols count for Harvard Universe: {total_uk} (expected >100)")
+                    
+                    # Skip duplicate check
+                    if country == "United Kingdom" and "UK" in products_by_country:
+                        continue
+                    if country == "UK" and "United Kingdom" in products_by_country:
+                        continue
+                        
+                elif country in ["CA", "Canada"]:
+                    ca_count = len(products_by_country.get("CA", []))
+                    canada_count = len(products_by_country.get("Canada", []))
+                    total_ca = ca_count + canada_count
+                    
+                    if total_ca < 100:
+                        warnings.append(f"Low CA symbols count for Harvard Universe: {total_ca} (expected >100)")
+                    
+                    # Skip duplicate check
+                    if country == "Canada" and "CA" in products_by_country:
+                        continue
+                    if country == "CA" and "Canada" in products_by_country:
+                        continue
+                        
+                # General case for other countries
                 elif country in ["UK", "CA"] and len(products) < 100:
                     warnings.append(f"Low {country} symbols count for Harvard Universe: {len(products)}")
                     
-            # Check if Harvard anchors exist
-            for country in ["US", "UK", "CA"]:
-                category = f"HARVARD-{country}"
+            # Check if Harvard anchors exist - handle both short and full country names
+            missing_anchors = []
+            country_mappings = {
+                "US": ["US", "USA", "United States"],
+                "UK": ["UK", "United Kingdom"],
+                "CA": ["CA", "Canada"]
+            }
+            
+            for country_code, country_variants in country_mappings.items():
+                # Check for any variant of the country name in anchor categories
+                categories = [f"HARVARD-{variant}" for variant in country_variants]
                 anchor = session.query(CompassAnchor)\
-                    .filter(CompassAnchor.category == category)\
+                    .filter(CompassAnchor.category.in_(categories))\
                     .first()
                     
                 if not anchor:
-                    issues.append(f"Missing Harvard Universe anchor for {country}: {category}")
+                    missing_anchors.append(country_code)
+                    issues.append(f"Missing Harvard Universe anchor for {country_code}: {categories[0]}")
                     
             # Check if global Harvard anchor exists
             global_anchor = session.query(CompassAnchor)\
@@ -284,7 +336,13 @@ def validate_harvard_universe() -> Dict[str, Any]:
                 .first()
                 
             if not global_anchor:
+                missing_anchors.append("GLOBAL")
                 warnings.append("Missing global Harvard Universe anchor: GLOBAL-HARVARD")
+                
+            # Log missing anchors but don't try to create them here
+            # Anchors will be created in the business_bootstrap phase after compass parameters are processed
+            if missing_anchors:
+                logger.warning(f"Missing Harvard anchors detected: {missing_anchors}. Will be created in business bootstrap phase.")
                 
         except ImportError:
             issues.append("Harvard Universe manager not available")

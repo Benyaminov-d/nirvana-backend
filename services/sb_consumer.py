@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import json as _json
+import json
 import logging
 import os
 import threading
@@ -167,7 +167,7 @@ def _sb_topic() -> str | None:
     return os.getenv("SB_TOPIC") or os.getenv("SERVICEBUS_TOPIC")
 
 
-def _sb_results_queue() -> str | None:
+def _get_results_queue() -> str | None:
     return os.getenv("SB_RESULTS_QUEUE") or os.getenv("SERVICEBUS_RESULTS_QUEUE")
 
 
@@ -175,7 +175,7 @@ def start_consumer_loop() -> None:
     conn = _sb_conn()
     topic = _sb_topic()
     sub = os.getenv("SB_SUBSCRIPTION", "monitor")
-    q_results = _sb_results_queue()
+    q_results = _get_results_queue()
     if not conn:
         _logger.info("SB consumer disabled (no connection)")
         return
@@ -271,13 +271,13 @@ def start_consumer_loop() -> None:
                                         if hasattr(msg, "get_body")
                                         else bytes(str(msg), "utf-8")
                                     )
-                                payload = (
-                                    _json.loads(
-                                        body_bytes.decode("utf-8", "replace")
-                                    )
-                                    if body_bytes
-                                    else {}
-                                )
+                                try:
+                                    decoded_body = body_bytes.decode("utf-8", "replace")
+                                    _logger.info(f"Raw message body: {decoded_body[:200]}")
+                                    payload = json.loads(decoded_body) if body_bytes else {}
+                                except Exception as e:
+                                    _logger.error(f"Failed to parse message body: {str(e)}")
+                                    payload = {}
                             except Exception:
                                 payload = {}
 
@@ -640,6 +640,163 @@ def start_consumer_loop() -> None:
                                             (code or status or ""),
                                             str(emsg)[:120],
                                         )
+                                        
+                                        # Check if this is a temporary API error that should be retried
+                                        retry_error = False
+                                        max_retries = int(os.getenv("CVAR_MAX_RETRIES", "3"))
+                                        
+                                        # Get current retry count from message properties
+                                        retry_count = 0
+                                        try:
+                                            if hasattr(msg, "application_properties") and msg.application_properties:
+                                                retry_count = int(msg.application_properties.get("retry_count", 0))
+                                        except Exception:
+                                            retry_count = 0
+                                            
+                                        # Determine if error is retryable
+                                        if any(err_text in str(emsg).lower() for err_text in [
+                                            "max retries exceeded",
+                                            "timeout",
+                                            "connection error",
+                                            "retries exhausted",
+                                            "rate limit",
+                                            "too many requests",
+                                            "service unavailable",
+                                            "internal server error",
+                                            "502",
+                                            "503",
+                                            "504"
+                                        ]):
+                                            retry_error = True
+                                        
+                                        # Special case: handle 404 errors for Canadian and UK symbols
+                                        if "404" in str(emsg).lower() and "provider returned 404" in str(emsg).lower():
+                                            # Check if this is a Canadian or UK symbol
+                                            from core.db import get_db_session
+                                            from core.models import Symbols
+                                            
+                                            try:
+                                                session = get_db_session()
+                                                symbol_info = session.query(Symbols).filter(Symbols.symbol == sym).first()
+                                                
+                                                # Get symbol info from database
+                                                if symbol_info:
+                                                    # For Canadian symbols add .TO suffix
+                                                    if symbol_info.country in ["CA", "Canada"]:
+                                                        _logger.info(f"Detected 404 for Canadian symbol {sym}, will retry with .TO suffix")
+                                                        retry_error = True
+                                                        
+                                                        # Modify the original message body to include exchange=TO
+                                                        if hasattr(msg, "body") and msg.body:
+                                                            try:
+                                                                body_data = _json.loads(msg.body.decode('utf-8'))
+                                                                body_data["exchange"] = "TO"
+                                                                # We'll use this modified body when requeuing
+                                                            except Exception:
+                                                                pass
+                                                    
+                                                    # For UK symbols add .LSE suffix
+                                                    elif symbol_info.country in ["UK", "United Kingdom", "GB", "Great Britain"]:
+                                                        _logger.info(f"Detected 404 for UK symbol {sym}, will retry with .LSE suffix")
+                                                        retry_error = True
+                                                        
+                                                        # Modify the original message body to include exchange=LSE
+                                                        if hasattr(msg, "body") and msg.body:
+                                                            try:
+                                                                body_data = _json.loads(msg.body.decode('utf-8'))
+                                                                body_data["exchange"] = "LSE"
+                                                                # We'll use this modified body when requeuing
+                                                            except Exception:
+                                                                pass
+                                                    
+                                                    # For any other symbol with valid=1 that's getting a 404, mark it as invalid
+                                                    elif symbol_info.valid == 1:
+                                                        _logger.warning(f"Symbol {sym} is marked as valid=1 but got 404 error. Marking as invalid.")
+                                                        try:
+                                                            # Update validation flags to mark symbol as invalid
+                                                            from services.validation_integration import process_ticker_validation
+                                                            validation_data = {
+                                                                "success": False,
+                                                                "code": "insufficient_data",
+                                                                "error": f"Provider returned 404 for {sym}"
+                                                            }
+                                                            process_ticker_validation(
+                                                                symbol=sym,
+                                                                validation_data=validation_data,
+                                                                country=symbol_info.country
+                                                            )
+                                                        except Exception as ve:
+                                                            _logger.error(f"Failed to update validation flags for {sym}: {ve}")
+                                            except Exception as ex:
+                                                _logger.warning(f"Error checking symbol country for {sym}: {ex}")
+                                            finally:
+                                                session.close()
+                                            
+                                        # Requeue if retryable and under max retries
+                                        if retry_error and retry_count < max_retries:
+                                            try:
+                                                from services.infrastructure.azure_service_bus_client import AzureServiceBusClient, QueueMessage, MessagePriority
+                                                
+                                                # Increment retry count
+                                                retry_count += 1
+                                                
+                                                # Create new message with same data but incremented retry count
+                                                from utils.service_bus import sb_connection_string, _sb_results_queue
+                                                
+                                                # Get connection string from environment
+                                                conn_str = sb_connection_string()
+                                                queue_name = _sb_results_queue()
+                                                
+                                                if not conn_str:
+                                                    _logger.error("Cannot retry: Service Bus connection string not configured")
+                                                    # Try direct retry without Service Bus
+                                                    _logger.info(f"Attempting direct retry for symbol {sym} with exchange suffix")
+                                                    # TODO: Implement direct retry mechanism
+                                                    # For now, just log the attempt
+                                                    _logger.info(f"Direct retry not implemented yet for {sym}")
+                                                    return
+                                                    
+                                                sb_client = AzureServiceBusClient(connection_string=conn_str, default_queue=queue_name)
+                                                if sb_client.connect():
+                                                    # Extract original message body
+                                                    body_data = {}
+                                                    try:
+                                                        if hasattr(msg, "body"):
+                                                            body_data = json.loads(msg.body.decode('utf-8'))
+                                                            
+                                                            # If we detected a symbol with 404 error, ensure we add appropriate exchange suffix
+                                                            if "404" in str(emsg).lower() and sym and body_data.get("symbol") == sym:
+                                                                from core.models import Symbols
+                                                                symbol_info = session.query(Symbols).filter(Symbols.symbol == sym).first()
+                                                                if symbol_info and symbol_info.country in ["CA", "Canada"]:
+                                                                    body_data["exchange"] = "TO"
+                                                                    _logger.info(f"Added exchange=TO to requeued message for Canadian symbol {sym}")
+                                                                elif symbol_info and symbol_info.country in ["UK", "United Kingdom", "GB", "Great Britain"]:
+                                                                    body_data["exchange"] = "LSE"
+                                                                    _logger.info(f"Added exchange=LSE to requeued message for UK symbol {sym}")
+                                                    except Exception:
+                                                        body_data = {"symbol": sym}
+                                                    
+                                                    # Create new message with retry metadata
+                                                    new_message = QueueMessage(
+                                                        body=body_data,
+                                                        priority=MessagePriority.MEDIUM,
+                                                        metadata={"retry_count": retry_count, "original_error": str(emsg)[:100]}
+                                                    )
+                                                    
+                                                    # Add delay before retry (exponential backoff)
+                                                    import datetime
+                                                    backoff_minutes = min(5 * (2 ** (retry_count - 1)), 60)  # Max 60 minutes
+                                                    new_message.scheduled_enqueue_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=backoff_minutes)
+                                                    
+                                                    # Send to queue
+                                                    if queue_name and sb_client.send_message(new_message, queue_name):
+                                                        _logger.info(
+                                                            "Requeued symbol=%s for retry %d/%d with %d minute delay",
+                                                            sym, retry_count, max_retries, backoff_minutes
+                                                        )
+                                            except Exception as re:
+                                                _logger.warning("Failed to requeue symbol=%s: %s", sym, str(re))
                                     except Exception:
                                         pass
                                     # Persist anomaly report if provided on error events

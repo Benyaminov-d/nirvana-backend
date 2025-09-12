@@ -12,12 +12,17 @@ def export_page(
     _auth: None = Depends(_basic_auth_if_configured),
 ) -> RedirectResponse:
     # Always route to SPA implementation to avoid legacy template/JS drift
-    return RedirectResponse(url="/spa/export", status_code=307)
+    return RedirectResponse(
+        url="/spa/export",
+        status_code=307,
+    )
 
 
 # ─────────────────────────── CVaR CSV/TXT ───────────────────────────
 @router.get("/export/cvars")
-def export_cvars_text(_auth: None = Depends(_basic_auth_if_configured)) -> Response:
+def export_cvars_text(
+    _auth: None = Depends(_basic_auth_if_configured),
+) -> Response:
     """Text export equivalent of legacy /export_cvars."""
     from core.db import get_db_session
     from core.models import CvarSnapshot
@@ -97,7 +102,9 @@ def export_cvars_text(_auth: None = Depends(_basic_auth_if_configured)) -> Respo
             out.write("\n")
 
         data = out.getvalue().encode("utf-8")
-        headers = {"Content-Disposition": "attachment; filename=export_cvars.txt"}
+        headers = {
+            "Content-Disposition": "attachment; filename=export_cvars.txt",
+        }
         return Response(content=data, media_type="text/plain", headers=headers)
     finally:
         try:
@@ -109,19 +116,38 @@ def export_cvars_text(_auth: None = Depends(_basic_auth_if_configured)) -> Respo
 @router.get("/export/cvars.csv")
 def export_cvars_csv(
     _auth: None = Depends(_basic_auth_if_configured),
-    levels: str = Query("", description="Comma-separated alpha labels: 50,95,99"),
-    level: str = Query("", description="Alias of 'levels'"),
+    levels: str = Query(
+        "",
+        description="Comma-separated alpha labels: 50,95,99",
+    ),
+    level: str = Query(
+        "",
+        description="Alias of 'levels'",
+    ),
     products: str = Query(
         "",
-        description="Comma-separated tickers to include; omit or 'all' for all",
+        description=(
+            "Comma-separated tickers to include; omit or 'all' for all"
+        ),
+    ),
+    instrument_types: str = Query(
+        "",
+        description=(
+            "Comma-separated instrument types to include "
+            "(e.g., ETF,Mutual Fund)"
+        ),
     ),
     latest: bool = Query(
         False,
-        description="When true, include only the latest as_of per symbol",
+        description=(
+            "When true, include only the latest as_of per symbol"
+        ),
     ),
     one_row: bool = Query(
         False,
-        description="When true, output one row per symbol with per-alpha columns",
+        description=(
+            "When true, output one row per symbol with per-alpha columns"
+        ),
     ),
     worst_only: bool = Query(
         False,
@@ -144,8 +170,13 @@ def export_cvars_csv(
     ),
 ) -> Response:
     from core.db import get_db_session
-    from core.models import CvarSnapshot, Symbols
-    import io, csv as _csv
+    from core.models import CvarSnapshot
+    from core.models import Symbols
+    import io
+    import csv as _csv
+    from utils.common import (
+        canonical_instrument_type as _canon_type,
+    )  # type: ignore
 
     sess = get_db_session()
     if sess is None:
@@ -175,7 +206,8 @@ def export_cvars_csv(
         if allowed:
             q = q.filter(CvarSnapshot.alpha_label.in_(list(allowed)))
 
-        # Optional symbol filter, supports special tokens: 5STARS, 5STARSUS, 5STARSCA
+        # Optional symbol filter, supports special tokens:
+        # 5STARS, 5STARSUS, 5STARSCA
         prod_raw = (products or "").strip()
         if prod_raw and prod_raw.lower() != "all":
             token = prod_raw.upper()
@@ -188,7 +220,15 @@ def export_cvars_csv(
                 q = (
                     q.join(Symbols, Symbols.symbol == CvarSnapshot.symbol)
                     .filter(Symbols.five_stars == 1)
-                    .filter(Symbols.country.in_(["US", "USA", "United States"]))  # type: ignore
+                    .filter(
+                        Symbols.country.in_(
+                            [
+                                "US",
+                                "USA",
+                                "United States",
+                            ]
+                        )
+                    )  # type: ignore
                 )
             elif token == "5STARSCA":
                 q = (
@@ -204,6 +244,24 @@ def export_cvars_csv(
                 }
                 if sym_set:
                     q = q.filter(CvarSnapshot.symbol.in_(list(sym_set)))
+
+        # Optional instrument types filter (e.g., ETF, Mutual Fund)
+        types_raw = (instrument_types or "").strip()
+        if types_raw:
+            # Canonicalize and deduplicate provided types
+            type_list = []
+            seen_types: set[str] = set()
+            for tok in types_raw.split(","):
+                label = _canon_type(tok)
+                if label:
+                    if label not in seen_types:
+                        type_list.append(label)
+                        seen_types.add(label)
+            if type_list:
+                # Join Symbols if not already joined (safe to re-join by symbol
+                # equality in SQLAlchemy)
+                q = q.join(Symbols, Symbols.symbol == CvarSnapshot.symbol)
+                q = q.filter(Symbols.instrument_type.in_(type_list))
 
         # Latest-only filter (per symbol) if requested
         if latest:
@@ -234,7 +292,11 @@ def export_cvars_csv(
                 return None
 
         def _worst_of_three(r: CvarSnapshot) -> float | None:
-            vals = [_flt(r.cvar_nig), _flt(r.cvar_ghst), _flt(r.cvar_evar)]
+            vals = [
+                _flt(r.cvar_nig),
+                _flt(r.cvar_ghst),
+                _flt(r.cvar_evar),
+            ]
             vals = [v for v in vals if v is not None and v == v]
             return max(vals) if vals else None
 
@@ -265,8 +327,23 @@ def export_cvars_csv(
                     rec["cvar_evar"] = _flt(r.cvar_evar) or ""
                 records.append(rec)
             # Header order
-            base = ["symbol", "as_of", "start_date", "years", "alpha_label", "alpha"]
-            value_cols = (["cvar"] if worst_only else ["cvar_nig", "cvar_ghst", "cvar_evar"])
+            base = [
+                "symbol",
+                "as_of",
+                "start_date",
+                "years",
+                "alpha_label",
+                "alpha",
+            ]
+            value_cols = (
+                ["cvar"]
+                if worst_only
+                else [
+                    "cvar_nig",
+                    "cvar_ghst",
+                    "cvar_evar",
+                ]
+            )
             header = base + value_cols
         else:
             # one row per symbol
@@ -280,14 +357,20 @@ def export_cvars_csv(
                     continue
             for sym, parts in sorted(by_sym.items(), key=lambda t: t[0]):
                 # Determine target as_of
-                asofs = [getattr(parts.get(lbl), "as_of_date", None) for lbl in selected_labels]
+                asofs = [
+                    getattr(parts.get(lbl), "as_of_date", None)
+                    for lbl in selected_labels
+                ]
                 asofs = [a for a in asofs if a is not None]
                 target_asof = max(asofs) if asofs else None
                 as_of = target_asof.isoformat() if target_asof else ""
                 rec2: dict[str, object] = {"symbol": sym, "as_of": as_of}
                 for lbl in selected_labels:
                     row = parts.get(lbl)
-                    if target_asof is not None and getattr(row, "as_of_date", None) != target_asof:
+                    if (
+                        target_asof is not None
+                        and getattr(row, "as_of_date", None) != target_asof
+                    ):
                         # align to target date when latest-only requested upstream
                         # (missing labels for that date will be empty)
                         row = None
@@ -313,7 +396,13 @@ def export_cvars_csv(
                 if worst_only:
                     header.append(f"cvar_{lbl}")
                 else:
-                    header.extend([f"cvar_nig_{lbl}", f"cvar_ghst_{lbl}", f"cvar_evar_{lbl}"])
+                    header.extend(
+                        [
+                            f"cvar_nig_{lbl}",
+                            f"cvar_ghst_{lbl}",
+                            f"cvar_evar_{lbl}",
+                        ]
+                    )
 
         # Apply exclude filter
         exclude_set = {
@@ -324,17 +413,29 @@ def export_cvars_csv(
             try:
                 if one_row:
                     if worst_only:
-                        vals = [rec.get("cvar_50"), rec.get("cvar_95"), rec.get("cvar_99")]
+                        vals = [
+                            rec.get("cvar_50"),
+                            rec.get("cvar_95"),
+                            rec.get("cvar_99"),
+                        ]
                     else:
                         vals = []
                         for lbl in selected_labels:
-                            for fam in ("cvar_nig_", "cvar_ghst_", "cvar_evar_"):
+                            for fam in (
+                                "cvar_nig_",
+                                "cvar_ghst_",
+                                "cvar_evar_",
+                            ):
                                 vals.append(rec.get(f"{fam}{lbl}"))
                 else:
                     if worst_only:
                         vals = [rec.get("cvar")]
                     else:
-                        vals = [rec.get("cvar_nig"), rec.get("cvar_ghst"), rec.get("cvar_evar")]
+                        vals = [
+                            rec.get("cvar_nig"),
+                            rec.get("cvar_ghst"),
+                            rec.get("cvar_evar"),
+                        ]
                 nums = [float(v) for v in vals if v is not None and str(v) != ""]
                 return max(nums) if nums else float("nan")
             except Exception:
@@ -368,7 +469,11 @@ def export_cvars_csv(
             except Exception:
                 continue
         data = buf.getvalue().encode("utf-8")
-        headers = {"Content-Disposition": "attachment; filename=export_cvars.csv"}
+        headers = {
+            "Content-Disposition": (
+                "attachment; filename=export_cvars.csv"
+            )
+        }
         return Response(content=data, media_type="text/csv", headers=headers)
     finally:
         try:
@@ -379,7 +484,10 @@ def export_cvars_csv(
 
 # ─────────────────────────── Time series ───────────────────────────
 @router.get("/export/timeseries")
-def export_timeseries(products: str = Query(...), _auth: None = Depends(_basic_auth_if_configured)) -> Response:
+def export_timeseries(
+    products: str = Query(...),
+    _auth: None = Depends(_basic_auth_if_configured),
+) -> Response:
     syms = [s.strip() for s in (products or "").split(",") if s.strip()]
     if not syms:
         raise HTTPException(400, "no symbols provided")
@@ -387,7 +495,8 @@ def export_timeseries(products: str = Query(...), _auth: None = Depends(_basic_a
         from routes.timeseries import get_time_series as _single
 
         return _single(ticker=syms[0])
-    import io, zipfile as _zip
+    import io
+    import zipfile as _zip
     buf = io.BytesIO()
     with _zip.ZipFile(buf, "w", _zip.ZIP_DEFLATED) as zf:
         from routes.timeseries import get_time_series as _single
@@ -399,7 +508,9 @@ def export_timeseries(products: str = Query(...), _auth: None = Depends(_basic_a
             except Exception:
                 zf.writestr(f"{s}_error.txt", "failed to fetch timeseries")
     data = buf.getvalue()
-    headers = {"Content-Disposition": "attachment; filename=timeseries_export.zip"}
+    headers = {
+        "Content-Disposition": "attachment; filename=timeseries_export.zip",
+    }
     return Response(content=data, media_type="application/zip", headers=headers)
 
 

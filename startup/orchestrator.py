@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+import threading
 from typing import Dict, Any, Union
 
 from startup.infrastructure_bootstrap import run_infrastructure_bootstrap
 from startup.data_bootstrap import run_data_bootstrap
 from startup.business_bootstrap import run_business_bootstrap
+from startup.servicebus import start_servicebus_consumer
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Ensure startup logs are visible
@@ -58,6 +60,23 @@ def run_startup_tasks() -> Dict[str, Union[str, Dict[str, Any], int]]:
         logger.exception("Data bootstrap failed")
         all_results['data'] = {'error': 'Data bootstrap failed'}
         # Continue with business bootstrap even if data bootstrap fails
+    
+    # Initialize Service Bus Consumer before business logic
+    logger.info("Initializing Service Bus Consumer for CVaR results...")
+    try:
+        # Start Service Bus consumer in a separate thread
+        sb_thread = threading.Thread(
+            target=start_servicebus_consumer,
+            daemon=True,
+            name="ServiceBusConsumer"
+        )
+        sb_thread.start()
+        logger.info("Service Bus Consumer thread started")
+        all_results['service_bus'] = True
+    except Exception:
+        logger.exception("Service Bus Consumer initialization failed")
+        all_results['service_bus'] = 'error'
+        # Continue even if Service Bus fails
     
     # Phase 3: Business Logic Bootstrap
     logger.info("Phase 3: Business logic bootstrap (CVaR, caching, Compass)")

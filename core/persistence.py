@@ -246,6 +246,48 @@ def init_db_if_configured() -> bool:
                             conn.execute(text(sql))
                         except Exception:
                             pass
+                    # Ensure price_time_series exists with required indexes/constraints (idempotent)
+                    try:
+                        conn.execute(text(
+                            """
+                            DO $$
+                            BEGIN
+                                IF NOT EXISTS (
+                                    SELECT 1 FROM information_schema.tables
+                                    WHERE table_name='price_time_series'
+                                ) THEN
+                                    CREATE TABLE price_time_series (
+                                        id SERIAL PRIMARY KEY,
+                                        symbol_id INTEGER NOT NULL REFERENCES symbols (id) ON DELETE CASCADE,
+                                        date DATE NOT NULL,
+                                        price NUMERIC(20, 6) NOT NULL,
+                                        volume BIGINT NULL,
+                                        source_type VARCHAR(20) NOT NULL,
+                                        version_id VARCHAR(128) NOT NULL,
+                                        created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+                                    );
+                                END IF;
+
+                                -- Indexes
+                                BEGIN
+                                    CREATE INDEX IF NOT EXISTS ix_pts_symbol_id ON price_time_series(symbol_id);
+                                EXCEPTION WHEN OTHERS THEN NULL; END;
+                                BEGIN
+                                    CREATE INDEX IF NOT EXISTS ix_pts_date ON price_time_series(date);
+                                EXCEPTION WHEN OTHERS THEN NULL; END;
+                                BEGIN
+                                    CREATE INDEX IF NOT EXISTS ix_pts_symbol_date ON price_time_series(symbol_id, date);
+                                EXCEPTION WHEN OTHERS THEN NULL; END;
+
+                                -- Unique index for idempotent writes
+                                BEGIN
+                                    CREATE UNIQUE INDEX IF NOT EXISTS uq_pts_symbol_date_version ON price_time_series(symbol_id, date, version_id);
+                                EXCEPTION WHEN OTHERS THEN NULL; END;
+                            END$$;
+                            """
+                        ))
+                    except Exception:
+                        pass
             except Exception:
                 pass
             # Ensure new auth-related columns exist (Postgres path)

@@ -13,7 +13,7 @@ from collections import defaultdict
 
 from core.db import get_db_session
 from core.models import Symbols
-from core.persistence import upsert_price_series_item
+from services.infrastructure.price_service_helpers import upsert_price_series_item
 
 
 _LOG = logging.getLogger(__name__)

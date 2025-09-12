@@ -165,7 +165,8 @@ class AzureServiceBusClient:
             sb_message = ServiceBusMessage(
                 body=json.dumps(message.body),
                 correlation_id=message.correlation_id,
-                time_to_live=message.time_to_live
+                time_to_live=message.time_to_live,
+                message_id=(message.metadata or {}).get("message_id") if message.metadata else None,
             )
             
             # Add priority as custom property
@@ -182,7 +183,9 @@ class AzureServiceBusClient:
             with self._client.get_queue_sender(queue_name=target_queue) as sender:
                 sender.send_messages(sb_message)
             
-            logger.debug(f"Sent message to queue '{target_queue}' with correlation_id: {message.correlation_id}")
+            logger.debug(
+                f"Sent message to queue '{target_queue}' with correlation_id: {message.correlation_id}"
+            )
             return True
             
         except Exception as e:
@@ -229,7 +232,9 @@ class AzureServiceBusClient:
                 
                 if not AZURE_AVAILABLE or not self._client:
                     # Mock mode
-                    logger.info(f"Mock: Would send batch of {len(batch)} messages to '{target_queue}'")
+                    logger.info(
+                        f"Mock: Would send batch of {len(batch)} messages to '{target_queue}'"
+                    )
                     successful_messages += len(batch)
                     batches_sent += 1
                     continue
@@ -240,45 +245,35 @@ class AzureServiceBusClient:
                     sb_message = ServiceBusMessage(
                         body=json.dumps(msg.body),
                         correlation_id=msg.correlation_id,
-                        time_to_live=msg.time_to_live
+                        time_to_live=msg.time_to_live,
+                        message_id=(msg.metadata or {}).get("message_id") if msg.metadata else None,
                     )
-                    
+                    # Custom properties
                     sb_message.application_properties = {
                         "priority": msg.priority.value,
                         **(msg.metadata or {})
                     }
-                    
+                    # Schedule if needed
                     if msg.scheduled_enqueue_time:
                         sb_message.scheduled_enqueue_time_utc = msg.scheduled_enqueue_time
-                    
                     sb_messages.append(sb_message)
                 
-                # Send batch
+                # Send the batch
                 with self._client.get_queue_sender(queue_name=target_queue) as sender:
                     sender.send_messages(sb_messages)
                 
                 successful_messages += len(batch)
                 batches_sent += 1
-                
-                logger.debug(f"Sent batch {batches_sent} with {len(batch)} messages to '{target_queue}'")
-            
+        
             return {
                 "success": True,
-                "total_messages": len(messages),
-                "successful_messages": successful_messages,
+                "total_messages": successful_messages,
                 "batches_sent": batches_sent,
-                "queue": target_queue
+                "queue": target_queue,
             }
-            
         except Exception as e:
-            logger.error(f"Batch send failed for queue '{target_queue}': {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "total_messages": len(messages),
-                "successful_messages": successful_messages,
-                "batches_sent": batches_sent
-            }
+            logger.error(f"Failed to send batch to queue '{target_queue}': {e}")
+            return {"success": False, "error": str(e), "total_messages": len(messages)}
     
     def get_queue_stats(self, queue_name: Optional[str] = None) -> Optional[QueueStats]:
         """
@@ -398,7 +393,7 @@ class AzureServiceBusClient:
     def _ensure_connected(self) -> bool:
         """Ensure connection is established, attempting to connect if needed."""
         
-        if self._connected:
+        if self._connected and self._client:
             return True
         
         return self.connect()

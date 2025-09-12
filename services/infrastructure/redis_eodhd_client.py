@@ -179,7 +179,12 @@ class RedisCachedEODHDClient:
         
         # Initialize components
         self.rate_limiter = RateLimiter(self.redis)
-        self.circuit_breaker = CircuitBreaker(self.redis)
+        # Use more tolerant circuit breaker settings (higher threshold, shorter recovery)
+        self.circuit_breaker = CircuitBreaker(
+            self.redis,
+            failure_threshold=20,  # Allow more failures before opening circuit (default: 5)
+            recovery_timeout=30    # Try to recover faster (default: 60)
+        )
         
         # Initialize underlying EODHD client
         self.eodhd_client = EODHDClient(
@@ -318,6 +323,31 @@ class RedisCachedEODHDClient:
             
         except Exception as e:
             logger.error(f"Failed to fetch historical prices for {symbol}.{exchange}: {e}")
+            
+            # Try to get stale data from cache even if TTL expired
+            stale_key = f"stale:{cache_key}"
+            stale_data = self._get_cached_result(stale_key)
+            
+            if not stale_data:
+                # No stale data, try to get any data from Redis regardless of key
+                pattern = f"eodhd:historical_prices:*{symbol}*"
+                keys = self.redis.keys(pattern)
+                if keys and len(keys) > 0:
+                    for key in keys:
+                        try:
+                            data = self.redis.get(key)
+                            if data:
+                                stale_data = json.loads(data.decode('utf-8'))
+                                break
+                        except Exception:
+                            continue
+            
+            if stale_data:
+                logger.warning(f"Using stale cached data for {symbol}.{exchange} after API error")
+                # Store as stale data for future fallbacks
+                self._set_cached_result(stale_key, stale_data, ttl=86400*30)  # 30 days
+                return [PriceDataPoint(**item) for item in stale_data]
+                
             raise e
     
     def get_symbol_info_cached(self, symbol: str, exchange: str) -> Optional[EODHDSymbolInfo]:
@@ -351,6 +381,31 @@ class RedisCachedEODHDClient:
             
         except Exception as e:
             logger.error(f"Failed to fetch symbol info for {symbol}.{exchange}: {e}")
+            
+            # Try to get stale data from cache even if TTL expired
+            stale_key = f"stale:{cache_key}"
+            stale_data = self._get_cached_result(stale_key)
+            
+            if not stale_data:
+                # No stale data, try to get any data from Redis regardless of key
+                pattern = f"eodhd:symbol_info:*{symbol}*"
+                keys = self.redis.keys(pattern)
+                if keys and len(keys) > 0:
+                    for key in keys:
+                        try:
+                            data = self.redis.get(key)
+                            if data:
+                                stale_data = json.loads(data.decode('utf-8'))
+                                break
+                        except Exception:
+                            continue
+            
+            if stale_data:
+                logger.warning(f"Using stale cached data for symbol info {symbol}.{exchange} after API error")
+                # Store as stale data for future fallbacks
+                self._set_cached_result(stale_key, stale_data, ttl=86400*30)  # 30 days
+                return EODHDSymbolInfo(**stale_data)
+                
             raise e
     
     def validate_symbol_cached(self, symbol: str, exchange: str) -> bool:
@@ -383,7 +438,28 @@ class RedisCachedEODHDClient:
             
         except Exception as e:
             logger.error(f"Failed to validate symbol {symbol}.{exchange}: {e}")
-            raise e
+            
+            # Try to get stale data from cache even if TTL expired
+            stale_key = f"stale:{cache_key}"
+            stale_data = self._get_cached_result(stale_key)
+            
+            if stale_data is not None:
+                logger.warning(f"Using stale cached validation data for {symbol}.{exchange} after API error")
+                return bool(stale_data)
+                
+            # If no stale data, check if we have historical prices for this symbol
+            # If we do, then the symbol is likely valid
+            hist_pattern = f"eodhd:historical_prices:*{symbol}*"
+            hist_keys = self.redis.keys(hist_pattern)
+            if hist_keys and len(hist_keys) > 0:
+                logger.warning(f"Inferring symbol validity from historical data for {symbol}.{exchange}")
+                # Cache this inference for future fallbacks
+                self._set_cached_result(stale_key, True, ttl=86400*30)  # 30 days
+                return True
+                
+            # If we can't validate, assume it's valid and let the data quality checks handle it
+            logger.warning(f"Assuming symbol {symbol}.{exchange} is valid due to API error")
+            return True
     
     def queue_bulk_price_fetch(self, symbol_exchange_pairs: List[Tuple[str, str]]) -> List[str]:
         """

@@ -94,7 +94,12 @@ class EODHDClient:
             raise Exception("EODHD API key required for price data retrieval")
         
         # Construct API endpoint
-        endpoint = f"{self.base_url}/eod/{symbol}.{exchange}"
+        # For Canadian stocks (TO exchange), make sure to include the exchange suffix
+        if exchange.lower() in ('to', 'tsx', 'ca'):
+            endpoint = f"{self.base_url}/eod/{symbol}.TO"
+            logger.debug(f"Using Toronto exchange suffix for {symbol}: {endpoint}")
+        else:
+            endpoint = f"{self.base_url}/eod/{symbol}.{exchange}"
         
         # Prepare parameters
         params = {

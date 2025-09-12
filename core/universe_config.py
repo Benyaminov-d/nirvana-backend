@@ -1,18 +1,30 @@
 """
-Harvard Release Universe Configuration
+Universe Configuration
 
-Defines the frozen universe of products for Nirvana's first release.
+Defines the universe of products for Nirvana.
 Provides flexible configuration for adding/removing product categories.
+Supports multiple universe types (Harvard, Cambridge, etc.)
 """
 
 import os
 from dataclasses import dataclass
-from typing import Dict, List, Set, Optional
+from typing import Dict, List, Set, Optional, Type
 from enum import Enum
 
 
+class UniverseType(Enum):
+    """Supported universe types."""
+    HARVARD = "harvard"
+    CAMBRIDGE = "cambridge"
+    # Add new universe types here
+
+
+# Default active universe from environment or fallback to HARVARD
+ACTIVE_UNIVERSE = os.getenv("ACTIVE_UNIVERSE", UniverseType.HARVARD.value)
+
+
 class ProductCategory(Enum):
-    """Product categories supported in Harvard release."""
+    """Product categories supported in universe configurations."""
     ETF = "ETF"
     MUTUAL_FUND = "MUTUAL_FUND"  
     FIVE_STARS = "FIVE_STARS"
@@ -45,54 +57,16 @@ class CountryUniverseConfig:
             object.__setattr__(self, 'special_lists', [])
 
 
-class HarvardUniverseConfig:
-    """Harvard Release universe configuration."""
+class BaseUniverseConfig:
+    """Base abstract class for all universe configurations."""
     
-    # Core countries and their product categories
-    COUNTRIES = {
-        "US": CountryUniverseConfig(
-            country_code="US",
-            country_name="United States", 
-            categories={
-                ProductCategory.ETF,
-                ProductCategory.MUTUAL_FUND,
-                ProductCategory.FIVE_STARS,
-                ProductCategory.INDEX_SP500,
-                ProductCategory.INDEX_DOW_JONES,
-                ProductCategory.INDEX_NASDAQ100,
-            },
-            compass_category="HARVARD-US",
-            min_market_cap=100_000_000,  # $100M minimum
-            min_volume=1_000_000,  # $1M daily volume
-            special_lists=["SP500", "DOW_JONES", "NASDAQ100"],
-        ),
-        
-        "UK": CountryUniverseConfig(
-            country_code="UK",
-            country_name="United Kingdom",
-            categories={
-                ProductCategory.ETF,
-                ProductCategory.COMMON_STOCK,
-                ProductCategory.FTSE100,
-            },
-            compass_category="HARVARD-UK",
-            min_market_cap=50_000_000,  # £50M minimum
-            min_volume=500_000,  # £500K daily volume  
-            special_lists=["FTSE100"],
-        ),
-        
-        "CA": CountryUniverseConfig(
-            country_code="CA", 
-            country_name="Canada",
-            categories={
-                ProductCategory.ETF,
-            },
-            compass_category="HARVARD-CA",
-            min_market_cap=25_000_000,  # CAD $25M minimum
-            min_volume=250_000,  # CAD $250K daily volume
-            enabled=True,  # Enable when ready
-        ),
-    }
+    # Countries with their configurations
+    COUNTRIES: Dict[str, CountryUniverseConfig] = {}
+    
+    @classmethod
+    def get_universe_name(cls) -> str:
+        """Get universe name."""
+        raise NotImplementedError("Must be implemented by subclass")
     
     @classmethod
     def get_enabled_countries(cls) -> Dict[str, CountryUniverseConfig]:
@@ -116,8 +90,8 @@ class HarvardUniverseConfig:
             for config in cls.COUNTRIES.values() 
             if config.enabled
         ]
-        # Add global Harvard Universe category
-        return country_categories + ["GLOBAL-HARVARD"]
+        # Add global Universe category
+        return country_categories + [f"GLOBAL-{cls.get_universe_name().upper()}"]
         
     @classmethod
     def get_country_code_map(cls) -> Dict[str, str]:
@@ -139,18 +113,7 @@ class HarvardUniverseConfig:
         five_stars: Optional[int] = None,
         special_list: Optional[str] = None
     ) -> bool:
-        """
-        Check if a product is eligible for Harvard release universe.
-        
-        Args:
-            country_code: ISO country code
-            instrument_type: Type of instrument
-            market_cap: Market capitalization
-            volume: Daily trading volume
-            history_days: Days of price history available
-            five_stars: Five stars rating (0 or 1)
-            special_list: Special list membership (SP500, FTSE100, etc.)
-        """
+        """Check if a product is eligible for the universe."""
         config = cls.get_country_config(country_code)
         if not config or not config.enabled:
             return False
@@ -209,42 +172,177 @@ class HarvardUniverseConfig:
         return True
 
 
+class HarvardUniverseConfig(BaseUniverseConfig):
+    """Harvard Release universe configuration."""
+    
+    # Core countries and their product categories
+    COUNTRIES = {
+        "US": CountryUniverseConfig(
+            country_code="US",
+            country_name="United States", 
+            categories={
+                ProductCategory.ETF,
+                ProductCategory.MUTUAL_FUND,
+                ProductCategory.FIVE_STARS,
+                ProductCategory.INDEX_SP500,
+                ProductCategory.INDEX_DOW_JONES,
+                ProductCategory.INDEX_NASDAQ100,
+            },
+            compass_category="HARVARD-US",
+            min_market_cap=100_000_000,  # $100M minimum
+            min_volume=1_000_000,  # $1M daily volume
+            special_lists=["SP500", "DOW_JONES", "NASDAQ100"],
+        ),
+        
+        "UK": CountryUniverseConfig(
+            country_code="UK",
+            country_name="United Kingdom",
+            categories={
+                ProductCategory.ETF,
+                ProductCategory.COMMON_STOCK,
+                ProductCategory.FTSE100,
+            },
+            compass_category="HARVARD-UK",
+            min_market_cap=50_000_000,  # £50M minimum
+            min_volume=500_000,  # £500K daily volume  
+            special_lists=["FTSE100"],
+        ),
+        
+        "CA": CountryUniverseConfig(
+            country_code="CA", 
+            country_name="Canada",
+            categories={
+                ProductCategory.ETF,
+            },
+            compass_category="HARVARD-CA",
+            min_market_cap=25_000_000,  # CAD $25M minimum
+            min_volume=250_000,  # CAD $250K daily volume
+            enabled=True,  # Enable when ready
+        ),
+    }
+    
+    @classmethod
+    def get_universe_name(cls) -> str:
+        """Get universe name."""
+        return "HARVARD"
+
+
 # Environment-controlled feature flags
 class UniverseFeatureFlags:
     """Feature flags for universe management."""
     
-    @classmethod
-    def auto_compute_missing_mu(cls) -> bool:
+    def __init__(self, universe_type: str = ACTIVE_UNIVERSE):
+        """Initialize feature flags for specific universe type."""
+        self.universe_type = universe_type.upper()
+        self.universe_name = UniverseFactory.get_config(universe_type).get_universe_name()
+    
+    def auto_compute_missing_mu(self) -> bool:
         """Auto-compute missing μ values."""
-        return os.getenv("HARVARD_AUTO_COMPUTE_MU", "true").lower() == "true"
+        # Try universe-specific flag first, then fallback to general flag
+        specific_flag = f"{self.universe_name}_AUTO_COMPUTE_MU"
+        general_flag = "UNIVERSE_AUTO_COMPUTE_MU"
+        return (os.getenv(specific_flag, os.getenv(general_flag, "true")).lower() == "true")
     
-    @classmethod
-    def auto_compute_missing_cvar(cls) -> bool:
+    def auto_compute_missing_cvar(self) -> bool:
         """Auto-compute missing CVaR values."""
-        return os.getenv("HARVARD_AUTO_COMPUTE_CVAR", "false").lower() == "true"
+        specific_flag = f"{self.universe_name}_AUTO_COMPUTE_CVAR"
+        general_flag = "UNIVERSE_AUTO_COMPUTE_CVAR"
+        return (os.getenv(specific_flag, os.getenv(general_flag, "false")).lower() == "true")
     
-    @classmethod  
-    def auto_recalibrate_anchors(cls) -> bool:
+    def auto_recalibrate_anchors(self) -> bool:
         """Auto-recalibrate anchors when universe changes."""
-        return os.getenv("HARVARD_AUTO_RECALIBRATE", "true").lower() == "true"
+        specific_flag = f"{self.universe_name}_AUTO_RECALIBRATE"
+        general_flag = "UNIVERSE_AUTO_RECALIBRATE"
+        return (os.getenv(specific_flag, os.getenv(general_flag, "true")).lower() == "true")
     
-    @classmethod
-    def force_universe_refresh(cls) -> bool:
+    def force_universe_refresh(self) -> bool:
         """Force complete universe refresh."""
-        return os.getenv("HARVARD_FORCE_REFRESH", "false").lower() == "true"
+        specific_flag = f"{self.universe_name}_FORCE_REFRESH"
+        general_flag = "UNIVERSE_FORCE_REFRESH"
+        return (os.getenv(specific_flag, os.getenv(general_flag, "false")).lower() == "true")
     
-    @classmethod
-    def dry_run_mode(cls) -> bool:
+    def dry_run_mode(self) -> bool:
         """Dry run mode - show changes without applying."""
-        return os.getenv("HARVARD_DRY_RUN", "false").lower() == "true"
+        specific_flag = f"{self.universe_name}_DRY_RUN"
+        general_flag = "UNIVERSE_DRY_RUN"
+        return (os.getenv(specific_flag, os.getenv(general_flag, "false")).lower() == "true")
+    
+    def max_parallel_workers(self) -> int:
+        """Maximum parallel workers for computations."""
+        specific_flag = f"{self.universe_name}_MAX_WORKERS"
+        general_flag = "UNIVERSE_MAX_WORKERS"
+        return int(os.getenv(specific_flag, os.getenv(general_flag, "16")))
+        
+    # For backward compatibility
+    @classmethod
+    def get_harvard_flags(cls) -> "UniverseFeatureFlags":
+        """Get feature flags for Harvard universe (backward compatibility)."""
+        return UniverseFeatureFlags(UniverseType.HARVARD.value)
+
+
+# Create a CambridgeUniverseConfig as another example
+class CambridgeUniverseConfig(BaseUniverseConfig):
+    """Cambridge Universe configuration."""
+    
+    # Sample countries and their product categories
+    COUNTRIES = {
+        "UK": CountryUniverseConfig(
+            country_code="UK",
+            country_name="United Kingdom",
+            categories={
+                ProductCategory.ETF,
+                ProductCategory.COMMON_STOCK,
+                ProductCategory.FTSE100,
+            },
+            compass_category="CAMBRIDGE-UK",
+            min_market_cap=25_000_000,  # £25M minimum
+            min_volume=250_000,  # £250K daily volume  
+            special_lists=["FTSE100"],
+        ),
+        
+        "US": CountryUniverseConfig(
+            country_code="US",
+            country_name="United States", 
+            categories={
+                ProductCategory.ETF,
+                ProductCategory.COMMON_STOCK,
+                ProductCategory.INDEX_SP500,
+            },
+            compass_category="CAMBRIDGE-US",
+            min_market_cap=50_000_000,  # $50M minimum
+            min_volume=500_000,  # $500K daily volume
+            special_lists=["SP500"],
+        ),
+    }
     
     @classmethod
-    def max_parallel_workers(cls) -> int:
-        """Maximum parallel workers for computations."""
-        return int(os.getenv("HARVARD_MAX_WORKERS", "16"))
+    def get_universe_name(cls) -> str:
+        """Get universe name."""
+        return "CAMBRIDGE"
 
 
-# Global configuration instance
-def get_harvard_config() -> HarvardUniverseConfig:
-    """Get Harvard release configuration."""
-    return HarvardUniverseConfig()
+class UniverseFactory:
+    """Factory for creating Universe configurations."""
+    
+    @staticmethod
+    def get_config(universe_type: str = ACTIVE_UNIVERSE) -> Type[BaseUniverseConfig]:
+        """Get configuration for the specified Universe type."""
+        if universe_type == UniverseType.HARVARD.value:
+            return HarvardUniverseConfig
+        elif universe_type == UniverseType.CAMBRIDGE.value:
+            return CambridgeUniverseConfig
+        else:
+            # Default to Harvard Universe
+            return HarvardUniverseConfig
+
+
+# Functions to get universe configurations
+def get_universe_config(universe_type: str = ACTIVE_UNIVERSE) -> Type[BaseUniverseConfig]:
+    """Get universe configuration based on type."""
+    return UniverseFactory.get_config(universe_type)
+
+
+# For backwards compatibility
+def get_harvard_config() -> Type[BaseUniverseConfig]:
+    """Get Harvard release configuration (backward compatibility)."""
+    return HarvardUniverseConfig

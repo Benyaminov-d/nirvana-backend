@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import json as _json
 import importlib
 
 from core.db import get_db_session
@@ -14,15 +13,28 @@ def _build_symbol_list() -> list[str]:
     if sess is None:
         return []
     try:
-        q = sess.query(Symbols.symbol)
-        # include_unknown=True
-        q = q.filter(
-            (Symbols.insufficient_history == 0)
-            | (Symbols.insufficient_history.is_(None))
+        # Only include distinct symbols with ValidationFlags.valid = 1
+        from core.models import ValidationFlags
+        q = (
+            sess.query(Symbols.symbol)
+            .join(ValidationFlags, Symbols.symbol == ValidationFlags.symbol)
+            .filter(ValidationFlags.valid == 1)
+            .distinct()
         )
+
+        # Log how many distinct symbols we're processing
+        import logging
+        logger = logging.getLogger(__name__)
         rows = q.all()
-        return [s for (s,) in rows]
-    except Exception:
+        syms = [s for (s,) in rows]
+        logger.info(
+            f"Found {len(syms)} valid symbols for CVaR calculation"
+        )
+        return syms
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error building symbol list: {e}")
         return []
     finally:
         try:
@@ -33,7 +45,8 @@ def _build_symbol_list() -> list[str]:
 
 def _enqueue_via_servicebus(symbols: list[str]) -> dict:
     conn = _sb.sb_connection_string()
-    qname = _sb.sb_queue_name()
+    # Use CVaR calculations queue for bootstrap
+    qname = _sb.sb_cvar_calculations_queue() or _sb.sb_queue_name()
     if not (conn and qname):
         return {"mode": "none", "symbols": 0, "submitted": 0}
     submitted = 0
@@ -44,39 +57,118 @@ def _enqueue_via_servicebus(symbols: list[str]) -> dict:
         ServiceBusMessage = getattr(sb_mod, "ServiceBusMessage")
         batch_size = max(50, int(os.getenv("SB_BATCH", "100")))
         chunk_size = max(50, int(os.getenv("SB_SYMBOLS_PER_MSG", "100")))
+
+        # Detailed logging
+        import logging
+        import json
+        logger = logging.getLogger(__name__)
+        logger.info(
+            f"Initializing Service Bus connection: conn={conn[:20]}... "
+            f"qname={qname}"
+        )
+        logger.info(
+            f"Preparing to enqueue {len(symbols)} symbols "
+            f"with batch_size={batch_size}, chunk_size={chunk_size}"
+        )
+
         with ServiceBusClient.from_connection_string(conn) as client:
             sender = client.get_queue_sender(queue_name=qname)
+            logger.info(f"Service Bus sender created for queue: {qname}")
+
             with sender:
                 pending: list = []
                 for i in range(0, len(symbols), chunk_size):
                     chunk = symbols[i:i + chunk_size]
+                    logger.info(
+                        f"Processing chunk {i//chunk_size + 1}/"
+                        f"{(len(symbols) + chunk_size - 1)//chunk_size}: "
+                        f"{len(chunk)} symbols"
+                    )
+
                     for sym in chunk:
+                        # Determine exchange for symbol
+                        exchange = "US"  # default US
+
+                        # Check for CA/UK from symbols table
+                        session = get_db_session()
+                        try:
+                            symbol_info = (
+                                session.query(Symbols)
+                                .filter(Symbols.symbol == sym)
+                                .first()
+                            )
+                            if symbol_info and symbol_info.country in [
+                                "CA", "Canada"
+                            ]:
+                                exchange = "TO"
+                                # logger.info(
+                                #     f"Canadian symbol detected: {sym}, "
+                                #     f"using exchange: {exchange}"
+                                # )
+                            elif symbol_info and symbol_info.country in [
+                                "UK", "United Kingdom", "GB", "Great Britain"
+                            ]:
+                                exchange = "LSE"
+                                # logger.info(
+                                #     f"UK symbol detected: {sym}, "
+                                #     f"using exchange: {exchange}"
+                                # )
+                        except Exception as ex:
+                            logger.warning(
+                                f"Error determining exchange for {sym}: {ex}"
+                            )
+                        finally:
+                            session.close()
+
                         body = {
                             "symbol": sym,
+                            "exchange": exchange,
                             "alphas": [0.99, 0.95, 0.50],
                             "force": True,
                         }
                         cid = str(sym)
                         pending.append(
                             ServiceBusMessage(
-                                _json.dumps(body),
+                                json.dumps(body),
                                 correlation_id=cid,
+                                message_id=f"cvarreq-{sym}"
                             )
                         )
                         corr_ids.append(cid)
                         submitted += 3
                         if len(pending) >= batch_size:
+                            logger.info(
+                                f"Sending batch of {len(pending)} messages"
+                            )
                             sender.send_messages(pending)
                             pending.clear()
+
                 if pending:
+                    logger.info(
+                        f"Sending final batch of {len(pending)} messages"
+                    )
                     sender.send_messages(pending)
+
+                logger.info(
+                    f"Successfully enqueued {submitted} messages for "
+                    f"{len(symbols)} symbols"
+                )
+
         return {
             "mode": "servicebus",
             "symbols": len(symbols),
             "submitted": submitted,
         }
-    except Exception:
-        return {"mode": "error", "symbols": 0, "submitted": 0}
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Service Bus enqueue failed: {str(e)}")
+        return {
+            "mode": "error",
+            "symbols": 0,
+            "submitted": 0,
+            "error": str(e),
+        }
 
 
 def _compute_locally(symbols: list[str]) -> dict:
@@ -135,15 +227,9 @@ def _compute_locally(symbols: list[str]) -> dict:
                     alpha_label=label,
                     alpha_conf=alpha_val,
                     years=years_val,
-                    cvar_nig=_flt(
-                        getattr(ann, "get", lambda *_: None)("nig")
-                    ),
-                    cvar_ghst=_flt(
-                        getattr(ann, "get", lambda *_: None)("ghst")
-                    ),
-                    cvar_evar=_flt(
-                        getattr(ann, "get", lambda *_: None)("evar")
-                    ),
+                    cvar_nig=_flt(getattr(ann, "get", lambda *_: None)("nig")),
+                    cvar_ghst=_flt(getattr(ann, "get", lambda *_: None)("ghst")),
+                    cvar_evar=_flt(getattr(ann, "get", lambda *_: None)("evar")),
                     source="local_startup",
                     return_as_of=None,
                     return_annual=None,
@@ -180,6 +266,12 @@ def enqueue_all_if_snapshots_empty(db_ready: bool) -> dict | None:
     syms = _build_symbol_list()
     if not syms:
         return {"mode": "none", "symbols": 0}
-    if _sb.sb_connection_string() and _sb.sb_queue_name():
+    # Mark bootstrap start time for retry grace logic
+    try:
+        import time as _t
+        os.environ["CVAR_BOOTSTRAP_START_TS"] = str(int(_t.time()))
+    except Exception:
+        pass
+    if _sb.sb_connection_string() and _sb.sb_symbols_queue():
         return _enqueue_via_servicebus(syms)
     return _compute_locally(syms)
