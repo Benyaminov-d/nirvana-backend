@@ -120,12 +120,25 @@ def _enqueue_via_servicebus(symbols: list[str]) -> dict:
                         finally:
                             session.close()
 
+                        # Map exchange to suffix for downstream consumers (functions)
+                        suf = None
+                        try:
+                            exu = str(exchange or "").strip().upper()
+                            if exu == "TO":
+                                suf = ".TO"
+                            elif exu in ("LSE", "L"):
+                                suf = ".LSE"
+                        except Exception:
+                            suf = None
+
                         body = {
                             "symbol": sym,
                             "exchange": exchange,
                             "alphas": [0.99, 0.95, 0.50],
                             "force": True,
                         }
+                        if suf:
+                            body["suffix"] = suf
                         cid = str(sym)
                         pending.append(
                             ServiceBusMessage(

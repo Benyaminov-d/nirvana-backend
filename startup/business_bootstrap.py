@@ -679,6 +679,31 @@ def run_business_bootstrap(db_ready: bool) -> Dict[str, Union[bool, str, Dict[st
         logger.exception("CVaR bootstrap enqueue failed")
         results['cvar_bootstrap'] = 'error'
     
+    # CVaR enqueue for all valid symbols - controlled via STARTUP_CVAR_ENQUEUE_VALID
+    # Enqueue all ValidationFlags.valid=1 directly to CVaR calculations queue
+    try:
+        cvar_enq_valid_flag = os.getenv("STARTUP_CVAR_ENQUEUE_VALID", "0").lower()
+        if cvar_enq_valid_flag in ("1", "true", "yes"):
+            print("  - Enqueuing CVaR for all valid symbols...")  # Force visibility
+            try:
+                from startup.cvar_bootstrap import _build_symbol_list, _enqueue_via_servicebus
+                syms_valid = _build_symbol_list()
+                if syms_valid:
+                    res_enq = _enqueue_via_servicebus(syms_valid)
+                else:
+                    res_enq = {"mode": "none", "symbols": 0}
+                results['cvar_enqueue_valid'] = res_enq
+                logger.info("CVaR enqueue (all valid) summary: %s", res_enq)
+            except Exception as _cv_e:
+                logger.exception("CVaR enqueue (all valid) failed: %s", _cv_e)
+                results['cvar_enqueue_valid'] = 'error'
+            print("  - CVaR enqueue for valid symbols completed")  # Force visibility
+        else:
+            results['cvar_enqueue_valid'] = 'skipped'
+    except Exception:
+        logger.exception("CVaR enqueue (all valid) step failed")
+        results['cvar_enqueue_valid'] = 'error'
+    
     # Compass parameters - controlled via STARTUP_COMPASS_PARAMETERS
     # This must run before anchors calibration
     try:
